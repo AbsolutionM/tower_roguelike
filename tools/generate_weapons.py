@@ -243,9 +243,10 @@ def schliff(img, ox, oy, length, half, r, curve_amp=0.0, von=3, bis=None, schrit
 # das v_hi-Ende liegt im Schatten.
 
 def guard(img, ox, oy, u_c, thick, v_lo, v_hi, r,
-          flare=0.0, spitze=None, niete=None):
+          flare=0.0, spitze=None, niete=None, schwung=0.0):
     """Parierstange quer zur Klinge, fuenf Tonstufen entlang ihrer Laenge."""
     spanne = max(0.001, v_hi - v_lo)
+    weit = max(abs(v_lo), abs(v_hi), 0.001)
     for y in range(img.height):
         for x in range(img.width):
             u, v = to_uv(x, y, ox, oy)
@@ -254,7 +255,10 @@ def guard(img, ox, oy, u_c, thick, v_lo, v_hi, r,
             t = thick
             if flare and (v <= v_lo + 0.75 or v >= v_hi - 0.75):
                 t += flare
-            if abs(u - u_c) > t + 0.001:
+            # schwung zieht die Enden zur Klinge hin - eine gerade
+            # Parierstange sieht neben einer geformten Klinge billig aus
+            mitte = u_c + schwung * (abs(v) / weit) ** 2
+            if abs(u - mitte) > t + 0.001:
                 continue
             f = (v - v_lo) / spanne
             if f < 0.25:
@@ -267,8 +271,8 @@ def guard(img, ox, oy, u_c, thick, v_lo, v_hi, r,
                 col = r['tief']
             put(img, x, y, C(col))
     if spitze:                                   # dicht am Balken, sonst lose
-        speck(img, ox, oy, u_c, v_lo - 0.45, spitze)
-        speck(img, ox, oy, u_c, v_hi + 0.45, spitze)
+        speck(img, ox, oy, u_c + schwung, v_lo - 0.45, spitze)
+        speck(img, ox, oy, u_c + schwung, v_hi + 0.45, spitze)
     if niete:
         speck(img, ox, oy, u_c, -0.5, niete)
         speck(img, ox, oy, u_c, 0.5, niete)
@@ -1221,8 +1225,12 @@ def schwert(img, ox, oy, laenge, halb, klinge, beschlag, wicklung=LEDER,
     if stufe >= 1:
         schliff(img, ox, oy, laenge, halb, klinge, curve_amp=kruemmung,
                 schritt=3 if stufe == 1 else 2)
-    if stufe >= 2:
-        for u in (laenge * 0.35, laenge * 0.6):               # Funken im Stahl
+    if stufe >= 2 and stein:                  # Einlage laeuft in der
+        for i in range(3, int(laenge * 0.62), 2):   # Hohlkehle mit
+            speck(img, ox, oy, i, kruemmung * (i / laenge) ** 2,
+                  stein['hell'] if i % 4 == 3 else stein['mitte'])
+    elif stufe >= 2:
+        for u in (laenge * 0.35, laenge * 0.6):
             speck(img, ox, oy, u, 0.4 + kruemmung * (u / laenge) ** 2,
                   klinge['glanz'])
 
@@ -1230,7 +1238,8 @@ def schwert(img, ox, oy, laenge, halb, klinge, beschlag, wicklung=LEDER,
     dick = 0.7 + halb * 0.2
     guard(img, ox, oy, -0.9, dick, -quer, quer, beschlag,
           flare=0.5 if stufe >= 2 else 0.0,
-          spitze=beschlag['glanz'] if stufe >= 2 else None)
+          spitze=beschlag['glanz'] if stufe >= 2 else None,
+          schwung=(0.0, 0.7, 1.2)[min(stufe, 2)])
     if stein:
         gem(img, ox, oy, -0.9, stein['hell'], stein['mitte'], stein['dunkel'],
             glanz=stein['glanz'])
@@ -1637,7 +1646,9 @@ def wurfwaffe(img, form, klinge, beschlag=EISEN, stufe=0, cx=12, cy=12,
         versatz = int(groesse * 1.3) if form == 'ring' else 1
         put(img, cx - versatz, cy - versatz, C(beschlag['glanz']))
     if stufe >= 2:
-        if form != 'ring':               # der Reif ist innen hohl
+        if form == 'stern':              # Nabe bleibt frei, sonst
+            pass                         # sprenkelt der Kern sie zu
+        elif form != 'ring':             # der Reif ist innen hohl
             kristall(img, cx, cy, 2, klinge, zacken=False)
         for dx, dy in ((-1, 0), (0, -1)):                # Glanz auf der Kante
             put(img, cx + dx * int(groesse), cy + dy * int(groesse),
@@ -1693,9 +1704,11 @@ def bogen(img, x0, y0, hoehe, bauch, holz, sehne='mint', stufe=0,
     for y in (y0 + 1, y0 + hoehe - 2):
         put(img, x0 + 1, y, C('amber'))
     if stufe >= 1:                                   # Beschlag auf den Armen
-        for y in (y0 + 4, y0 + hoehe - 5):
-            put(img, x0 + int(bauch * 0.75), y, C('sand'))
-            put(img, x0 + int(bauch * 0.75) + 1, y, C('rust_dk'))
+        for i in (4, hoehe - 5):                     # Lage aus dem Bogen
+            t = i / (hoehe - 1.0)                    # rechnen, sonst
+            ax = x0 + int(round(bauch * math.sin(math.pi * t)))
+            put(img, ax, y0 + i, C('sand'))          # haengt er daneben
+            put(img, ax + 1, y0 + i, C('rust_dk'))
     if stufe >= 2:                                   # Kern im Griff
         kristall(img, x0 + bauch, mitte, 2, holz, zacken=False)
 
@@ -1877,6 +1890,97 @@ def w_twinblade_astral(img):
     doppelklinge(img, 22, 22, 15.0, 1.1, ASTRAL, GOLD, stufe=2)
 
 
+def kopf_dreizack(klinge, beschlag=SILBER):
+    """Dreizack: mittlere Stossklinge, zwei kuerzere Zinken daneben."""
+    def bauen(img, ox, oy, tx, ty, stufe):
+        guard(img, tx, ty, -0.4, 0.8, -2.8, 2.8, beschlag,
+              schwung=1.0 if stufe >= 1 else 0.4)
+        blade(img, tx, ty, 11.0, 0.9, klinge, tip=5.0, profil='keil')
+        for v in (-3.2, 3.2):                        # aeussere Zinken
+            zx, zy = to_xy(0.3, v, tx, ty)           # kuerzer und
+            blade(img, zx, zy, 6.5, 0.6, klinge, tip=3.5)   # schmaler,
+            # sonst wachsen sie mit der Mittelklinge zusammen
+        if stufe >= 2:
+            speck(img, tx, ty, 1.0, 0.0, klinge['glanz'])
+    return bauen
+
+
+def kopf_schaedel(knochen=KNOCHEN, glut='ember'):
+    """Totenkopf auf dem Stab: Hirnschale, tiefe Augenhoehlen, Kiefer.
+
+    Bei dieser Groesse traegt nur der Umriss - zwei dunkle Hoehlen und eine
+    abgesetzte Kieferreihe reichen, mehr wird zu Brei.
+    """
+    def bauen(img, ox, oy, tx, ty, stufe):
+        guard(img, tx, ty, -0.8, 0.8, -2.2, 2.2, GOLD, schwung=0.6)
+        sx, sy = tx + 2, ty - 2
+        kugel(img, sx, sy, 3.4, knochen)             # Hirnschale
+        for i in (-1, 0, 1, 2):                      # Kiefer, etwas schmaler
+            put(img, sx + i - 1, sy + 3, C(knochen['mitte'] if i % 2
+                                           else knochen['dunkel']))
+        for dx in (-2, 1):                           # Augenhoehlen
+            put(img, sx + dx, sy - 1, C('purple_dk'))
+            put(img, sx + dx, sy, C(glut if stufe >= 1 else 'ink'))
+        put(img, sx - 1, sy + 1, C(knochen['dunkel']))   # Nasenoeffnung
+        if stufe >= 2:
+            put(img, sx, sy - 5, C(glut))
+    return bauen
+
+
+def w_trident_abyss(img):
+    """Abgrunddreizack - Hardmode, drei Zinken. 46x46."""
+    stangenwaffe(img, 8, 39, 22.0, kopf_dreizack(ABGRUND), holz=LEDER,
+                 beschlag=SILBER, stufe=1, halb=0.85)
+
+
+def w_staff_skull(img):
+    """Totenstab - Pre-Hardmode Beschwoerung, Schaedel mit Glut. 42x42."""
+    stangenwaffe(img, 7, 36, 20.0, kopf_schaedel(), holz=DUNKELLEDER,
+                 beschlag=GOLD, stufe=1)
+
+
+def w_gunblade(img):
+    """Klingenpistole - Hardmode, Lauf laeuft am Klingenruecken mit. 40x40."""
+    ox, oy = 12, 27
+    schwert(img, ox, oy, 18.0, 1.4, KOBALT, SILBER, stein=MOND, stufe=1,
+            tip=4.5, profil='keil')
+    lx, ly = to_xy(2.0, 2.2, ox, oy)                 # Lauf am Ruecken
+    box(img, lx, ly, 9, 3, SILBER)
+    put(img, lx + 9, ly + 1, C('ink'))               # Seele
+    put(img, lx - 1, ly + 2, C('gold'))              # Abzug
+    put(img, lx + 2, ly - 1, C('sand'))              # Kimme
+
+
+def w_kusarigama(img):
+    """Kettensichel - Hardmode: Sichel, Kette, Wurfgewicht. 46x46."""
+    ox, oy = 10, 30
+    grip(img, ox, oy, 0.0, 5.0, 0.9, DUNKELLEDER)
+    guard(img, ox, oy, 5.4, 0.7, -1.4, 1.4, GOLD)
+    bx, by = to_xy(6.0, 0.0, ox, oy)
+    sichel(img, bx - 9, by + 2, 9.5, -15, 125, 3.6, KOBALT)
+    schnur(img, [(9, 33), (13, 37), (19, 39), (26, 38)], EISEN,
+           dick_von=0.7, dick_bis=0.7)
+    kugel(img, 30, 37, 3.2, EISEN)
+    pommel(img, ox, oy, -0.9, 1.3, GOLD)
+
+
+def w_greatsword_crystal(img):
+    """Kristallgrossschwert - Post-Moon-Lord, Kristalle wachsen aus der
+    Schneide. 50x50."""
+    ox, oy = 15, 31
+    schwert(img, ox, oy, 22.0, 1.8, KOBALT, GOLD, wicklung=DUNKELLEDER,
+            stein=MOND, stufe=2, tip=6.0, profil='bauchig')
+    for u, v, rad in ((7.0, -2.2, 2), (12.0, -2.6, 3), (16.5, -2.0, 2)):
+        kx, ky = to_xy(u, v, ox, oy)
+        kristall(img, kx, ky, rad, MOND, zacken=False)
+
+
+def w_longbow_astral(img):
+    """Astrallangbogen - Post-Moon-Lord, deutlich groesser als der Jagdbogen.
+    44x44."""
+    bogen(img, 12, 3, 38, 8, ASTRAL, sehne='aqua_lt', stufe=2)
+
+
 WEAPONS = [
     ('sword_melee',      'Kurzschwert',            w_sword_melee),
     ('shortsword_bone',  'Knochen-Kurzschwert',    w_shortsword_bone),
@@ -1965,6 +2069,12 @@ WEAPONS = [
     ('flail_copper',     'Kupferflegel',           w_flail_copper,    38),
     ('flail_astral',     'Astralflegel',           w_flail_astral,    42),
     ('twinblade_astral', 'Astraldoppelklinge',     w_twinblade_astral, 44),
+    ('trident_abyss',    'Abgrunddreizack',        w_trident_abyss,   46),
+    ('staff_skull',      'Totenstab',              w_staff_skull,     42),
+    ('gunblade',         'Klingenpistole',         w_gunblade,        40),
+    ('kusarigama',       'Kettensichel',           w_kusarigama,      46),
+    ('greatsword_crystal', 'Kristallgrossschwert', w_greatsword_crystal, 50),
+    ('longbow_astral',   'Astrallangbogen',        w_longbow_astral,  44),
 ]
 
 
