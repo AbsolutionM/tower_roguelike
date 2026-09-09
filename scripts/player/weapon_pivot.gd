@@ -1,48 +1,55 @@
 extends Node2D
 class_name WeaponPivot
 
-## Dreht Hand und Waffe zum Ziel. Das Ziel bestimmt der WeaponController -
-## so zeigt der Arm immer auf genau den Gegner, der auch getroffen wird.
+## Der Kreis, auf dem beide Hände sitzen.
+##
+## Der Knoten liegt im Körpermittelpunkt und dreht sich zum Ziel. Die
+## Waffenhand sitzt bei +Radius, die freie Hand gegenüber bei -Radius; damit
+## kreisen beide um die Figur, ohne dass jemand sie einzeln setzen muss.
+##
+## Während eines Schlags bleibt die Drehung stehen. Sonst würde die Figur
+## mitten im Schwung nachzielen und der Bogen bräche ab.
 
 @export var rotation_speed: float = 12.0
 @export var pivot_radius: float = 10.0
-@export var pivot_radius_up: float = -30.0
 @export var hand: HandController
 @export var off_hand: OffHandController
 @export var sword: SwordWeapon
 
 var current_target: Node2D = null
 
-## Richtung zum Ziel. Blickrichtung und Spiegelung hängen hieran und nicht
-## an `rotation` - sonst kippt die Figur mitten im Schlag auf die andere Seite.
+## Richtung zum Ziel. Blickrichtung und Spiegelung hängen hieran, nicht an
+## `rotation` - sonst kippt die Figur mitten im Schlag auf die andere Seite.
 var aim_rotation: float = 0.0
+
 func _process(delta: float) -> void:
-	if current_target and is_instance_valid(current_target):
+	if not is_swinging() and current_target and is_instance_valid(current_target):
 		var raw_angle := global_position.direction_to(current_target.global_position).angle()
 		aim_rotation = lerp_angle(aim_rotation, raw_angle, rotation_speed * delta)
 
 	rotation = aim_rotation
 	update_visuals()
 
+## Während der Schlag läuft, ist das Zielen gesperrt.
+func is_swinging() -> bool:
+	return sword != null and sword.is_swinging
+
 func update_visuals() -> void:
-	# Für Blickrichtung und Spiegelung zählt das Ziel, nicht der Schwung -
-	# sonst kippt die Figur mitten im Schlag auf die andere Seite.
 	var dir := Vector2.RIGHT.rotated(aim_rotation)
 	var facing_left := dir.x < 0
 	var facing_up := dir.y < -0.5
 
+	# Ohne diese Spiegelung stünde die Waffe beim Zielen nach links auf dem Kopf.
 	scale.y = -1.0 if facing_left else 1.0
 
-	var radius := pivot_radius_up if facing_up else pivot_radius
-
 	if hand:
-		hand.set_radius(radius)
+		hand.set_radius(pivot_radius)
 		hand.z_index = -2 if facing_up else 2
-
 	if off_hand:
-		off_hand.set_side(facing_left)
+		off_hand.set_radius(pivot_radius)
+		# Die freie Hand liegt gegenüber - beim Zielen nach oben also vorn.
+		off_hand.z_index = 2 if facing_up else -2
 
-	# Die Waffe liegt vor der Hand - sonst verdeckt die Faust den Griff.
-	# Beim Zielen nach oben wandern beide hinter den Körper.
+	# Die Waffe liegt vor der Hand, sonst verdeckt die Faust den Griff.
 	if sword:
 		sword.z_index = -3 if facing_up else 3

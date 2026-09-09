@@ -20,5 +20,5 @@ pickup_scene = ExtResource("2_pickup")
 shape = SubResource("CircleShape2D_ore")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-scale = Vector2(2, 2)
+scale = Vector2(1.2, 1.2)
 texture = ExtResource("4_erz")

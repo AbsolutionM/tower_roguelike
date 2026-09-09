@@ -32,7 +32,7 @@ const LIGHT_TEXTURE := preload("res://resources/materials/light_gradient.tres")
 @onready var weapon_controller: WeaponController = $WeaponController
 ## Beide Hände - die Sprites haben keine, sie kommen aus den Charakterdaten.
 @onready var weapon_hand: Sprite2D = get_node_or_null("WeaponPivot/FirstHand")
-@onready var off_hand: Sprite2D = get_node_or_null("SecondHand")
+@onready var off_hand: Sprite2D = get_node_or_null("WeaponPivot/SecondHand")
 
 var stats: PlayerStats
 var health: PlayerHealth
@@ -116,46 +116,28 @@ func _apply_hands() -> void:
 		if hand.texture:
 			hand.center = PixelDraw.center_offset(hand.texture)
 
-	# Beide Hände gehören an den Rand der Silhouette, nicht in den Torso.
-	# Gemessen wird die bemalte Fläche des Körpers, nicht die Texturgröße.
+	# Beide Hände sitzen auf einem Kreis um den Körpermittelpunkt. Der Kreis
+	# selbst ist der WeaponPivot - der wandert dorthin, wo die Figur wirklich
+	# gezeichnet ist, nicht auf den Knotenursprung in der Texturmitte.
 	var reach := _body_reach()
 	if reach <= 0.0:
 		return
 
-	var shoulder := _shoulder_height()
-	if off_hand:
-		off_hand.distance = reach
-		off_hand.position.y = shoulder
-		off_hand.base_y = shoulder
 	var pivot := get_node_or_null("WeaponPivot")
 	if pivot:
+		pivot.position.y = _body_center()
 		pivot.pivot_radius = reach
-		# Beim Zielen nach oben bleibt die Hand hinter dem Körper.
-		pivot.pivot_radius_up = -reach * 0.55
-		if pivot.hand:
-			pivot.hand.base_y = shoulder
 
-## Wie weit die Hände vom Körpermittelpunkt sitzen, als Anteil der halben
-## bemalten Körperbreite. Unter 1.0 heißt: die Hand überlappt die Silhouette
-## und liest sich als angesetzt statt als schwebend.
-const HAND_INSET := 0.62
-
-## Höhe, auf der die Hände am Körper sitzen.
+## Mittelpunkt der gezeichneten Figur, in Spieler-Koordinaten.
 ##
 ## Der Knotenursprung liegt in der Texturmitte, die bemalte Figur reicht aber
-## weiter nach unten - bei y = 0 saßen die Hände deshalb auf Kopfhöhe.
-## Gemessen wird die Mitte der bemalten Fläche, dann ein Stück tiefer.
-func _shoulder_height() -> float:
+## weiter nach unten. Ohne diesen Ausgleich kreisen die Hände um den Kopf
+## statt um den Körper.
+func _body_center() -> float:
 	var frame := _idle_frame()
 	if not frame:
 		return 0.0
-	var painted_center: float = -PixelDraw.center_offset(frame).y
-	var painted_height: float = PixelDraw.used_size(frame).y
-	return (painted_center + painted_height * HAND_DROP) * animated_sprite.scale.y
-
-## Wie weit unter der Mitte der bemalten Fläche die Hände hängen,
-## als Anteil der Körperhöhe.
-const HAND_DROP := 0.10
+	return -PixelDraw.center_offset(frame).y * animated_sprite.scale.y
 
 ## Das Bild, an dem gemessen wird.
 func _idle_frame() -> Texture2D:
@@ -172,7 +154,12 @@ func _idle_frame() -> Texture2D:
 		return null
 	return frames.get_frame_texture(animation, 0)
 
-## Handabstand in Spieler-Koordinaten, gemessen an der bemalten Breite.
+## Wie weit die Hände vom Körpermittelpunkt kreisen, als Anteil der halben
+## bemalten Körperbreite. Unter 1.0 heißt: die Hand überlappt die Silhouette
+## und liest sich als angesetzt statt als schwebend.
+const HAND_INSET := 0.62
+
+## Kreisradius der Hände in Spieler-Koordinaten, gemessen an der bemalten Breite.
 func _body_reach() -> float:
 	var frame := _idle_frame()
 	if not frame:

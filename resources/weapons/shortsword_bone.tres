@@ -2,21 +2,21 @@
 
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
 [ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="3_tree"]
-[ext_resource type="Texture2D" path="res://assets/sprites/weapons/shortsword_bone.png" id="10_art"]
-[ext_resource type="Resource" path="res://resources/weapons/specials/cls_shortsword.tres" id="11_special"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/shortsword_bone.png" id="14_art"]
+[ext_resource type="Resource" path="res://resources/weapons/specials/cls_shortsword.tres" id="15_special"]
 
 [resource]
 script = ExtResource("1_script")
 weapon_id = "shortsword_bone"
 weapon_name = "Knochendolch"
 category = 0
-icon = ExtResource("10_art")
-hold_texture = ExtResource("10_art")
+icon = ExtResource("14_art")
+hold_texture = ExtResource("14_art")
 hold_scale = 0.91
 hold_rotation_degrees = -45.0
 description = "Platzhalter - kurz, leicht, überraschend fies."
 damage = 7.4
-special = ExtResource("11_special")
+special = ExtResource("15_special")
 bleed_buildup = 22.0
 stagger = 12.0
 weight = 2.0
@@ -31,7 +31,7 @@ knockback = 170.0
 screen_shake = 2.5
 crit_bonus = 0.05
 is_melee = true
-attack_reach = 145.0
+attack_reach = 87.0
 swing_duration = 0.11
 swing_angle_degrees = 135.0
 upgrade_tree = ExtResource("3_tree")

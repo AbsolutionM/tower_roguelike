@@ -20,9 +20,9 @@
 script = ExtResource("1_script")
 floor_tiles = Array[Texture2D]([ExtResource("2_b1"), ExtResource("3_b2")])
 floor_accents = Array[Texture2D]([ExtResource("4_gitter"), ExtResource("5_riss")])
-accent_chance = 0.07
+accent_chance = 0.04
 decor_tiles = Array[Texture2D]([ExtResource("6_lache"), ExtResource("7_blasen")])
-decor_chance = 0.05
+decor_chance = 0.03
 wall_top = ExtResource("8_wo")
 wall_bottom = ExtResource("9_wu")
 wall_left = ExtResource("10_wl")
@@ -31,4 +31,4 @@ corner_top_left = ExtResource("12_ol")
 corner_top_right = ExtResource("13_or")
 corner_bottom_left = ExtResource("14_ul")
 corner_bottom_right = ExtResource("15_ur")
-tile_size = 64.0
+tile_size = 40.0

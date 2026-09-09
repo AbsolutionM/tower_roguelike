@@ -4,7 +4,7 @@ class_name Obstacle
 ## Blockierender Felsblock im Raum (Isaac-Stil): stoppt Spieler und Geschosse
 ## und zwingt dazu, um Ecken zu laufen statt stumpf geradeaus.
 
-@export var block_radius: float = 26.0
+@export var block_radius: float = 15.6
 @export var body_color: Color = Palette.STONE_LIGHT
 @export var top_color: Color = Palette.MIST
 ## Optional: Textur statt der gezeichneten Blöcke.

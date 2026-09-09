@@ -12,7 +12,7 @@ class_name Harvestable
 @export var sprite: Sprite2D
 @export var rock_color: Color = Palette.STONE_LIGHT
 @export var ore_color: Color = Palette.AZURE
-@export var rock_radius: float = 18.0
+@export var rock_radius: float = 10.8
 
 var current_hits: int = 0
 

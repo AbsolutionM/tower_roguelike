@@ -238,7 +238,8 @@ func _configure_swing() -> void:
 	sword.configure(
 		equipped_weapon.swing_duration,
 		equipped_weapon.swing_angle_degrees,
-		equipped_weapon.knockback * stagger_mult
+		equipped_weapon.knockback * stagger_mult,
+		equipped_weapon.attack_reach
 	)
 
 ## Versatz der Textur gegenueber der Faust.

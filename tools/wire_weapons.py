@@ -365,13 +365,13 @@ NEW = [
 # Grundwerte je Kategorie auf Stufe 0. Hoehere Stufen skalieren daraus.
 BASE = {
     "SHORTSWORD": dict(damage=5.6, cooldown=0.32, rng=170, knock=150, shake=2.5,
-                       reach=140, swing=0.10, angle=130, weight=2.4, stagger=14,
+                       reach=84, swing=0.10, angle=130, weight=2.4, stagger=14,
                        bleed=0, crit=0.0, scal=("D", "C", "NONE"), req=(2, 3), price=150),
     "BROADSWORD": dict(damage=17.4, cooldown=0.95, rng=220, knock=380, shake=6.0,
-                       reach=175, swing=0.16, angle=160, weight=6.5, stagger=42,
+                       reach=105, swing=0.16, angle=160, weight=6.5, stagger=42,
                        bleed=0, crit=0.0, scal=("B", "E", "NONE"), req=(6, 2), price=260),
     "KATANA": dict(damage=9.3, cooldown=0.42, rng=200, knock=170, shake=3.0,
-                   reach=155, swing=0.09, angle=140, weight=3.0, stagger=20,
+                   reach=93, swing=0.09, angle=140, weight=3.0, stagger=20,
                    bleed=18, crit=0.06, scal=("D", "B", "D"), req=(3, 6), price=280),
     "REVOLVER": dict(damage=9.3, cooldown=0.55, rng=360, knock=160, shake=3.5,
                      speed=700, shots=1, spread=3.0, pierce=0, flash=36,
@@ -401,7 +401,7 @@ BASE = {
                   scal=("NONE", "C", "B"), req=(2, 4), price=340),
     # Peitsche: sehr grosse Reichweite, schmaler Bogen, wenig Wucht.
     "WHIP": dict(damage=6.5, cooldown=0.50, rng=270, knock=90, shake=2.0,
-                 reach=235, swing=0.12, angle=55, weight=2.2, stagger=10,
+                 reach=141, swing=0.12, angle=55, weight=2.2, stagger=10,
                  bleed=12, crit=0.0, scal=("D", "B", "C"), req=(2, 5), price=260),
     # Wurfwaffe: fliegt hin, trifft mehrfach und kommt zurueck.
     "THROWN": dict(damage=8.0, cooldown=0.70, rng=310, knock=140, shake=2.5,
@@ -410,7 +410,7 @@ BASE = {
                    scal=("D", "B", "D"), req=(3, 5), price=280),
     # Schild: kaum Schaden, dafuer Ruestung und massiver Rueckstoss.
     "SHIELD": dict(damage=9.0, cooldown=1.10, rng=160, knock=520, shake=6.0,
-                   reach=115, swing=0.18, angle=180, weight=7.5, stagger=55,
+                   reach=69, swing=0.18, angle=180, weight=7.5, stagger=55,
                    bleed=0, crit=0.0, armor=8.0,
                    scal=("B", "NONE", "NONE"), req=(6, 1), price=300),
 }

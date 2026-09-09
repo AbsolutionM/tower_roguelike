@@ -73,7 +73,7 @@ shape = SubResource("RectangleShape2D_fp34w")
 
 [node name="FirstBody" type="AnimatedSprite2D" parent="Player" unique_id=216130267]
 material = SubResource("ShaderMaterial_bqye8")
-scale = Vector2(5, 5)
+scale = Vector2(3, 3)
 sprite_frames = ExtResource("8_o8jlk")
 animation = &"Walking_Front"
 frame_progress = 0.37244323
@@ -89,28 +89,26 @@ position = Vector2(93, -9)
 rotation = -4.712389
 scale = Vector2(6, 6)
 
-[node name="SecondHand" type="Sprite2D" parent="Player" unique_id=84706149]
-z_index = 2
-z_as_relative = false
-material = SubResource("ShaderMaterial_bqye8")
-position = Vector2(-32, 8)
-scale = Vector2(5, 5)
-texture = ExtResource("45_awo1y")
-script = ExtResource("47_offhand")
-distance = 32.0
-
 [node name="WeaponPivot" type="Node2D" parent="Player" unique_id=1923055262 node_paths=PackedStringArray("hand", "off_hand", "sword")]
 material = SubResource("ShaderMaterial_mkoc8")
 script = ExtResource("46_rpqcm")
 hand = NodePath("FirstHand")
-off_hand = NodePath("../SecondHand")
+off_hand = NodePath("SecondHand")
 sword = NodePath("FirstHand/Sword")
+
+[node name="SecondHand" type="Sprite2D" parent="Player/WeaponPivot" unique_id=84706149]
+z_index = -2
+z_as_relative = false
+material = SubResource("ShaderMaterial_bqye8")
+scale = Vector2(3, 3)
+texture = ExtResource("45_awo1y")
+script = ExtResource("47_offhand")
 
 [node name="FirstHand" type="Sprite2D" parent="Player/WeaponPivot" unique_id=84706148]
 z_index = 2
 z_as_relative = false
 material = SubResource("ShaderMaterial_bqye8")
-scale = Vector2(5, 5)
+scale = Vector2(3, 3)
 texture = ExtResource("45_awo1y")
 script = ExtResource("47_s2ufw")
 
@@ -138,7 +136,7 @@ z_index = 0
 material = SubResource("ShaderMaterial_bqye8")
 position = Vector2(65.649994, -2.4999998)
 rotation = 1.5707964
-scale = Vector2(5, 5)
+scale = Vector2(3, 3)
 texture = ExtResource("46_ah16c")
 
 [node name="HitSound" type="AudioStreamPlayer" parent="Player/WeaponPivot/FirstHand/Sword" unique_id=462831525]

@@ -1,10 +1,6 @@
 extends Area2D
 class_name SwordWeapon
 
-## Anteil des Klingenbogens, den die Hand mitgeht. 0 = Hand steht still,
-## 1 = Hand und Klinge drehen gleich weit (sieht dann wieder nach Rudern aus).
-const HAND_SWING_SHARE := 0.38
-
 @export var swing_duration: float = 0.15
 @export var swing_angle_degrees: float = 90.0
 @export var return_duration: float = 0.1
@@ -17,6 +13,9 @@ const HAND_SWING_SHARE := 0.38
 @export var hit_sound: AudioStreamPlayer
 @export var hitstop_duration: float = 0.06
 @export var hitstop_scale: float = 0.05
+
+## Richtung der Trefferbox, einmal aus der Szene übernommen.
+var _hitbox_direction: Vector2 = Vector2.ZERO
 
 var damage: float = 0.0
 var is_crit: bool = false
@@ -34,12 +33,36 @@ func _ready() -> void:
 		arc.modulate.a = 0.0
 
 ## Wird vom WeaponController gesetzt, damit Waffenklassen sich unterschiedlich anfühlen.
-func configure(duration: float, angle_degrees: float, knockback: float) -> void:
+func configure(duration: float, angle_degrees: float, knockback: float, reach: float = 0.0) -> void:
 	swing_duration = duration
 	swing_angle_degrees = angle_degrees
 	knockback_force = knockback
+	if reach > 0.0:
+		_resize_hitbox(reach)
 	if arc:
 		build_arc()
+
+## Die Trefferbox steckte fest in der Szene, die Zielreichweite kommt aber aus
+## den Waffendaten. Ein Speer zielte dadurch weiter, als er trifft.
+func _resize_hitbox(reach: float) -> void:
+	var collision := get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if not collision or not (collision.shape is RectangleShape2D):
+		return
+
+	# Von Weltpixeln in die lokalen Einheiten der Klinge zurückrechnen.
+	var factor: float = absf(global_scale.x)
+	if factor <= 0.001:
+		return
+
+	if not _hitbox_direction:
+		_hitbox_direction = collision.position.normalized()
+		if _hitbox_direction == Vector2.ZERO:
+			_hitbox_direction = Vector2.RIGHT
+
+	var length: float = reach / factor
+	var rect: RectangleShape2D = collision.shape
+	rect.size.y = length
+	collision.position = _hitbox_direction * length * 0.5
 
 func build_arc() -> void:
 	var half_angle := deg_to_rad(swing_angle_degrees / 2)
@@ -138,25 +161,20 @@ func perform_swing(dmg: float, crit: bool = false) -> void:
 		var arc_tween := create_tween()
 		arc_tween.tween_property(arc, "modulate:a", 0.0, swing_duration)
 
-	# Die Klinge fährt den großen Bogen um die Faust, die Hand einen kleineren
-	# über denselben Takt. Den ganzen Arm mitzudrehen sah aus wie Rudern,
-	# die Hand ganz still stehen zu lassen wie ein Drehteller.
+	# Den Bogen fährt die Hand. Die Klinge selbst dreht sich nicht mehr um
+	# ihren eigenen Punkt - nur so bleibt der Griff in der Faust.
 	var half_angle := deg_to_rad(swing_angle_degrees / 2)
 	var hand := get_parent() as HandController
-	var hand_angle: float = half_angle * HAND_SWING_SHARE
+	rotation = 0.0
 
-	rotation = -half_angle
-	if hand:
-		hand.swing_angle = -hand_angle
+	if not hand:
+		return
 
+	hand.swing_angle = -half_angle
 	var tween := create_tween()
-	tween.tween_property(self, "rotation", half_angle, swing_duration)
-	if hand:
-		tween.parallel().tween_property(hand, "swing_angle", hand_angle, swing_duration)
+	tween.tween_property(hand, "swing_angle", half_angle, swing_duration)
 	tween.tween_callback(end_swing)
-	tween.tween_property(self, "rotation", 0.0, return_duration)
-	if hand:
-		tween.parallel().tween_property(hand, "swing_angle", 0.0, return_duration)
+	tween.tween_property(hand, "swing_angle", 0.0, return_duration)
 
 func end_swing() -> void:
 	monitoring = false

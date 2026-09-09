@@ -21,7 +21,7 @@ trail_colors = Array[Color]([Color(0.007843138, 0.8, 0.3019608, 0.4509804), Colo
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=806511996]
 visible = false
-scale = Vector2(4.305, 4.305)
+scale = Vector2(2.583, 2.583)
 shape = SubResource("CircleShape2D_fp34w")
 
 [node name="HealthBarBG" type="ColorRect" parent="." unique_id=141980625]
@@ -42,5 +42,5 @@ color = Color(1, 0, 0, 1)
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=878219782]
 material = ExtResource("3_ewtqv")
 position = Vector2(1.8850098, -26)
-scale = Vector2(3, 3)
+scale = Vector2(1.800, 1.800)
 texture = ExtResource("4_wsmac")

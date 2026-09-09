@@ -2,21 +2,21 @@
 
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
 [ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="3_tree"]
-[ext_resource type="Texture2D" path="res://assets/sprites/weapons/broadsword_titan.png" id="10_art"]
-[ext_resource type="Resource" path="res://resources/weapons/specials/cls_broadsword.tres" id="11_special"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/broadsword_titan.png" id="14_art"]
+[ext_resource type="Resource" path="res://resources/weapons/specials/cls_broadsword.tres" id="15_special"]
 
 [resource]
 script = ExtResource("1_script")
 weapon_id = "broadsword_titan"
 weapon_name = "Titanbrecher"
 category = 1
-icon = ExtResource("10_art")
-hold_texture = ExtResource("10_art")
+icon = ExtResource("14_art")
+hold_texture = ExtResource("14_art")
 hold_scale = 0.66
 hold_rotation_degrees = -45.0
 description = "Platzhalter - jeder Schwung ist ein kleines Erdbeben."
 damage = 23.6
-special = ExtResource("11_special")
+special = ExtResource("15_special")
 bleed_buildup = 0.0
 stagger = 58.0
 weight = 8.5
@@ -30,7 +30,7 @@ weapon_range = 235.0
 knockback = 460.0
 screen_shake = 8.0
 is_melee = true
-attack_reach = 205.0
+attack_reach = 123.0
 swing_duration = 0.22
 swing_angle_degrees = 230.0
 upgrade_tree = ExtResource("3_tree")
