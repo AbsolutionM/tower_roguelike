@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/dagger_void.png" id="2_art"]
+[ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="4_tree"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_id = "dagger_void"
+weapon_name = "Leeredolch"
+category = 0
+icon = ExtResource("2_art")
+hold_texture = ExtResource("2_art")
+hold_scale = 0.72
+hold_rotation_degrees = -45.0
+description = "Schneidet dort, wo eigentlich nichts mehr ist."
+rarity = 3
+damage = 16.2
+cooldown = 0.320
+weapon_range = 170.0
+knockback = 150.0
+screen_shake = 2.5
+crit_bonus = 0.00
+scaling_power = 4
+scaling_agility = 5
+scaling_fortune = 0
+required_power = 5
+required_agility = 6
+weight = 2.4
+stagger = 23.8
+bleed_buildup = 0.0
+is_melee = true
+attack_reach = 140.0
+swing_duration = 0.10
+swing_angle_degrees = 130.0
+upgrade_tree = ExtResource("4_tree")
+shop_price = 1200

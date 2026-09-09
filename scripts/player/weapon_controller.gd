@@ -157,7 +157,7 @@ func _apply_weapon_visuals() -> void:
 		hold_sprite.texture = equipped_weapon.hold_texture
 	hold_sprite.scale = _hold_sprite_base_scale * equipped_weapon.hold_scale
 	hold_sprite.rotation = _hold_sprite_base_rotation + deg_to_rad(equipped_weapon.hold_rotation_degrees)
-	hold_sprite.position = _hold_position()
+	hold_sprite.position = _hold_position(_drawn_length(hold_sprite))
 	hold_sprite.visible = has_texture
 
 	# Ohne Haltesprite wird ein Platzhalter gezeichnet - sonst wäre die Waffe
@@ -169,14 +169,38 @@ func _apply_weapon_visuals() -> void:
 	if placeholder.visible:
 		placeholder.category = equipped_weapon.category
 		placeholder.tint = equipped_weapon.projectile_color if not equipped_weapon.is_melee else Palette.BONE
-		placeholder.position = _hold_position()
+		placeholder.position = Vector2.ZERO
 		placeholder.scale = _hold_sprite_base_scale * equipped_weapon.hold_scale * PLACEHOLDER_SCALE
 		placeholder.queue_redraw()
 
-## Die Grundposition der Szene schiebt das Sprite weit nach vorn - das passt
-## zu einer Klinge, die aus der Faust ragt. Eine Schusswaffe gehört in die Hand.
-func _hold_position() -> Vector2:
-	return _hold_sprite_base_position if equipped_weapon.is_melee else Vector2.ZERO
+	_configure_swing()
+
+## Schwungdauer, Schwungwinkel und Rueckstoss der Klinge aus den Waffenwerten.
+func _configure_swing() -> void:
+	if not sword or not sword.has_method("configure"):
+		return
+	# Geschmiedete Waffen stoßen Gegner spürbar weiter zurück.
+	var stagger_mult := Progression.reinforce_stagger_mult(RunState.get_weapon_level(equipped_weapon.weapon_id))
+	sword.configure(
+		equipped_weapon.swing_duration,
+		equipped_weapon.swing_angle_degrees,
+		equipped_weapon.knockback * stagger_mult
+	)
+
+## Wo das Haltesprite relativ zur Faust sitzt.
+## Schusswaffen liegen mittig in der Hand. Klingen ragen heraus, und zwar um
+## ihre halbe gezeichnete Laenge - die feste Position aus der Szene passte nur
+## zu dem einen kleinen Schwert, mit dem sie eingerichtet wurde.
+func _hold_position(drawn_length: float) -> Vector2:
+	if not equipped_weapon.is_melee:
+		return Vector2.ZERO
+	return Vector2(drawn_length * 0.42, 0.0)
+
+## Diagonale des gezeichneten Sprites in Spieler-Pixeln.
+func _drawn_length(sprite: Sprite2D) -> float:
+	if not sprite.texture:
+		return _hold_sprite_base_position.x * 2.0
+	return sprite.texture.get_size().length() * absf(sprite.scale.x)
 
 func _ensure_placeholder(hold_sprite: Sprite2D) -> WeaponSymbol:
 	if is_instance_valid(_hold_placeholder):
@@ -192,15 +216,6 @@ func _ensure_placeholder(hold_sprite: Sprite2D) -> WeaponSymbol:
 	_hold_placeholder.z_index = hold_sprite.z_index
 	host.add_child(_hold_placeholder)
 	return _hold_placeholder
-
-	if sword and sword.has_method("configure"):
-		# Geschmiedete Waffen stoßen Gegner spürbar weiter zurück.
-		var stagger_mult := Progression.reinforce_stagger_mult(RunState.get_weapon_level(equipped_weapon.weapon_id))
-		sword.configure(
-			equipped_weapon.swing_duration,
-			equipped_weapon.swing_angle_degrees,
-			equipped_weapon.knockback * stagger_mult
-		)
 
 func _roll_damage() -> Dictionary:
 	if _stats:

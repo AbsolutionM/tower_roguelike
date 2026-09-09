@@ -1,16 +1,18 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://fb22nb73w7sg" path="res://assets/sprites/weapons/GoldenSword.png" id="2_hold"]
 [ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="3_tree"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/broadsword_titan.png" id="4_art"]
 
 [resource]
 script = ExtResource("1_script")
 weapon_id = "broadsword_titan"
 weapon_name = "Titanbrecher"
 category = 1
-hold_texture = ExtResource("2_hold")
-hold_scale = 1.6
+icon = ExtResource("4_art")
+hold_texture = ExtResource("4_art")
+hold_scale = 0.41
+hold_rotation_degrees = -45.0
 description = "Platzhalter - jeder Schwung ist ein kleines Erdbeben."
 damage = 23.6
 bleed_buildup = 0.0

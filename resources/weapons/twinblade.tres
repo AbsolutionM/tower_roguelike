@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/twinblade.png" id="2_art"]
+[ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="4_tree"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_id = "twinblade"
+weapon_name = "Doppelklinge"
+category = 2
+icon = ExtResource("2_art")
+hold_texture = ExtResource("2_art")
+hold_scale = 0.45
+hold_rotation_degrees = -45.0
+description = "Zwei Schneiden, ein Griff, doppelte Schlagzahl."
+rarity = 1
+damage = 7.4
+cooldown = 0.315
+weapon_range = 200.0
+knockback = 170.0
+screen_shake = 3.0
+crit_bonus = 0.06
+scaling_power = 2
+scaling_agility = 4
+scaling_fortune = 2
+required_power = 3
+required_agility = 6
+weight = 3.0
+stagger = 20.0
+bleed_buildup = 18.0
+is_melee = true
+attack_reach = 155.0
+swing_duration = 0.09
+swing_angle_degrees = 140.0
+upgrade_tree = ExtResource("4_tree")
+shop_price = 280

@@ -6,14 +6,7 @@ func build() -> void:
 	var column := make_page("Shop", "Gold gegen Ausrüstung. Material verkaufst du in der Werkstatt.")
 	var content := make_scroll(column, 10)
 
-	content.add_child(UIKit.make_section("Waffen", UIKit.ACCENT))
-	var weapons_listed := false
-	for weapon in Database.get_weapons():
-		if weapon and weapon.shop_price > 0:
-			content.add_child(_make_weapon_row(weapon))
-			weapons_listed = true
-	if not weapons_listed:
-		content.add_child(UIKit.make_label("Aktuell keine Waffen im Angebot.", 15, UIKit.TEXT_DIM))
+	_build_weapon_sections(content)
 
 	content.add_child(UIKit.make_section("Accessoires", UIKit.COOL))
 	var accessories_listed := false
@@ -23,6 +16,34 @@ func build() -> void:
 			accessories_listed = true
 	if not accessories_listed:
 		content.add_child(UIKit.make_label("Aktuell keine Accessoires im Angebot.", 15, UIKit.TEXT_DIM))
+
+## Waffen nach Klasse gruppiert, innerhalb der Klasse vom Billigen zum Teuren.
+## Bei ueber fuenfzig Waffen ist eine flache Liste nicht mehr lesbar.
+func _build_weapon_sections(content: VBoxContainer) -> void:
+	var by_category: Dictionary = {}
+	for weapon in Database.get_weapons():
+		if not weapon or weapon.shop_price <= 0:
+			continue
+		if not by_category.has(weapon.category):
+			by_category[weapon.category] = []
+		by_category[weapon.category].append(weapon)
+
+	if by_category.is_empty():
+		content.add_child(UIKit.make_section("Waffen", UIKit.ACCENT))
+		content.add_child(UIKit.make_label("Aktuell keine Waffen im Angebot.", 15, UIKit.TEXT_DIM))
+		return
+
+	var categories: Array = by_category.keys()
+	categories.sort()
+	for category in categories:
+		var weapons: Array = by_category[category]
+		weapons.sort_custom(func(a, b): return a.shop_price < b.shop_price)
+		content.add_child(UIKit.make_section(
+			"%s  (%d)" % [WeaponData.CATEGORY_NAMES.get(category, "Waffen"), weapons.size()],
+			UIKit.ACCENT
+		))
+		for weapon in weapons:
+			content.add_child(_make_weapon_row(weapon))
 
 func _make_row(title: String, subtitle: String, detail: String, accent: Color, price: int, owned: bool, on_buy: Callable, icon: Texture2D = null) -> Control:
 	var affordable: bool = RunState.gold >= price

@@ -52,11 +52,12 @@ func _build() -> void:
 	_right_hand = _make_hand(false)
 	if _left_hand:
 		_root.add_child(_left_hand)
+	# Reihenfolge: Waffe zuerst, dann die Haende darueber.
+	_weapon_sprite = _make_weapon()
+	if _weapon_sprite:
+		_root.add_child(_weapon_sprite)
 	if _right_hand:
 		_root.add_child(_right_hand)
-		_weapon_sprite = _make_weapon()
-		if _weapon_sprite:
-			_right_hand.add_child(_weapon_sprite)
 
 ## Bevorzugt die Leerlauf-Animation, sonst ein Standbild.
 func _make_body() -> Node2D:
@@ -112,17 +113,14 @@ func _make_weapon() -> Sprite2D:
 	var sprite := Sprite2D.new()
 	sprite.texture = weapon.hold_texture
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	sprite.z_index = -1
 
 	# Auf Körpergröße normieren, damit kein Sprite die Figur erschlägt.
 	var texture_size: Vector2 = weapon.hold_texture.get_size()
-	var target: float = _body_size.y * 0.55
-	var factor: float = target / maxf(texture_size.y, 1.0)
-	sprite.scale = Vector2.ONE * factor * weapon.hold_scale
+	var factor: float = _body_size.y * 0.7 / maxf(texture_size.length(), 1.0)
+	sprite.scale = Vector2.ONE * factor
 
-	# Der Griff sitzt in der Hand, die Klinge zeigt nach schräg oben.
-	sprite.offset = Vector2(texture_size.x * 0.45, 0.0)
-	sprite.rotation = -PI * 0.28
+	# Der Griff sitzt in der Hand, die Klinge zeigt nach schräg oben hinaus.
+	sprite.offset = Vector2(texture_size.x * 0.35, -texture_size.y * 0.25)
 	return sprite
 
 ## Skaliert die Figur auf die aktuelle Panelgröße und setzt die Handpunkte.
@@ -160,6 +158,9 @@ func _process(delta: float) -> void:
 	if _right_hand:
 		_right_hand.position = Vector2(_hand_anchor.x, _hand_anchor.y + sin(_time * breathe_speed + 0.4) * 1.3)
 		_right_hand.rotation = sin(_time * sway_speed) * 0.14
+		if _weapon_sprite:
+			_weapon_sprite.position = _right_hand.position
+			_weapon_sprite.rotation = _right_hand.rotation - PI * 0.22
 
 	queue_redraw()
 

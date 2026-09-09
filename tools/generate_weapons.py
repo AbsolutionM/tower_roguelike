@@ -138,9 +138,45 @@ HOLZ = rampe('sand', 'rust_dk', 'copper', 'rust', 'rust_dk', 'maroon')
 
 # --- Klinge ----------------------------------------------------------------
 
+# Breitenprofile entlang der Klinge. Eine Klinge mit konstanter Breite
+# liest sich als Streifen - erst Bauch, Keil oder Haken geben ihr Gestalt.
+PROFIL = {
+    'gerade': lambda t: 1.0,
+    'bauchig': lambda t: 1.0 + 0.38 * math.sin(math.pi * min(1.0, t)),
+    'keil': lambda t: 1.30 - 0.50 * t,
+    'flamme': lambda t: 1.0 + 0.20 * math.sin(math.pi * 3.0 * t),
+    'haken': lambda t: 1.0 + 1.4 * max(0.0, t - 0.62),
+    'blatt': lambda t: 0.72 + 0.75 * math.sin(math.pi * min(1.0, t * 0.9)),
+}
+
+
+def flanke(t):
+    """Tonstufe quer durch die Klinge, 0 = hellster Ton.
+
+    Statt eines linearen Verlaufs von der Schneide zum Ruecken liegt hier
+    ein Grat: Licht bricht sich zweimal, an der Schneidenfase und am Grat,
+    dazwischen ein dunkleres Tal. Das gibt der Klinge Volumen.
+    """
+    if t < 0.10:
+        return 1                      # Schneidenfase faengt Licht
+    if t < 0.27:
+        return 2                      # Tal zwischen Fase und Grat
+    if t < 0.35:
+        return 1
+    if t < 0.49:
+        return 0                      # Grat
+    if t < 0.62:
+        return 1
+    if t < 0.78:
+        return 2                      # abfallende Flanke
+    if t < 0.89:
+        return 3
+    return 4                          # Ruecken im Schatten
+
+
 def blade(img, ox, oy, length, half, r, curve_amp=0.0, tip=3.0, serr=None,
-          fuller=False):
-    """Klinge mit gedithertem Querverlauf von der Schneide zum Ruecken.
+          fuller=False, profil='gerade'):
+    """Klinge mit Grat, Breitenprofil und gedithertem Uebergang.
 
     half 0.75 -> 3 px pro Zeile, 1.0 -> 5 px (wie gras_sword), 1.5 -> 7 px.
     Der Verlauf laeuft ueber glanz -> hell -> mitte -> dunkel -> tief, die
@@ -150,8 +186,11 @@ def blade(img, ox, oy, length, half, r, curve_amp=0.0, tip=3.0, serr=None,
     leiter = [C(r['glanz']), C(r['hell']), C(r['mitte']), C(r['dunkel']), C(r['tief'])]
     body = max(0.001, length - tip)
 
+    formen = PROFIL[profil] if isinstance(profil, str) else profil
+
     def w_at(u):
-        w = half if u <= body else half * (length - u) / tip
+        breit = half * formen(max(0.0, u) / length)
+        w = breit if u <= body else breit * (length - u) / tip
         if serr and u < body - 1.0:      # nicht in die Spitze schneiden,
             w += serr(u)                 # sonst haengt sie lose in der Luft
         return w
@@ -172,18 +211,20 @@ def blade(img, ox, oy, length, half, r, curve_amp=0.0, tip=3.0, serr=None,
             am_heft = u < 2.5             # Schatten des Hefts auf der Klinge
             an_spitze = u > length - 2.0
 
-            if vv <= -w + 0.25:           # Schneidenlinie
-                col = C(r['tief']) if u > length - 1.5 else C(r['kante'])
+            t = (vv + w) / max(0.02, 2.0 * w)   # 0 = Schneide, 1 = Ruecken
+            if u > length - 1.2:
+                col = C(r['tief'])        # Spitze bricht das Licht
             elif vv >= w - 0.25 and w >= 0.9:
                 col = C(r['tief'])        # Ruecken liegt im Schatten
-            elif fuller and w >= 1.25 and abs(vv) <= 0.3 and 1.5 < u < body - 1.0:
-                col = C(r['dunkel'])      # Hohlkehle
+            elif fuller and w >= 1.4 and 0.44 < t < 0.56 and 2.0 < u < body - 1.0:
+                col = C(r['dunkel'])      # Hohlkehle laeuft im Grat
             else:
-                t = (vv + w) / (2.0 * w)  # 0 = Schneide, 1 = Ruecken
-                stufe = 0 if t < 0.30 else (1 if t < 0.55 else (2 if t < 0.80 else 3))
-                if (x + y) % 2 != hell_parity:
-                    stufe += 1            # Dither: jede zweite Lage eine Stufe tiefer
-                if am_heft or an_spitze:
+                stufe = flanke(t)
+                if stufe == 2 and 0.66 < t < 0.80 and (x + y) % 2 != hell_parity:
+                    stufe += 1            # nur die Flanken dithern,
+                if am_heft:               # Grat und Fase bleiben klare Linien
+                    stufe += 1            # Schatten des Hefts
+                elif an_spitze:
                     stufe += 1
                 col = leiter[min(stufe, 4)]
             put(img, x, y, col)
@@ -298,7 +339,7 @@ def w_shortsword_bone(img):
     def teeth(u):
         return -0.5 if u > 3.5 and int(math.floor(u)) % 4 == 1 else 0.0
 
-    blade(img, OX, OY, 14.0, 1.0, KNOCHEN, serr=teeth)
+    blade(img, OX, OY, 14.0, 1.0, KNOCHEN, serr=teeth, profil='bauchig')
     for u, v in ((5.0, 0.0), (5.5, 0.5), (8.0, -0.5), (8.5, 0.0), (11.0, 0.5)):
         speck(img, OX, OY, u, v, KNOCHEN['dunkel'])   # Risse
     guard(img, OX, OY, -0.8, 0.8, -2.0, 2.0, KNOCHEN, spitze='white')
@@ -310,7 +351,7 @@ def w_shortsword_bone(img):
 
 def w_broadsword_iron(img):
     """Eisen-Breitschwert: lange Parierstange, Hohlkehle, blauer Stein."""
-    blade(img, OX, OY, 15.5, 1.5, STAHL, tip=4.0, fuller=True)
+    blade(img, OX, OY, 15.5, 1.5, STAHL, tip=4.0, fuller=True, profil='bauchig')
     guard(img, OX, OY, -1.0, 1.0, -3.6, 3.6, SILBER)
     gem(img, OX, OY, -1.0, 'sky', 'blue_br', 'indigo')
     grip(img, OX, OY, -5.0, -2.2, 1.05, LEDER)
@@ -318,18 +359,26 @@ def w_broadsword_iron(img):
 
 
 def w_broadsword_titan(img):
-    """Titanen-Breitschwert: kolossal, Scharten, Rostnarben in zwei Toenen."""
-    def chips(u):
-        return -0.5 if (4.5 <= u <= 5.5 or 10.5 <= u <= 11.5) else 0.0
+    """Titanen-Breitschwert: kolossal, keilfoermig, Scharten und Rostnarben.
 
-    blade(img, OX, OY, 16.0, 2.0, EISEN, tip=4.5, serr=chips, fuller=True)
-    for u, v in ((4.0, 1.5), (8.5, 0.5), (12.5, 1.0)):
-        speck(img, OX, OY, u, v, 'rust_dk')
-        speck(img, OX, OY, u + 0.5, v + 0.5, 'maroon')
-    guard(img, OX, OY, -1.2, 1.1, -3.8, 3.8, EISEN, flare=0.4, spitze='rust_dk')
-    gem(img, OX, OY, -1.2, 'rust', 'rust_dk', 'maroon', glanz='sand')
-    grip(img, OX, OY, -5.4, -2.6, 1.05, DUNKELLEDER)
-    pommel(img, OX, OY, -6.2, 1.7, EISEN)
+    Eigener Ursprung, weil die Klinge deutlich groesser ist als die uebrigen
+    Breitschwerter - Heft und Klinge muessen denselben Ursprung teilen.
+    """
+    ox, oy = 13, 26
+
+    def chips(u):
+        return -0.5 if (5.5 <= u <= 6.5 or 12.5 <= u <= 13.5) else 0.0
+
+    blade(img, ox, oy, 21.0, 2.3, EISEN, tip=5.5, serr=chips, fuller=True,
+          profil='keil')
+    for u, v in ((5.0, 1.8), (10.0, 0.6), (15.0, 1.2)):
+        speck(img, ox, oy, u, v, 'rust_dk')
+        speck(img, ox, oy, u + 0.5, v + 0.5, 'maroon')
+    guard(img, ox, oy, -1.3, 1.2, -4.4, 4.4, EISEN, flare=0.5,
+          spitze='rust_dk')
+    gem(img, ox, oy, -1.3, 'rust', 'rust_dk', 'maroon', glanz='sand')
+    grip(img, ox, oy, -6.0, -2.8, 1.15, DUNKELLEDER)
+    pommel(img, ox, oy, -7.0, 1.9, EISEN)
 
 
 def w_katana_moon(img):
@@ -376,7 +425,8 @@ def w_curved_fang(img):
     def teeth(u):
         return -0.5 if u > 4.0 and int(math.floor(u)) % 3 == 0 else 0.0
 
-    blade(img, OX, OY, 15.0, 1.5, FANG, curve_amp=2.2, tip=4.0, serr=teeth)
+    blade(img, OX, OY, 15.0, 1.5, FANG, curve_amp=2.2, tip=4.0, serr=teeth,
+          profil='haken')
     for u in (6.0, 9.0, 12.0):                            # Zahnspitzen
         v = -1.5 + 2.2 * (u / 15.0) ** 2
         speck(img, OX, OY, u, v, 'cream')
@@ -386,20 +436,21 @@ def w_curved_fang(img):
 
 
 def w_dagger_bleed(img):
-    """Blutdolch: Blutrinne in der Klinge, kleiner Stein im Parier."""
+    """Blutdolch: blattfoermige Klinge, Blutrinne, Stein im Parier."""
     ROSA = rampe('pink_lt', 'maroon', 'pink', 'rose', 'maroon', 'purple_dk')
-    blade(img, OX, OY, 9.0, 1.0, BLUT, curve_amp=1.0, tip=2.5)
+    blade(img, OX, OY, 10.5, 1.15, BLUT, curve_amp=1.0, tip=3.0,
+          profil='blatt')
     for u in (3.0, 5.0, 7.0):                             # Blutrinne
-        speck(img, OX, OY, u, 0.1 + 1.0 * (u / 9.0) ** 2, BLUT['tief'])
-    guard(img, OX, OY, -0.8, 0.8, -1.8, 1.8, ROSA)
-    gem(img, OX, OY, -0.8, 'crimson', 'blood', 'blood_dk', glanz='salmon')
-    grip(img, OX, OY, -3.8, -1.8, 0.8, DUNKELLEDER)
-    pommel(img, OX, OY, -4.5, 1.3, ROSA)
+        speck(img, OX, OY, u, 0.1 + 1.0 * (u / 10.5) ** 2, BLUT['tief'])
+    guard(img, OX, OY, -0.9, 0.85, -2.2, 2.2, GOLD, spitze='sand')
+    gem(img, OX, OY, -0.9, 'crimson', 'blood', 'blood_dk', glanz='salmon')
+    grip(img, OX, OY, -4.2, -1.9, 0.85, DUNKELLEDER)
+    pommel(img, OX, OY, -5.0, 1.4, ROSA)
 
 
 def w_dagger_gold(img):
     """Gnadendolch: schmaler Stich, goldene Parierstange mit Dornen."""
-    blade(img, OX, OY, 11.0, 0.75, STAHL, tip=2.5)
+    blade(img, OX, OY, 9.0, 0.75, STAHL, tip=2.2, profil='keil')
     guard(img, OX, OY, -0.8, 0.8, -2.4, 2.4, GOLD, spitze='pale_yellow')
     grip(img, OX, OY, -4.0, -1.8, 0.8, LEDER)
     pommel(img, OX, OY, -4.8, 1.4, GOLD)
@@ -824,8 +875,8 @@ def w_scythe_harvest(img):
 
 def w_dagger_throw(img):
     """Wurfdolch: klein, schmal, roter Stein im Parier. 24x24."""
-    schwert(img, 7, 16, 10.0, 0.75, STAHL, GOLD, wicklung=DUNKELLEDER,
-            stein=BLUT, stufe=1, tip=3.0)
+    schwert(img, 6, 14, 8.0, 0.7, STAHL, GOLD, wicklung=DUNKELLEDER,
+            stein=BLUT, stufe=1, tip=2.4, profil='blatt')
 
 
 def w_boomerang_wood(img):
@@ -1140,11 +1191,11 @@ def w_blunderbuss(img):
 
 def schwert(img, ox, oy, laenge, halb, klinge, beschlag, wicklung=LEDER,
             stein=None, stufe=0, kruemmung=0.0, tip=3.5, fuller=None,
-            serr=None):
+            serr=None, profil='gerade'):
     if fuller is None:
         fuller = halb >= 1.25
     blade(img, ox, oy, laenge, halb, klinge, curve_amp=kruemmung, tip=tip,
-          serr=serr, fuller=fuller)
+          serr=serr, fuller=fuller, profil=profil)
     if stufe >= 1:
         schliff(img, ox, oy, laenge, halb, klinge, curve_amp=kruemmung,
                 schritt=3 if stufe == 1 else 2)
@@ -1175,31 +1226,31 @@ def w_shortsword_copper(img):
 def w_broadsword_cobalt(img):
     """Kobaltbreitschwert - Hardmode, Haertelinie und Stein. 36x36."""
     schwert(img, 12, 23, 17.0, 1.5, KOBALT, SILBER, stein=MOND, stufe=1,
-            tip=4.5)
+            tip=4.5, profil='bauchig')
 
 
 def w_greatsword_abyss(img):
     """Abgrundgrossschwert - Hardmode, breit und dunkel. 40x40."""
-    schwert(img, 13, 26, 19.0, 2.0, ABGRUND, EISEN, wicklung=DUNKELLEDER,
-            stein=STURM, stufe=1, tip=5.0)
+    schwert(img, 15, 32, 24.0, 2.4, ABGRUND, EISEN, wicklung=DUNKELLEDER,
+            stein=STURM, stufe=1, tip=6.0, profil='keil')
 
 
 def w_katana_dawn(img):
     """Morgenkatana - Hardmode, gekruemmt, goldenes Heft. 36x36."""
     schwert(img, 11, 24, 19.0, 1.0, FLAMME, GOLD, stein=None, stufe=1,
-            kruemmung=1.6, tip=4.5)
+            kruemmung=1.6, tip=4.5, profil='keil')
 
 
 def w_dagger_void(img):
     """Leeredolch - Post-Moon-Lord, Dornen und Funken. 28x28."""
-    schwert(img, 9, 18, 10.5, 1.0, LEERE, GOLD, wicklung=DUNKELLEDER,
-            stein=LEERE, stufe=2, kruemmung=0.9, tip=3.0)
+    schwert(img, 8, 17, 9.5, 0.95, LEERE, GOLD, wicklung=DUNKELLEDER,
+            stein=LEERE, stufe=2, kruemmung=0.8, tip=2.6, profil='blatt')
 
 
 def w_blade_astral(img):
     """Astralklinge - Post-Moon-Lord, ausgestellte Quillons. 40x40."""
-    schwert(img, 13, 26, 19.5, 1.5, ASTRAL, GOLD, wicklung=DUNKELLEDER,
-            stein=ASTRAL, stufe=2, tip=5.0)
+    schwert(img, 15, 31, 23.0, 1.9, ASTRAL, GOLD, wicklung=DUNKELLEDER,
+            stein=ASTRAL, stufe=2, tip=6.0, profil='blatt')
 
 
 # --- Bauplan Stangenwaffe --------------------------------------------------
@@ -1298,7 +1349,7 @@ def w_spear_cobalt(img):
 
 def w_scythe_void(img):
     """Leeresense - Post-Moon-Lord, Runen im Schaft. 46x46."""
-    stangenwaffe(img, 7, 39, 21.0, kopf_sense(LEERE, radius=12.0, dicke=4.4),
+    stangenwaffe(img, 8, 46, 26.0, kopf_sense(LEERE, radius=14.0, dicke=5.0),
                  holz=LEDER, beschlag=GOLD, stufe=2)
 
 
@@ -1316,9 +1367,9 @@ def w_hammer_astral(img):
 
 def w_greataxe_abyss(img):
     """Abgrunddoppelaxt - Hardmode, zwei Blaetter. 46x46."""
-    stangenwaffe(img, 8, 40, 21.0,
-                 kopf_axt(ABGRUND, radius=9.5, dicke=5.5, doppelt=True),
-                 holz=HOLZ, beschlag=EISEN, stufe=1, halb=0.9)
+    stangenwaffe(img, 9, 46, 25.0,
+                 kopf_axt(ABGRUND, radius=11.0, dicke=6.2, doppelt=True),
+                 holz=HOLZ, beschlag=EISEN, stufe=1, halb=1.0)
 
 
 # --- Bauplan Schusswaffe ---------------------------------------------------
@@ -1430,25 +1481,25 @@ def w_shortsword_iron(img):
 def w_broadsword_bone(img):
     """Knochenbreitschwert - Pre-Hardmode, breit und stumpf. 36x36."""
     schwert(img, 12, 23, 16.0, 1.5, KNOCHEN, KUPFER, wicklung=DUNKELLEDER,
-            stein=KNOCHEN, stufe=0, tip=4.0)
+            stein=KNOCHEN, stufe=0, tip=4.0, profil='bauchig')
 
 
 def w_rapier_gold(img):
     """Goldrapier - Hardmode, sehr schmale Klinge. 36x36."""
     schwert(img, 11, 24, 18.0, 0.75, STAHL, GOLD, stein=GOLD, stufe=1,
-            tip=4.0)
+            tip=4.0, profil='keil')
 
 
 def w_katana_void(img):
     """Leerekatana - Post-Moon-Lord, gekruemmt und gedornt. 38x38."""
     schwert(img, 12, 25, 20.0, 1.0, LEERE, GOLD, wicklung=DUNKELLEDER,
-            stein=LEERE, stufe=2, kruemmung=1.7, tip=4.5)
+            stein=LEERE, stufe=2, kruemmung=1.7, tip=4.5, profil='haken')
 
 
 def w_dagger_cobalt(img):
     """Kobaltdolch - Hardmode. 28x28."""
-    schwert(img, 9, 18, 10.0, 1.0, KOBALT, SILBER, stein=MOND, stufe=1,
-            tip=3.0)
+    schwert(img, 8, 16, 9.0, 0.9, KOBALT, SILBER, stein=MOND, stufe=1,
+            tip=2.6, profil='blatt')
 
 
 def w_spear_bone(img):
@@ -1803,13 +1854,13 @@ WEAPONS = [
     ('sword_melee',      'Kurzschwert',            w_sword_melee),
     ('shortsword_bone',  'Knochen-Kurzschwert',    w_shortsword_bone),
     ('broadsword_iron',  'Eisen-Breitschwert',     w_broadsword_iron),
-    ('broadsword_titan', 'Titanen-Breitschwert',   w_broadsword_titan),
+    ('broadsword_titan', 'Titanen-Breitschwert',   w_broadsword_titan, 46),
     ('katana_moon',      'Mond-Katana',            w_katana_moon),
     ('katana_storm',     'Sturm-Katana',           w_katana_storm),
     ('greatsword_flame', 'Flammen-Grossschwert',   w_greatsword_flame),
     ('curved_fang',      'Krummschwert Fang',      w_curved_fang),
-    ('dagger_bleed',     'Blutdolch',              w_dagger_bleed),
-    ('dagger_gold',      'Gnadendolch',            w_dagger_gold),
+    ('dagger_bleed',     'Blutdolch',              w_dagger_bleed,    26),
+    ('dagger_gold',      'Gnadendolch',            w_dagger_gold,     24),
     ('revolver',         'Revolver',               w_revolver),
     ('shotgun_boom',     'Schrotflinte',           w_shotgun_boom),
     ('smg_buzz',         'MP',                     w_smg_buzz),
@@ -1817,7 +1868,7 @@ WEAPONS = [
     ('spear_brim',       'Speer',                  w_spear_brim,      40),
     ('flail_nebula',     'Flegel',                 w_flail_nebula,    40),
     ('scythe_harvest',   'Sense',                  w_scythe_harvest,  44),
-    ('dagger_throw',     'Wurfdolch',              w_dagger_throw,    24),
+    ('dagger_throw',     'Wurfdolch',              w_dagger_throw,    20),
     ('boomerang_wood',   'Bumerang',               w_boomerang_wood,  32),
     ('spiky_ball',       'Stachelball',            w_spiky_ball,      22),
     ('javelin_bone',     'Wurfspiess',             w_javelin_bone,    40),
@@ -1842,16 +1893,16 @@ WEAPONS = [
     ('blunderbuss',      'Donnerbuechse',          w_blunderbuss,     36),
     ('shortsword_copper', 'Kupferkurzschwert',     w_shortsword_copper, 32),
     ('broadsword_cobalt', 'Kobaltbreitschwert',    w_broadsword_cobalt, 36),
-    ('greatsword_abyss', 'Abgrundgrossschwert',    w_greatsword_abyss, 40),
+    ('greatsword_abyss', 'Abgrundgrossschwert',    w_greatsword_abyss, 52),
     ('katana_dawn',      'Morgenkatana',           w_katana_dawn,     36),
-    ('dagger_void',      'Leeredolch',             w_dagger_void,     28),
-    ('blade_astral',     'Astralklinge',           w_blade_astral,    40),
+    ('dagger_void',      'Leeredolch',             w_dagger_void,     24),
+    ('blade_astral',     'Astralklinge',           w_blade_astral,    50),
     ('axe_copper',       'Kupferaxt',              w_axe_copper,      40),
     ('spear_cobalt',     'Kobaltspeer',            w_spear_cobalt,    44),
-    ('scythe_void',      'Leeresense',             w_scythe_void,     46),
+    ('scythe_void',      'Leeresense',             w_scythe_void,     58),
     ('staff_abyss',      'Abgrundstab',            w_staff_abyss,     44),
     ('hammer_astral',    'Astralhammer',           w_hammer_astral,   44),
-    ('greataxe_abyss',   'Abgrunddoppelaxt',       w_greataxe_abyss,  46),
+    ('greataxe_abyss',   'Abgrunddoppelaxt',       w_greataxe_abyss,  58),
     ('pistol_scrap',     'Schrottpistole',         w_pistol_scrap,    30),
     ('revolver_heavy',   'Schwerer Revolver',      w_revolver_heavy,  34),
     ('pistol_burst',     'Salvenpistole',          w_pistol_burst,    32),
@@ -1862,7 +1913,7 @@ WEAPONS = [
     ('broadsword_bone',  'Knochenbreitschwert',    w_broadsword_bone, 36),
     ('rapier_gold',      'Goldrapier',             w_rapier_gold,     36),
     ('katana_void',      'Leerekatana',            w_katana_void,     38),
-    ('dagger_cobalt',    'Kobaltdolch',            w_dagger_cobalt,   28),
+    ('dagger_cobalt',    'Kobaltdolch',            w_dagger_cobalt,   22),
     ('spear_bone',       'Knochenspeer',           w_spear_bone,      44),
     ('halberd_cobalt',   'Kobalthellebarde',       w_halberd_cobalt,  46),
     ('scythe_copper',    'Kupfersense',            w_scythe_copper,   44),
