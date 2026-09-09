@@ -50,6 +50,7 @@ func _ready() -> void:
 
 func add_gold(amount: int) -> void:
 	gold += amount
+	GameManager.count_gold(amount)
 	gold_changed.emit(gold)
 
 func spend_gold(amount: int) -> bool:
@@ -144,6 +145,7 @@ func get_stash_entries() -> Array:
 ## Beendet den Run. Bei Tod gehen zufällige Slots verloren, der Rest wandert
 ## ins Lager. Gibt { "lost": Array, "kept": Array, "died": bool } zurück.
 func end_run(died: bool) -> Dictionary:
+	GameManager.end_run()
 	var slots := run_slots.duplicate(true)
 	var lost: Array = []
 

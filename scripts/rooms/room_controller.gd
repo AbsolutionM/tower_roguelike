@@ -45,6 +45,7 @@ func _ready() -> void:
 	z_index = -100
 	z_as_relative = false
 	_apply_tower()
+	GameManager.begin_run()
 	GameManager.room_time_up.connect(_on_time_up)
 	# Erst nach dem Szenenaufbau spawnen, sonst ist die Root-Node noch gesperrt.
 	start_room.call_deferred()
@@ -384,5 +385,5 @@ func _draw() -> void:
 	# statt wie eine flache Testfläche auszusehen.
 	for i in 6:
 		var inset: float = 12.0 + float(i) * 11.0
-		var strength: float = 0.07 * (1.0 - float(i) / 6.0)
+		var strength: float = 0.05 * (1.0 - float(i) / 6.0)
 		draw_rect(rect.grow(-inset), Color(0.0, 0.0, 0.0, strength), false, 11.0)

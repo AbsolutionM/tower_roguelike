@@ -21,8 +21,8 @@ func _build() -> void:
 	var title_text: String = "Gefallen" if died else "Turm verlassen"
 	column.add_child(UIKit.make_label(title_text, 42, accent, HORIZONTAL_ALIGNMENT_CENTER))
 
-	var subtitle: String = "%d Beutel-Slots verloren." % lost.size() if died else "Die gesamte Beute ist im Lager."
-	column.add_child(UIKit.make_label(subtitle, 18, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_CENTER, true))
+	column.add_child(UIKit.make_label(_subtitle(died, lost.size()), 18, UIKit.TEXT_DIM,
+		HORIZONTAL_ALIGNMENT_CENTER, true))
 
 	var currency := UIKit.make_currency_row(RunState.gold, RunState.get_total_essence())
 	currency.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -36,6 +36,15 @@ func _build() -> void:
 	var content := UIKit.make_column(12)
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(content)
+
+	# Zahlen des Durchgangs - ohne die stand hier ein halber leerer Bildschirm.
+	var stats_panel := UIKit.make_panel(UIKit.PANEL, Color(accent, 0.3))
+	stats_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var stats_column := UIKit.make_column(6)
+	stats_panel.add_child(stats_column)
+	stats_column.add_child(UIKit.make_label("Durchgang", 21, accent))
+	stats_column.add_child(UIKit.make_stat_sheet(GameManager.get_run_stats(), 2))
+	content.add_child(stats_panel)
 
 	if died and not lost.is_empty():
 		content.add_child(_make_slot_panel("Verloren", lost, UIKit.BAD))
@@ -52,6 +61,16 @@ func _build() -> void:
 	town.pressed.connect(func() -> void: get_tree().change_scene_to_file(TOWN_SCENE))
 	footer.add_child(town)
 	column.add_child(footer)
+
+## Ein verlorener Slot ist Einzahl - "1 Beutel-Slots" las sich falsch.
+func _subtitle(died: bool, lost_count: int) -> String:
+	if not died:
+		return "Die gesamte Beute ist im Lager."
+	if lost_count <= 0:
+		return "Nichts verloren - der Beutel war leer."
+	if lost_count == 1:
+		return "1 Beutel-Slot verloren."
+	return "%d Beutel-Slots verloren." % lost_count
 
 func _make_slot_panel(title: String, slots: Array, accent: Color) -> Control:
 	var panel := UIKit.make_panel(UIKit.PANEL, Color(accent, 0.4))
@@ -71,6 +90,7 @@ func _make_slot_panel(title: String, slots: Array, accent: Color) -> Control:
 		if not item:
 			continue
 		var row := UIKit.make_row(8)
+		row.add_child(UIKit.make_item_icon(item, 28.0))
 		var name_label := UIKit.make_label(item.item_name, 17, item.get_rarity_color())
 		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(name_label)

@@ -94,9 +94,11 @@ func _draw() -> void:
 	else:
 		# Abgeschrägte Ecken: drei Streifen statt eines Kreises -
 		# derselbe Look wie die Pixelrahmen im restlichen Menü.
-		_chamfered(block, pixel, Color(Palette.INK, 0.72))
-		_chamfered(block, pixel, Color(main_color, 0.22))
-		PixelDraw.frame(self, block.grow(-pixel), pixel, Color(main_color, 0.9), 1)
+		# Bewusst durchscheinend: der Daumen liegt mitten im Spielfeld, und
+		# dahinter dürfen Gegner und Beute nicht verschwinden.
+		_chamfered(block, pixel, Color(Palette.INK, 0.46))
+		_chamfered(block, pixel, Color(main_color, 0.18))
+		PixelDraw.frame(self, block.grow(-pixel), pixel, Color(main_color, 0.95), 1)
 
 	if not is_ready:
 		# Der Block läuft von unten voll, bis die Aktion wieder bereit ist.
@@ -127,9 +129,16 @@ func _draw() -> void:
 		var font := UIKit.pixel_font()
 		var font_size := int(draw_radius * 0.75)
 		var text_size := font.get_string_size(label_text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size)
+		var text_at := center + Vector2(-text_size.x * 0.5, text_size.y * 0.32)
+		# Kontur zuerst - der Knopf ist durchscheinend, dahinter kann alles liegen.
+		for offset in [Vector2(2, 0), Vector2(-2, 0), Vector2(0, 2), Vector2(0, -2)]:
+			draw_string(
+				font, text_at + offset, label_text, HORIZONTAL_ALIGNMENT_LEFT,
+				-1.0, font_size, Color(Palette.INK, 0.85 if is_ready else 0.5)
+			)
 		draw_string(
 			font,
-			center + Vector2(-text_size.x * 0.5, text_size.y * 0.32),
+			text_at,
 			label_text,
 			HORIZONTAL_ALIGNMENT_LEFT,
 			-1.0,

@@ -119,10 +119,9 @@ func _draw() -> void:
 	var scaled_radius: float = radius * item.pickup_scale
 	var pixel: float = FX.pixel_size()
 
-	PixelDraw.disc(self, center, scaled_radius * 1.8, pixel, Color(tint, 0.16))
-	PixelDraw.disc(self, center, scaled_radius, pixel, tint)
-	PixelDraw.ring(self, center, scaled_radius + pixel * 0.5, pixel, Color(1.0, 1.0, 1.0, 0.5), 1)
-	PixelDraw.stamp(self, center + Vector2(-scaled_radius * 0.35, -scaled_radius * 0.4), pixel, Color(1.0, 1.0, 1.0, 0.9))
+	# Schein darunter, damit Beute im dunklen Raum auffaellt.
+	PixelDraw.disc(self, center, scaled_radius * 1.9, pixel, Color(tint, 0.18))
+	ItemSymbol.paint(self, center, scaled_radius * 2.4, item.symbol, tint)
 
 func collect() -> void:
 	if collected or not item:

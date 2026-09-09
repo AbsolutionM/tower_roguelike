@@ -509,6 +509,7 @@ func update_health_bar() -> void:
 	tween.tween_property(health_bar_fill, "size:x", bar_full_width * percent, 0.12).set_ease(Tween.EASE_OUT)
 
 func die() -> void:
+	GameManager.count_enemy_killed()
 	if is_dying:
 		return
 	is_dying = true

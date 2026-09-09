@@ -10,5 +10,7 @@ description = "Währung für Upgrades."
 item_type = 1
 rarity = 0
 value = 1
-color = Color(1, 0.84, 0.3, 1)
+
+symbol = 3
+color = Color(0.949, 0.694, 0.204, 1)
 pickup_scale = 1.0

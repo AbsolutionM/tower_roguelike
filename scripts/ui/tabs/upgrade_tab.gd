@@ -225,10 +225,13 @@ func _make_forge_section(weapon: WeaponData, character: CharacterData, level: in
 	var item_name: String = item.item_name if item else str(cost["item_id"])
 	var have: int = int(cost["have"])
 	var need: int = int(cost["need"])
-	column.add_child(UIKit.make_label(
+	var material_row := UIKit.make_row(6)
+	material_row.add_child(UIKit.make_item_icon(item, 24.0))
+	material_row.add_child(UIKit.make_label(
 		"%s  %d / %d" % [item_name, have, need],
 		15, UIKit.GOOD if have >= need else UIKit.TEXT_DIM
 	))
+	column.add_child(material_row)
 
 	var forge_button := UIKit.make_primary_button("Schmieden", 20, UIKit.COOL)
 	forge_button.custom_minimum_size = Vector2(0.0, 50.0)

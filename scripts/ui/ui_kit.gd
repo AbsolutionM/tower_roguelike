@@ -139,6 +139,26 @@ static func make_icon(texture: Texture2D, icon_size: float, fallback_color: Colo
 	)
 	return placeholder
 
+## Icon eines Items. Ohne Textur wird die Form gezeichnet, statt ein
+## farbiges Quadrat zu zeigen.
+static func make_item_icon(item: ItemData, icon_size: float) -> Control:
+	if not item:
+		return make_spacer(icon_size)
+	if item.icon:
+		return make_icon(item.icon, icon_size, item.get_rarity_color())
+
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(icon_size, icon_size)
+	var rarity := item.get_rarity_color()
+	panel.add_theme_stylebox_override("panel", panel_style(Color(rarity, 0.14), 0, Color(rarity, 0.45)))
+
+	var symbol := ItemSymbol.new()
+	symbol.kind = item.symbol
+	symbol.tint = item.color
+	symbol.symbol_size = icon_size * 0.72
+	panel.add_child(symbol)
+	return panel
+
 static func make_spacer(height: float) -> Control:
 	var spacer := Control.new()
 	spacer.custom_minimum_size = Vector2(0.0, height)

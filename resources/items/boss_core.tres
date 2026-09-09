@@ -11,5 +11,7 @@ item_type = 0
 rarity = 3
 max_stack = 20
 value = 60
-color = Color(1, 0.45, 0.75, 1)
+
+symbol = 6
+color = Color(0.545, 0.435, 0.831, 1)
 pickup_scale = 1.5

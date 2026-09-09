@@ -35,6 +35,8 @@ const RARITY_COLORS := {
 @export var heal_amount: float = 0.0
 
 @export_group("Optik")
+## Gezeichnete Form, solange kein `icon` gesetzt ist.
+@export var symbol: ItemSymbol.Kind = ItemSymbol.Kind.GEL
 ## Wird für den prozeduralen Look benutzt, solange kein Icon gesetzt ist.
 @export var color: Color = Palette.GOLD
 @export var pickup_scale: float = 1.0

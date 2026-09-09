@@ -11,5 +11,7 @@ item_type = 2
 rarity = 1
 value = 1
 essence_id = "slime"
-color = Color(0.4, 0.95, 0.5, 1)
+
+symbol = 7
+color = Color(0.658, 0.878, 0.372, 1)
 pickup_scale = 1.1

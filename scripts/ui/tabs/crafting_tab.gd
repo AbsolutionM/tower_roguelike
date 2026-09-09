@@ -52,13 +52,18 @@ func _make_recipe_row(recipe: CraftingRecipe) -> Control:
 		var needed: int = int(entry["count"])
 		var have: int = RunState.get_stash_count(str(entry["item_id"]))
 		var item_name: String = item.item_name if item else str(entry["item_id"])
+
+		# Material mit kleinem Icon - reine Textlisten liest niemand.
+		var material_row := UIKit.make_row(6)
+		material_row.add_child(UIKit.make_item_icon(item, 22.0))
 		# Fehlendes Material bleibt gedämpft - Rot wäre hier ein Fehler,
 		# nicht "noch nicht gesammelt".
-		info.add_child(UIKit.make_label(
+		material_row.add_child(UIKit.make_label(
 			"%s  %d/%d" % [item_name, have, needed],
 			14,
 			UIKit.GOOD if have >= needed else UIKit.TEXT_DIM
 		))
+		info.add_child(material_row)
 
 	var actions := UIKit.make_column(4)
 	actions.custom_minimum_size = Vector2(132.0, 0.0)
@@ -88,7 +93,7 @@ func _make_stash_row(item: ItemData, count: int) -> Control:
 
 	var row := UIKit.make_row(12)
 	panel.content.add_child(row)
-	row.add_child(UIKit.make_icon(item.icon, 46.0, rarity_color))
+	row.add_child(UIKit.make_item_icon(item, 46.0))
 
 	var info := UIKit.make_column(2)
 	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL

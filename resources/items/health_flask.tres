@@ -12,5 +12,7 @@ rarity = 1
 max_stack = 10
 value = 8
 heal_amount = 28.0
-color = Color(1, 0.4, 0.5, 1)
+
+symbol = 4
+color = Color(0.851, 0.31, 0.31, 1)
 pickup_scale = 1.1

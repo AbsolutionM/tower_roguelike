@@ -21,8 +21,8 @@ const LIGHT_TEXTURE := preload("res://resources/materials/light_gradient.tres")
 @export var shadow_radius: float = 14.0
 @export var step_dust_interval: float = 0.3
 @export var bob_strength: float = 0.035
-@export var light_energy: float = 1.0
-@export var light_scale: float = 1.9
+@export var light_energy: float = 1.4
+@export var light_scale: float = 2.3
 
 @export_group("Daten")
 @export var character_data: CharacterData

@@ -11,5 +11,7 @@ item_type = 0
 rarity = 0
 max_stack = 99
 value = 1
-color = Color(0.45, 0.9, 0.45, 1)
+
+symbol = 0
+color = Color(0.435, 0.749, 0.353, 1)
 pickup_scale = 0.95
