@@ -2,7 +2,8 @@ extends Sprite2D
 class_name HandController
 
 @export var bob_speed: float = 4.0
-@export var bob_amount: float = 2.0
+## Klein halten: eine angesetzte Hand wippt kaum, eine schwebende fällt auf.
+@export var bob_amount: float = 1.1
 
 var base_radius: float = 20.0
 var time_elapsed: float = 0.0

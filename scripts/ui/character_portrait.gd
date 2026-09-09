@@ -136,7 +136,8 @@ func _layout() -> void:
 
 	_body_base_y = 0.0
 	# Hände sitzen auf Schulterhöhe, knapp außerhalb der Silhouette.
-	_hand_anchor = Vector2(_body_size.x * 0.52, _body_size.y * 0.12)
+	# Wie im Spiel: die Hand überlappt die Silhouette, statt daneben zu schweben.
+	_hand_anchor = Vector2(_body_size.x * 0.31, _body_size.y * 0.12)
 	queue_redraw()
 
 func _process(delta: float) -> void:
@@ -152,11 +153,11 @@ func _process(delta: float) -> void:
 		_body.scale = Vector2(1.0, 1.0 + breathe * 0.02)
 
 	if _left_hand:
-		_left_hand.position = Vector2(-_hand_anchor.x, _hand_anchor.y + sin(_time * breathe_speed + 0.9) * 1.3)
+		_left_hand.position = Vector2(-_hand_anchor.x, _hand_anchor.y + sin(_time * breathe_speed + 0.9) * 0.7)
 		_left_hand.rotation = sin(_time * sway_speed + 1.7) * 0.10
 
 	if _right_hand:
-		_right_hand.position = Vector2(_hand_anchor.x, _hand_anchor.y + sin(_time * breathe_speed + 0.4) * 1.3)
+		_right_hand.position = Vector2(_hand_anchor.x, _hand_anchor.y + sin(_time * breathe_speed + 0.4) * 0.7)
 		_right_hand.rotation = sin(_time * sway_speed) * 0.14
 		if _weapon_sprite:
 			_weapon_sprite.position = _right_hand.position

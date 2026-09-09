@@ -128,7 +128,12 @@ func _apply_hands() -> void:
 		# Beim Zielen nach oben bleibt die Hand hinter dem Körper.
 		pivot.pivot_radius_up = -reach * 0.55
 
-## Halbe bemalte Körperbreite in Spieler-Koordinaten, plus etwas Luft.
+## Wie weit die Hände vom Körpermittelpunkt sitzen, als Anteil der halben
+## bemalten Körperbreite. Unter 1.0 heißt: die Hand überlappt die Silhouette
+## und liest sich als angesetzt statt als schwebend.
+const HAND_INSET := 0.62
+
+## Handabstand in Spieler-Koordinaten, gemessen an der bemalten Breite.
 func _body_reach() -> float:
 	var frames: SpriteFrames = animated_sprite.sprite_frames
 	if not frames:
@@ -142,7 +147,7 @@ func _body_reach() -> float:
 	if frames.get_frame_count(animation) <= 0:
 		return 0.0
 	var body := PixelDraw.used_size(frames.get_frame_texture(animation, 0))
-	return body.x * 0.5 * animated_sprite.scale.x + 4.0
+	return body.x * 0.5 * animated_sprite.scale.x * HAND_INSET
 
 func apply_character_data() -> void:
 	if not character_data:

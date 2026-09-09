@@ -6,7 +6,8 @@ class_name OffHandController
 
 @export var distance: float = 32.0
 @export var bob_speed: float = 4.0
-@export var bob_amount: float = 2.0
+## Klein halten: eine angesetzte Hand wippt kaum, eine schwebende fällt auf.
+@export var bob_amount: float = 1.1
 
 var base_y: float = 0.0
 var time_elapsed: float = 0.0
