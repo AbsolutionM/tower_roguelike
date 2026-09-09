@@ -15,6 +15,8 @@ var current_duration: float = 10.0
 
 ## Zahlen des laufenden Durchgangs - der Abschlussbildschirm liest sie aus.
 var run_rooms_cleared: int = 0
+## Raeume, die leergeraeumt wurden, bevor die Zeit ablief.
+var run_rooms_perfect: int = 0
 var run_enemies_killed: int = 0
 var run_gold_earned: int = 0
 var run_deepest_floor: int = 1
@@ -26,6 +28,7 @@ func begin_run() -> void:
 	current_floor = 1
 	rooms_cleared_this_floor = 0
 	run_rooms_cleared = 0
+	run_rooms_perfect = 0
 	run_enemies_killed = 0
 	run_gold_earned = 0
 	run_deepest_floor = 1
@@ -34,6 +37,10 @@ func begin_run() -> void:
 
 func end_run() -> void:
 	run_active = false
+
+func count_room_cleared_early() -> void:
+	if run_active:
+		run_rooms_perfect += 1
 
 func count_enemy_killed() -> void:
 	if run_active:
@@ -50,6 +57,7 @@ func get_run_stats() -> Array:
 	return [
 		{"name": "Etage", "value": "%d" % run_deepest_floor},
 		{"name": "Räume", "value": "%d" % run_rooms_cleared},
+		{"name": "Geschafft", "value": "%d" % run_rooms_perfect},
 		{"name": "Gegner", "value": "%d" % run_enemies_killed},
 		{"name": "Gold", "value": "%d" % run_gold_earned},
 		{"name": "Dauer", "value": "%d:%02d" % [minutes, seconds]},

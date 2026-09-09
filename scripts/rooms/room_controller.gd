@@ -15,6 +15,8 @@ signal room_finished
 
 ## Nach so vielen geschafften Räumen kommt garantiert ein Bossraum (0 = aus).
 @export var boss_every: int = 4
+## Gold pro Sekunde Restzeit, wenn der Raum leergeräumt wurde.
+@export var CLEAR_BONUS_PER_SECOND: float = 5.0
 
 @export_group("Spawns")
 ## Aus, wenn Gegner zufällig im Raum verteilt werden sollen.
@@ -59,7 +61,7 @@ func _process(_delta: float) -> void:
 	_clamp_player()
 
 	if not is_transitioning and GameManager.room_active and get_tree().get_nodes_in_group("enemies").is_empty():
-		clear_room()
+		clear_room(true)
 
 ## Übernimmt Räume und Grundbeleuchtung des gewählten Turms.
 func _apply_tower() -> void:
@@ -315,10 +317,15 @@ func force_next_room() -> void:
 func _on_time_up() -> void:
 	clear_room()
 
-func clear_room() -> void:
+## `by_kill` = alle Gegner lagen, bevor die Zeit ablief. Nur dann gibt es
+## den Bonus - sonst waere er keine Leistung, sondern eine Wartezeit.
+func clear_room(by_kill: bool = false) -> void:
 	if is_transitioning:
 		return
 	is_transitioning = true
+
+	if by_kill:
+		_award_clear_bonus()
 
 	GameManager.on_room_cleared()
 	room_finished.emit()
@@ -334,6 +341,32 @@ func clear_room() -> void:
 	await get_tree().create_timer(transition_delay).timeout
 	if is_inside_tree():
 		start_room()
+
+## Wer den Raum leerräumt, bekommt die Restzeit in Gold ausgezahlt.
+## Das gibt dem Zeitdruck eine zweite Seite: nicht nur überleben, sondern
+## schnell genug sein.
+func _award_clear_bonus() -> void:
+	# Räume ohne Zeitlimit (Bossraum) haben einen Timer von 99999 Sekunden.
+	# Ohne diese Sperre zahlt der Bonus dort ein Vermögen aus.
+	var room := get_current_room()
+	if room and room.disable_timer:
+		return
+
+	# Zusätzlich auf die Raumdauer deckeln, damit kein Sonderfall durchrutscht.
+	var remaining: float = minf(GameManager.get_time_remaining(), GameManager.current_duration)
+	if remaining <= 0.5:
+		return
+
+	var bonus: int = int(round(remaining * CLEAR_BONUS_PER_SECOND))
+	RunState.add_gold(bonus)
+	GameManager.count_room_cleared_early()
+
+	var player := get_tree().get_first_node_in_group("player")
+	var origin: Vector2 = player.global_position if player else global_position
+	FX.floating_text(origin + Vector2(0.0, -96.0), "Raum geschafft", Palette.GOLD, 24, 60.0)
+	FX.floating_text(origin + Vector2(0.0, -62.0), "+%d Gold" % bonus, Palette.AMBER, 20, 48.0)
+	FX.ring_burst(origin, Palette.GOLD, 12.0, 190.0, 0.45, 8.0)
+	Audio.play(Audio.ID_LEVEL_UP)
 
 ## Übrig gebliebenes Loot fliegt beim Raumwechsel automatisch zum Spieler.
 func _collect_remaining_pickups() -> void:
