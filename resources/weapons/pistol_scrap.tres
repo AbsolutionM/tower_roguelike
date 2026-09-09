@@ -3,21 +3,21 @@
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="2_proj"]
 [ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="3_tree"]
-[ext_resource type="Texture2D" path="res://assets/sprites/weapons/pistol_scrap.png" id="8_art"]
-[ext_resource type="Resource" path="res://resources/weapons/specials/cls_pistol.tres" id="9_special"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/pistol_scrap.png" id="10_art"]
+[ext_resource type="Resource" path="res://resources/weapons/specials/cls_pistol.tres" id="11_special"]
 
 [resource]
 script = ExtResource("1_script")
 weapon_id = "pistol_scrap"
 weapon_name = "Schrott-Pistole"
 category = 4
-icon = ExtResource("8_art")
-hold_texture = ExtResource("8_art")
+icon = ExtResource("10_art")
+hold_texture = ExtResource("10_art")
 hold_scale = 0.75
 hold_rotation_degrees = -90.0
 description = "Wenig Schaden, dafür ein sehr hoher Schussrhythmus."
 damage = 4.3
-special = ExtResource("9_special")
+special = ExtResource("11_special")
 bleed_buildup = 0.0
 stagger = 8.0
 weight = 2.0

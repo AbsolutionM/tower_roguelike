@@ -97,6 +97,9 @@ static func make_button(text: String, font_size: int = 22, accent: Color = ACCEN
 	button.add_theme_stylebox_override("disabled", panel_style(Color(PANEL, 0.45), 12, Color(1.0, 1.0, 1.0, 0.05)))
 	button.add_theme_stylebox_override("focus", panel_style(Color(0.0, 0.0, 0.0, 0.0), 12, Color(accent, 0.45)))
 	button.custom_minimum_size = Vector2(0.0, 54.0)
+	# Jeder Knopf im Spiel läuft durch hier - der Tastton hängt deshalb an
+	# einer Stelle statt an fünfzig Aufrufern.
+	button.pressed.connect(func() -> void: Audio.play(Audio.ID_UI_TAP))
 	return button
 
 ## Gefüllter Knopf für die eine Hauptaktion eines Bildschirms.

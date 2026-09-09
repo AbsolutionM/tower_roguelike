@@ -1,39 +1,39 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/weapons/greatsword_flame.png" id="2_art"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/flail_copper.png" id="2_art"]
 [ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="4_tree"]
-[ext_resource type="Resource" path="res://resources/weapons/specials/w_greatsword_flame.tres" id="5_special"]
+[ext_resource type="Resource" path="res://resources/weapons/specials/cls_broadsword.tres" id="5_special"]
 
 [resource]
 script = ExtResource("1_script")
-weapon_id = "greatsword_flame"
-weapon_name = "Flammen-Grossschwert"
+weapon_id = "flail_copper"
+weapon_name = "Kupferflegel"
 category = 1
 icon = ExtResource("2_art")
 hold_texture = ExtResource("2_art")
-hold_scale = 0.68
+hold_scale = 0.81
 hold_rotation_degrees = -45.0
-description = "Die Klinge glueht noch, wenn der Schlag laengst vorbei ist."
-rarity = 2
-damage = 30.4
-cooldown = 0.950
+description = "Die Kette holt aus - schwer zu zielen, schwer auszuhalten."
+rarity = 1
+damage = 16.5
+cooldown = 1.045
 weapon_range = 220.0
-knockback = 380.0
+knockback = 532.0
 screen_shake = 6.0
 crit_bonus = 0.00
-scaling_power = 5
-scaling_agility = 2
+scaling_power = 4
+scaling_agility = 1
 scaling_fortune = 0
-required_power = 8
-required_agility = 4
+required_power = 6
+required_agility = 2
 weight = 6.5
-stagger = 56.7
+stagger = 42.0
 bleed_buildup = 0.0
 is_melee = true
 attack_reach = 175.0
 swing_duration = 0.16
-swing_angle_degrees = 160.0
+swing_angle_degrees = 1.2
 special = ExtResource("5_special")
 upgrade_tree = ExtResource("4_tree")
-shop_price = 830
+shop_price = 260

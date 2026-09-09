@@ -2,21 +2,21 @@
 
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
 [ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="3_tree"]
-[ext_resource type="Texture2D" path="res://assets/sprites/weapons/katana_moon.png" id="8_art"]
-[ext_resource type="Resource" path="res://resources/weapons/specials/cls_katana.tres" id="9_special"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/katana_moon.png" id="10_art"]
+[ext_resource type="Resource" path="res://resources/weapons/specials/cls_katana.tres" id="11_special"]
 
 [resource]
 script = ExtResource("1_script")
 weapon_id = "katana_moon"
 weapon_name = "Mondklinge"
 category = 2
-icon = ExtResource("8_art")
-hold_texture = ExtResource("8_art")
+icon = ExtResource("10_art")
+hold_texture = ExtResource("10_art")
 hold_scale = 0.75
 hold_rotation_degrees = -45.0
 description = "Blitzschnelle Schnitte mit hoher kritischer Chance."
 damage = 9.3
-special = ExtResource("9_special")
+special = ExtResource("11_special")
 bleed_buildup = 18.0
 stagger = 20.0
 weight = 3.0
