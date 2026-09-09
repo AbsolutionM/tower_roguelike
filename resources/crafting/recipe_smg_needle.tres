@@ -8,5 +8,5 @@ script = ExtResource("1_script")
 recipe_id = "craft_smg_needle"
 result_weapon = ExtResource("2_weapon")
 gold_cost = 300
-material_ids = Array[String](["iron_scrap", "crystal_shard"])
-material_counts = Array[int]([6, 7])
+material_ids = Array[String](["crystal_shard", "slime_gel"])
+material_counts = Array[int]([8, 12])

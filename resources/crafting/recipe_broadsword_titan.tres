@@ -7,6 +7,6 @@
 script = ExtResource("1_script")
 recipe_id = "craft_broadsword_titan"
 result_weapon = ExtResource("2_weapon")
-gold_cost = 300
-material_ids = Array[String](["iron_scrap", "crystal_shard"])
-material_counts = Array[int]([14, 3])
+gold_cost = 320
+material_ids = Array[String](["iron_scrap", "ore_chunk"])
+material_counts = Array[int]([12, 10])

@@ -36,4 +36,4 @@ swing_duration = 0.16
 swing_angle_degrees = 1.4
 special = ExtResource("5_special")
 upgrade_tree = ExtResource("4_tree")
-shop_price = 2080
+shop_price = 0

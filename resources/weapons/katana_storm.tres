@@ -35,3 +35,4 @@ attack_reach = 170.0
 swing_duration = 0.07
 swing_angle_degrees = 165.0
 upgrade_tree = ExtResource("3_tree")
+shop_price = 0

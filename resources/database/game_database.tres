@@ -17,11 +17,6 @@
 [ext_resource type="Resource" path="res://resources/accessories/acc_leech_fang.tres" id="37_acc4"]
 [ext_resource type="Resource" path="res://resources/accessories/acc_hawk_eye.tres" id="38_acc5"]
 [ext_resource type="Resource" path="res://resources/accessories/acc_iron_plate.tres" id="39_acc6"]
-[ext_resource type="Resource" path="res://resources/crafting/recipe_broadsword_titan.tres" id="40_rec1"]
-[ext_resource type="Resource" path="res://resources/crafting/recipe_katana_storm.tres" id="41_rec2"]
-[ext_resource type="Resource" path="res://resources/crafting/recipe_revolver_heavy.tres" id="42_rec3"]
-[ext_resource type="Resource" path="res://resources/crafting/recipe_smg_needle.tres" id="43_rec4"]
-[ext_resource type="Resource" path="res://resources/crafting/recipe_shotgun_scatter.tres" id="44_rec5"]
 [ext_resource type="Resource" path="res://resources/items/gold_coin.tres" id="25_gold"]
 [ext_resource type="Resource" path="res://resources/items/essence_slime.tres" id="26_essence"]
 [ext_resource type="Resource" path="res://resources/items/slime_gel.tres" id="27_gel"]
@@ -109,6 +104,28 @@
 [ext_resource type="Resource" path="res://resources/weapons/shield_tower.tres" id="w176_weapon"]
 [ext_resource type="Resource" path="res://resources/weapons/shield_cobalt.tres" id="w177_weapon"]
 [ext_resource type="Resource" path="res://resources/weapons/shield_void.tres" id="w178_weapon"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_dagger_void.tres" id="r300_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_katana_void.tres" id="r301_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_twinblade_astral.tres" id="r302_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_whip_astral.tres" id="r303_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_shuriken_astral.tres" id="r304_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_yoyo_void.tres" id="r305_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_blade_astral.tres" id="r306_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_hammer_astral.tres" id="r307_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_scythe_void.tres" id="r308_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_shield_void.tres" id="r309_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_bomb_void.tres" id="r310_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_chakram_void.tres" id="r311_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_raygun_astral.tres" id="r312_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_smg_astral.tres" id="r313_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_bow_astral.tres" id="r314_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_tome_void.tres" id="r315_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_summon_astral.tres" id="r316_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_broadsword_titan.tres" id="r317_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_katana_storm.tres" id="r318_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_revolver_heavy.tres" id="r319_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_shotgun_scatter.tres" id="r320_recipe"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_smg_needle.tres" id="r321_recipe"]
 
 [resource]
 script = ExtResource("1_script")
@@ -117,5 +134,5 @@ weapons = Array[WeaponData]([ExtResource("w100_weapon"), ExtResource("w101_weapo
 towers = Array[TowerData]([ExtResource("24_tower"), ExtResource("33_tower2")])
 items = Array[ItemData]([ExtResource("25_gold"), ExtResource("26_essence"), ExtResource("27_gel"), ExtResource("28_ore"), ExtResource("29_scrap"), ExtResource("30_crystal"), ExtResource("31_core"), ExtResource("32_flask")])
 accessories = Array[AccessoryData]([ExtResource("34_acc1"), ExtResource("35_acc2"), ExtResource("36_acc3"), ExtResource("37_acc4"), ExtResource("38_acc5"), ExtResource("39_acc6")])
-recipes = Array[CraftingRecipe]([ExtResource("40_rec1"), ExtResource("41_rec2"), ExtResource("42_rec3"), ExtResource("43_rec4"), ExtResource("44_rec5")])
+recipes = Array[CraftingRecipe]([ExtResource("r300_recipe"), ExtResource("r301_recipe"), ExtResource("r302_recipe"), ExtResource("r303_recipe"), ExtResource("r304_recipe"), ExtResource("r305_recipe"), ExtResource("r306_recipe"), ExtResource("r307_recipe"), ExtResource("r308_recipe"), ExtResource("r309_recipe"), ExtResource("r310_recipe"), ExtResource("r311_recipe"), ExtResource("r312_recipe"), ExtResource("r313_recipe"), ExtResource("r314_recipe"), ExtResource("r315_recipe"), ExtResource("r316_recipe"), ExtResource("r317_recipe"), ExtResource("r318_recipe"), ExtResource("r319_recipe"), ExtResource("r320_recipe"), ExtResource("r321_recipe")])
 starting_weapon_ids = Array[String](["shortsword_iron", "revolver_ordinary", "pistol_scrap"])

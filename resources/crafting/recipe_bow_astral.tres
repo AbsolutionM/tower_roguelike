@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="CraftingRecipe" format=3]
+
+[ext_resource type="Script" path="res://resources/crafting/crafting_recipe.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/weapons/bow_astral.tres" id="2_weapon"]
+
+[resource]
+script = ExtResource("1_script")
+recipe_id = "craft_bow_astral"
+result_weapon = ExtResource("2_weapon")
+gold_cost = 1200
+material_ids = Array[String](["ore_chunk", "crystal_shard", "boss_core"])
+material_counts = Array[int]([14, 14, 1])

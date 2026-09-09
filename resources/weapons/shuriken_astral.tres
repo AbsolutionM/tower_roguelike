@@ -42,4 +42,4 @@ muzzle_flash_size = 18.0
 return_distance = 220.0
 special = ExtResource("5_special")
 upgrade_tree = ExtResource("4_tree")
-shop_price = 2240
+shop_price = 0

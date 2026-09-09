@@ -40,3 +40,4 @@ spread_degrees = 2.0
 projectile_color = Color(0.91, 0.4, 0.235, 1)
 muzzle_flash_size = 44.0
 upgrade_tree = ExtResource("3_tree")
+shop_price = 0

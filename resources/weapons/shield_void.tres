@@ -37,4 +37,4 @@ swing_angle_degrees = 180.0
 armor_bonus = 19.0
 special = ExtResource("5_special")
 upgrade_tree = ExtResource("4_tree")
-shop_price = 2400
+shop_price = 0

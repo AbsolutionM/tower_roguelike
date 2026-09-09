@@ -149,13 +149,24 @@ static func make_item_icon(item: ItemData, icon_size: float) -> Control:
 
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(icon_size, icon_size)
+	panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+
+	# Eigener Stil mit schmalem Innenrand: der Standardrand von 14 Pixeln
+	# würde die Kachel auf das Doppelte aufblasen und Zeilen abschneiden.
 	var rarity := item.get_rarity_color()
-	panel.add_theme_stylebox_override("panel", panel_style(Color(rarity, 0.14), 0, Color(rarity, 0.45)))
+	var box := panel_style(Color(rarity, 0.14), 0, Color(rarity, 0.45))
+	box.content_margin_left = 2.0
+	box.content_margin_right = 2.0
+	box.content_margin_top = 2.0
+	box.content_margin_bottom = 2.0
+	panel.add_theme_stylebox_override("panel", box)
 
 	var symbol := ItemSymbol.new()
 	symbol.kind = item.symbol
 	symbol.tint = item.color
-	symbol.symbol_size = icon_size * 0.72
+	symbol.symbol_size = icon_size * 0.7
+	# Mindestgröße sofort setzen - `_ready` käme zu spät für den Layoutlauf.
+	symbol.custom_minimum_size = Vector2.ONE * (icon_size - 8.0)
 	panel.add_child(symbol)
 	return panel
 
