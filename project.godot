@@ -28,6 +28,7 @@ Database="*res://scripts/autoload/database.gd"
 RunState="*res://scripts/autoload/run_state.gd"
 FX="*res://scripts/autoload/fx.gd"
 Weather="*res://scripts/autoload/weather.gd"
+Audio="*res://scripts/autoload/audio.gd"
 
 [display]
 

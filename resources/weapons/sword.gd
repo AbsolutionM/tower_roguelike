@@ -90,6 +90,8 @@ func try_hit(area: Area2D) -> void:
 	if area.has_method("apply_knockback"):
 		area.apply_knockback(knock_dir, knockback_force)
 
+	Audio.play(Audio.ID_ENEMY_HIT)
+
 	var stats = get_tree().get_first_node_in_group("player_stats")
 	if stats:
 		stats.report_damage(damage)
@@ -121,6 +123,7 @@ func spawn_trail() -> void:
 	t.tween_callback(ghost.queue_free)
 
 func perform_swing(dmg: float, crit: bool = false) -> void:
+	Audio.play(Audio.ID_SWING)
 	damage = dmg
 	is_crit = crit
 	hit_enemies.clear()

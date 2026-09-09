@@ -130,6 +130,7 @@ func _fire_special(special: WeaponSpecial) -> void:
 	var player := get_parent() as Node2D
 	if not player:
 		return
+	Audio.play(Audio.ID_SPECIAL)
 	var base: float = _stats.get_weapon_base_damage(equipped_weapon) if _stats else equipped_weapon.damage
 	WeaponSpecialRunner.execute(special, equipped_weapon, player, current_target, base)
 
@@ -351,6 +352,7 @@ func fire_at(target: Node2D, damage: float, crit: bool) -> void:
 		equipped_weapon.projectile_color,
 		equipped_weapon.muzzle_flash_size
 	)
+	Audio.play(Audio.ID_SHOOT)
 	FX.shake(equipped_weapon.screen_shake)
 	_recoil(base_direction)
 

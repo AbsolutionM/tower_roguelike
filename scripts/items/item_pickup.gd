@@ -142,6 +142,7 @@ func collect() -> void:
 				return
 
 	collected = true
+	Audio.play(Audio.ID_COIN if item.item_type == ItemData.ItemType.CURRENCY else Audio.ID_PICKUP)
 	_collect_effect()
 	queue_free()
 

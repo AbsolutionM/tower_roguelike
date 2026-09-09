@@ -510,6 +510,7 @@ func update_health_bar() -> void:
 
 func die() -> void:
 	GameManager.count_enemy_killed()
+	Audio.play(Audio.ID_ENEMY_DIE)
 	if is_dying:
 		return
 	is_dying = true

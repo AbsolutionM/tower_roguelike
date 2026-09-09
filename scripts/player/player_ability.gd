@@ -54,6 +54,7 @@ func _on_ready_again() -> void:
 		FX.ring_burst(_body.global_position, Color(1.0, 1.0, 1.0, 0.5), 20.0, 44.0, 0.25, 3.0)
 
 func _execute() -> void:
+	Audio.play(Audio.ID_ABILITY)
 	match ability.kind:
 		AbilityData.Kind.SHOCKWAVE:
 			_shockwave()

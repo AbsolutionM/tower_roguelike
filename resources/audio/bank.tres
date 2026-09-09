@@ -1,0 +1,162 @@
+[gd_resource type="Resource" script_class="SoundBank" format=3]
+
+[ext_resource type="Script" path="res://resources/audio/sound_bank.gd" id="1_bank"]
+[ext_resource type="Script" path="res://resources/audio/sound_entry.gd" id="2_entry"]
+[ext_resource type="AudioStream" path="res://assets/audio/slime_hit/floraphonic-slime-splatter-1-220262.mp3" id="3_hit"]
+
+[sub_resource type="Resource" id="entry_enemy_hit"]
+script = ExtResource("2_entry")
+sound_id = "enemy_hit"
+streams = Array[AudioStream]([ExtResource("3_hit")])
+volume_db = -8.0
+pitch_min = 0.94
+pitch_max = 1.06
+min_interval = 0.03
+
+[sub_resource type="Resource" id="entry_enemy_die"]
+script = ExtResource("2_entry")
+sound_id = "enemy_die"
+streams = Array[AudioStream]([])
+volume_db = -4.0
+pitch_min = 0.94
+pitch_max = 1.06
+min_interval = 0.09
+
+[sub_resource type="Resource" id="entry_player_hurt"]
+script = ExtResource("2_entry")
+sound_id = "player_hurt"
+streams = Array[AudioStream]([])
+volume_db = -4.0
+pitch_min = 0.94
+pitch_max = 1.06
+min_interval = 0.09
+
+[sub_resource type="Resource" id="entry_player_die"]
+script = ExtResource("2_entry")
+sound_id = "player_die"
+streams = Array[AudioStream]([])
+volume_db = -4.0
+pitch_min = 0.94
+pitch_max = 1.06
+min_interval = 0.09
+
+[sub_resource type="Resource" id="entry_shoot"]
+script = ExtResource("2_entry")
+sound_id = "shoot"
+streams = Array[AudioStream]([])
+volume_db = -8.0
+pitch_min = 0.94
+pitch_max = 1.06
+min_interval = 0.03
+
+[sub_resource type="Resource" id="entry_swing"]
+script = ExtResource("2_entry")
+sound_id = "swing"
+streams = Array[AudioStream]([])
+volume_db = -4.0
+pitch_min = 0.94
+pitch_max = 1.06
+min_interval = 0.03
+
+[sub_resource type="Resource" id="entry_dash"]
+script = ExtResource("2_entry")
+sound_id = "dash"
+streams = Array[AudioStream]([])
+volume_db = -4.0
+pitch_min = 0.94
+pitch_max = 1.06
+min_interval = 0.09
+
+[sub_resource type="Resource" id="entry_ability"]
+script = ExtResource("2_entry")
+sound_id = "ability"
+streams = Array[AudioStream]([])
+volume_db = -4.0
+pitch_min = 0.94
+pitch_max = 1.06
+min_interval = 0.09
+
+[sub_resource type="Resource" id="entry_special"]
+script = ExtResource("2_entry")
+sound_id = "special"
+streams = Array[AudioStream]([])
+volume_db = -4.0
+pitch_min = 0.94
+pitch_max = 1.06
+min_interval = 0.09
+
+[sub_resource type="Resource" id="entry_pickup"]
+script = ExtResource("2_entry")
+sound_id = "pickup"
+streams = Array[AudioStream]([])
+volume_db = -4.0
+pitch_min = 0.94
+pitch_max = 1.06
+min_interval = 0.09
+
+[sub_resource type="Resource" id="entry_coin"]
+script = ExtResource("2_entry")
+sound_id = "coin"
+streams = Array[AudioStream]([])
+volume_db = -4.0
+pitch_min = 0.94
+pitch_max = 1.06
+min_interval = 0.09
+
+[sub_resource type="Resource" id="entry_purchase"]
+script = ExtResource("2_entry")
+sound_id = "purchase"
+streams = Array[AudioStream]([])
+volume_db = -4.0
+pitch_min = 0.94
+pitch_max = 1.06
+min_interval = 0.09
+
+[sub_resource type="Resource" id="entry_forge"]
+script = ExtResource("2_entry")
+sound_id = "forge"
+streams = Array[AudioStream]([])
+volume_db = -4.0
+pitch_min = 0.94
+pitch_max = 1.06
+min_interval = 0.09
+
+[sub_resource type="Resource" id="entry_level_up"]
+script = ExtResource("2_entry")
+sound_id = "level_up"
+streams = Array[AudioStream]([])
+volume_db = -4.0
+pitch_min = 0.94
+pitch_max = 1.06
+min_interval = 0.09
+
+[sub_resource type="Resource" id="entry_boss_spawn"]
+script = ExtResource("2_entry")
+sound_id = "boss_spawn"
+streams = Array[AudioStream]([])
+volume_db = -4.0
+pitch_min = 0.94
+pitch_max = 1.06
+min_interval = 0.09
+
+[sub_resource type="Resource" id="entry_room_change"]
+script = ExtResource("2_entry")
+sound_id = "room_change"
+streams = Array[AudioStream]([])
+volume_db = -4.0
+pitch_min = 0.94
+pitch_max = 1.06
+min_interval = 0.09
+
+[sub_resource type="Resource" id="entry_ui_tap"]
+script = ExtResource("2_entry")
+sound_id = "ui_tap"
+streams = Array[AudioStream]([])
+volume_db = -4.0
+pitch_min = 0.94
+pitch_max = 1.06
+min_interval = 0.09
+
+[resource]
+script = ExtResource("1_bank")
+entries = Array[SoundEntry]([SubResource("entry_enemy_hit"), SubResource("entry_enemy_die"), SubResource("entry_player_hurt"), SubResource("entry_player_die"), SubResource("entry_shoot"), SubResource("entry_swing"), SubResource("entry_dash"), SubResource("entry_ability"), SubResource("entry_special"), SubResource("entry_pickup"), SubResource("entry_coin"), SubResource("entry_purchase"), SubResource("entry_forge"), SubResource("entry_level_up"), SubResource("entry_boss_spawn"), SubResource("entry_room_change"), SubResource("entry_ui_tap")])

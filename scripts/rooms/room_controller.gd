@@ -110,6 +110,7 @@ func start_room() -> void:
 		spawn_enemies()
 		spawn_props()
 
+	Audio.play(Audio.ID_ROOM_CHANGE)
 	queue_redraw()
 	room_started.emit(room)
 
@@ -201,6 +202,7 @@ func spawn_boss() -> void:
 	get_tree().current_scene.add_child(boss)
 	boss.global_position = global_position + Vector2(0.0, -room.room_size.y * 0.28)
 
+	Audio.play(Audio.ID_BOSS_SPAWN)
 	FX.screen_flash(Color(Palette.BLOOD, 0.35), 0.6)
 	FX.shake(8.0)
 

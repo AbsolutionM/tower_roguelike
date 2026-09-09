@@ -224,6 +224,7 @@ func _tick_step_dust(delta: float) -> void:
 func try_dash() -> void:
 	if input_locked or dash_timer > 0.0 or dash_cd_timer > 0.0:
 		return
+	Audio.play(Audio.ID_DASH)
 
 	var direction := PlayerInput.get_move_vector()
 	if direction.length() < 0.05:

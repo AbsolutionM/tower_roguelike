@@ -245,6 +245,8 @@ func _damage_target(target: Node) -> void:
 	if not target.has_method("take_damage"):
 		return
 
+	Audio.play(Audio.ID_ENEMY_HIT)
+
 	var stats = get_tree().get_first_node_in_group("player_stats")
 	if stats:
 		stats.report_damage(damage)

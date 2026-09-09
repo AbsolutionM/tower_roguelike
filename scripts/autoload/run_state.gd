@@ -248,6 +248,7 @@ func reinforce_weapon(weapon: WeaponData) -> bool:
 	weapon_levels[weapon.weapon_id] = level
 
 	gold_changed.emit(gold)
+	Audio.play(Audio.ID_FORGE)
 	weapon_reinforced.emit(weapon.weapon_id, level)
 	loadout_changed.emit()
 	save_game()
@@ -296,6 +297,7 @@ func level_up_character(character: CharacterData) -> bool:
 	character_levels[character.character_id] = level
 
 	gold_changed.emit(gold)
+	Audio.play(Audio.ID_LEVEL_UP)
 	character_leveled.emit(character.character_id, level)
 	loadout_changed.emit()
 	save_game()
@@ -424,6 +426,7 @@ func buy_weapon(weapon: WeaponData) -> bool:
 	if not spend_gold(weapon.shop_price):
 		return false
 	unlock_weapon(weapon.weapon_id)
+	Audio.play(Audio.ID_PURCHASE)
 	save_game()
 	return true
 

@@ -99,6 +99,7 @@ func take_damage(amount: float, from_position: Vector2 = Vector2.ZERO) -> void:
 	FX.hit_spark(origin_position, FX.COLOR_HURT, 10)
 	FX.shake(7.0)
 	FX.hitstop(0.09, 0.05)
+	Audio.play(Audio.ID_PLAYER_HURT)
 	FX.screen_flash(Color(Palette.BLOOD, 0.28), 0.3)
 	if _sprite:
 		FX.flash(_sprite, Color(8.0, 1.5, 1.5), 0.14)
@@ -144,6 +145,7 @@ func _die() -> void:
 	FX.shake(16.0)
 	FX.ring_burst(origin, Palette.BLOOD, 10.0, 200.0, 0.6, 10.0)
 	FX.hit_spark(origin, Palette.BLOOD, 18, Vector2.ZERO, TAU, 90.0)
+	Audio.play(Audio.ID_PLAYER_DIE)
 	FX.screen_flash(Color(Palette.BLOOD, 0.55), 0.6)
 
 	if _sprite:
