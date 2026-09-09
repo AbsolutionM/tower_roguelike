@@ -14,6 +14,9 @@ class_name SwordWeapon
 @export var hitstop_duration: float = 0.06
 @export var hitstop_scale: float = 0.05
 
+## Der Arm, der geschwungen wird. Wird beim ersten Schlag gesucht.
+var _pivot: WeaponPivot
+
 var damage: float = 0.0
 var is_crit: bool = false
 var hit_enemies: Array = []
@@ -132,12 +135,34 @@ func perform_swing(dmg: float, crit: bool = false) -> void:
 		arc_tween.tween_property(arc, "modulate:a", 0.0, swing_duration)
 
 	var half_angle := deg_to_rad(swing_angle_degrees / 2)
-	rotation = -half_angle
+	var pivot := _get_pivot()
+
+	if not pivot:
+		# Ohne Arm bleibt nur die alte Drehung um die Hand.
+		rotation = -half_angle
+		var fallback := create_tween()
+		fallback.tween_property(self, "rotation", half_angle, swing_duration)
+		fallback.tween_callback(end_swing)
+		fallback.tween_property(self, "rotation", 0.0, return_duration)
+		return
+
+	# Die Klinge steht still in der Faust - bewegt wird der Arm.
+	rotation = 0.0
+	pivot.swing_offset = -half_angle
 
 	var tween := create_tween()
-	tween.tween_property(self, "rotation", half_angle, swing_duration)
+	tween.tween_property(pivot, "swing_offset", half_angle, swing_duration)
 	tween.tween_callback(end_swing)
-	tween.tween_property(self, "rotation", 0.0, return_duration)
+	tween.tween_property(pivot, "swing_offset", 0.0, return_duration)
+
+## Sword haengt unter Hand haengt unter Arm.
+func _get_pivot() -> WeaponPivot:
+	if is_instance_valid(_pivot):
+		return _pivot
+	var hand := get_parent()
+	if hand:
+		_pivot = hand.get_parent() as WeaponPivot
+	return _pivot
 
 func end_swing() -> void:
 	monitoring = false

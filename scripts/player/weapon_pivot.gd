@@ -13,15 +13,25 @@ class_name WeaponPivot
 
 var current_target: Node2D = null
 
+## Richtung zum Ziel. Getrennt vom tatsächlichen `rotation`, weil da der
+## Schwung obendrauf kommt.
+var aim_rotation: float = 0.0
+## Auslenkung des Schlags. Der Schwung dreht den ganzen Arm, damit die Hand
+## die Waffe führt, statt dass die Waffe um die Hand kreist.
+var swing_offset: float = 0.0
+
 func _process(delta: float) -> void:
 	if current_target and is_instance_valid(current_target):
 		var raw_angle := global_position.direction_to(current_target.global_position).angle()
-		rotation = lerp_angle(rotation, raw_angle, rotation_speed * delta)
+		aim_rotation = lerp_angle(aim_rotation, raw_angle, rotation_speed * delta)
 
+	rotation = aim_rotation + swing_offset
 	update_visuals()
 
 func update_visuals() -> void:
-	var dir := Vector2.RIGHT.rotated(rotation)
+	# Für Blickrichtung und Spiegelung zählt das Ziel, nicht der Schwung -
+	# sonst kippt die Figur mitten im Schlag auf die andere Seite.
+	var dir := Vector2.RIGHT.rotated(aim_rotation)
 	var facing_left := dir.x < 0
 	var facing_up := dir.y < -0.5
 

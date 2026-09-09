@@ -17,6 +17,10 @@ const PLACEHOLDER_SCALE := 0.55
 ## diagonal nach oben rechts gezeichnet; -45 Grad stellt sie senkrecht.
 const UPRIGHT_ROTATION := -PI * 0.25
 
+## Wie stark sich die Klinge waehrend des Schlags in die Bewegung legt.
+## 0 = starr getragen, 1 = dreht wie frueher komplett mit.
+const SWING_LEAN := 0.45
+
 @export var equipped_weapon: WeaponData
 @export var sword: Node
 @export var weapon_pivot: Node2D
@@ -264,16 +268,19 @@ func _update_hold_orientation() -> void:
 	if not hold_sprite:
 		return
 
-	if sword and "is_swinging" in sword and sword.is_swinging:
-		hold_sprite.rotation = _rest_rotation()
-		return
-
 	var chain: float = weapon_pivot.rotation
 	if sword is Node2D:
 		chain += (sword as Node2D).rotation
+
+	# Waehrend des Schlags legt sich die Klinge leicht in die Bewegung -
+	# ganz starr getragen saehe der Schwung aus wie ein Umtragen.
+	var lean: float = 0.0
+	if "swing_offset" in weapon_pivot:
+		lean = weapon_pivot.swing_offset * SWING_LEAN
+
 	# Bei gespiegeltem Arm dreht sich alles andersherum.
 	var flip: float = -1.0 if weapon_pivot.scale.y < 0.0 else 1.0
-	hold_sprite.rotation = flip * (UPRIGHT_ROTATION - chain)
+	hold_sprite.rotation = flip * (UPRIGHT_ROTATION + lean - chain)
 
 func _ensure_placeholder(hold_sprite: Sprite2D) -> WeaponSymbol:
 	if is_instance_valid(_hold_placeholder):
