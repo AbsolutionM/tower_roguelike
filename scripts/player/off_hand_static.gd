@@ -10,6 +10,8 @@ class_name OffHandController
 @export var bob_amount: float = 1.1
 
 var base_y: float = 0.0
+## Ausgleich für nicht mittig gezeichnete Handtexturen. Siehe HandController.
+var center: Vector2 = Vector2.ZERO
 var time_elapsed: float = 0.0
 var facing_left: bool = false
 
@@ -22,7 +24,9 @@ func _process(delta: float) -> void:
 	var offset := sin(time_elapsed * bob_speed) * bob_amount
 	# Die freie Hand liegt der Waffenhand gegenüber.
 	var x := distance if facing_left else -distance
-	position = Vector2(x, base_y + offset)
+	# Beim Spiegeln kippt auch der Ausgleich auf die andere Seite.
+	var shift := Vector2(-center.x if facing_left else center.x, center.y)
+	position = Vector2(x, base_y + offset) + shift
 	# Mitspiegeln, damit beide Hände gleich herum stehen.
 	flip_h = facing_left
 

@@ -28,6 +28,8 @@ var _time: float = 0.0
 var _body_size: Vector2 = Vector2(32.0, 32.0)
 var _body_base_y: float = 0.0
 var _hand_anchor: Vector2 = Vector2(24.0, 6.0)
+## Ausgleich für nicht mittig gezeichnete Handtexturen.
+var _hand_center: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -100,8 +102,9 @@ func _make_hand(mirrored: bool) -> Sprite2D:
 	hand.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	hand.modulate = character.sprite_modulate
 	hand.flip_h = mirrored
-	# Nicht jede Handtextur ist mittig gezeichnet.
-	hand.offset = PixelDraw.center_offset(character.hand_texture)
+	# Zentrierung kommt über die Position - `offset` würde von `flip_h`
+	# mitgespiegelt und die linke Hand doppelt so weit wegschieben.
+	_hand_center = PixelDraw.center_offset(character.hand_texture)
 	return hand
 
 ## Nur das Haltesprite - Inventar-Icons sind teils undurchsichtige JPGs und
@@ -153,11 +156,11 @@ func _process(delta: float) -> void:
 		_body.scale = Vector2(1.0, 1.0 + breathe * 0.02)
 
 	if _left_hand:
-		_left_hand.position = Vector2(-_hand_anchor.x, _hand_anchor.y + sin(_time * breathe_speed + 0.9) * 0.7)
+		_left_hand.position = Vector2(-_hand_anchor.x, _hand_anchor.y + sin(_time * breathe_speed + 0.9) * 0.7) 			+ Vector2(-_hand_center.x, _hand_center.y)
 		_left_hand.rotation = sin(_time * sway_speed + 1.7) * 0.10
 
 	if _right_hand:
-		_right_hand.position = Vector2(_hand_anchor.x, _hand_anchor.y + sin(_time * breathe_speed + 0.4) * 0.7)
+		_right_hand.position = Vector2(_hand_anchor.x, _hand_anchor.y + sin(_time * breathe_speed + 0.4) * 0.7) 			+ _hand_center
 		_right_hand.rotation = sin(_time * sway_speed) * 0.14
 		if _weapon_sprite:
 			_weapon_sprite.position = _right_hand.position

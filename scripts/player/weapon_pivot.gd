@@ -42,5 +42,7 @@ func update_visuals() -> void:
 	if off_hand:
 		off_hand.set_side(facing_left)
 
+	# Die Waffe liegt vor der Hand - sonst verdeckt die Faust den Griff.
+	# Beim Zielen nach oben wandern beide hinter den Körper.
 	if sword:
-		sword.z_index = -2 if facing_up else 2
+		sword.z_index = -3 if facing_up else 3

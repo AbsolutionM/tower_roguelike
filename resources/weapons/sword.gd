@@ -1,6 +1,10 @@
 extends Area2D
 class_name SwordWeapon
 
+## Anteil des Klingenbogens, den die Hand mitgeht. 0 = Hand steht still,
+## 1 = Hand und Klinge drehen gleich weit (sieht dann wieder nach Rudern aus).
+const HAND_SWING_SHARE := 0.38
+
 @export var swing_duration: float = 0.15
 @export var swing_angle_degrees: float = 90.0
 @export var return_duration: float = 0.1
@@ -134,15 +138,25 @@ func perform_swing(dmg: float, crit: bool = false) -> void:
 		var arc_tween := create_tween()
 		arc_tween.tween_property(arc, "modulate:a", 0.0, swing_duration)
 
-	# Die Klinge fährt den Bogen um die Faust. Den ganzen Arm mitzudrehen sah
-	# aus, als würde die Figur rudern - der Schlag verlor seine Schärfe.
+	# Die Klinge fährt den großen Bogen um die Faust, die Hand einen kleineren
+	# über denselben Takt. Den ganzen Arm mitzudrehen sah aus wie Rudern,
+	# die Hand ganz still stehen zu lassen wie ein Drehteller.
 	var half_angle := deg_to_rad(swing_angle_degrees / 2)
+	var hand := get_parent() as HandController
+	var hand_angle: float = half_angle * HAND_SWING_SHARE
+
 	rotation = -half_angle
+	if hand:
+		hand.swing_angle = -hand_angle
 
 	var tween := create_tween()
 	tween.tween_property(self, "rotation", half_angle, swing_duration)
+	if hand:
+		tween.parallel().tween_property(hand, "swing_angle", hand_angle, swing_duration)
 	tween.tween_callback(end_swing)
 	tween.tween_property(self, "rotation", 0.0, return_duration)
+	if hand:
+		tween.parallel().tween_property(hand, "swing_angle", 0.0, return_duration)
 
 func end_swing() -> void:
 	monitoring = false

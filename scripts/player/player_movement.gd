@@ -110,44 +110,74 @@ func _apply_hands() -> void:
 			hand.texture = character_data.hand_texture
 		hand.modulate = character_data.sprite_modulate
 		hand.visible = hand.texture != null
-		# Nicht jede Handtextur ist mittig gezeichnet - ohne diesen Ausgleich
-		# sitzt die Hand neben dem Arm statt daran.
+		# Nicht jede Handtextur ist mittig gezeichnet. Der Ausgleich läuft über
+		# die Position, nicht über `offset` - den würde `flip_h` mitspiegeln.
+		hand.offset = Vector2.ZERO
 		if hand.texture:
-			hand.offset = PixelDraw.center_offset(hand.texture)
+			hand.center = PixelDraw.center_offset(hand.texture)
 
 	# Beide Hände gehören an den Rand der Silhouette, nicht in den Torso.
-	# Gemessen wird die bemalte Breite des Körpers, nicht die Texturgröße.
+	# Gemessen wird die bemalte Fläche des Körpers, nicht die Texturgröße.
 	var reach := _body_reach()
 	if reach <= 0.0:
 		return
+
+	var shoulder := _shoulder_height()
 	if off_hand:
 		off_hand.distance = reach
+		off_hand.position.y = shoulder
+		off_hand.base_y = shoulder
 	var pivot := get_node_or_null("WeaponPivot")
 	if pivot:
 		pivot.pivot_radius = reach
 		# Beim Zielen nach oben bleibt die Hand hinter dem Körper.
 		pivot.pivot_radius_up = -reach * 0.55
+		if pivot.hand:
+			pivot.hand.base_y = shoulder
 
 ## Wie weit die Hände vom Körpermittelpunkt sitzen, als Anteil der halben
 ## bemalten Körperbreite. Unter 1.0 heißt: die Hand überlappt die Silhouette
 ## und liest sich als angesetzt statt als schwebend.
 const HAND_INSET := 0.62
 
-## Handabstand in Spieler-Koordinaten, gemessen an der bemalten Breite.
-func _body_reach() -> float:
+## Höhe, auf der die Hände am Körper sitzen.
+##
+## Der Knotenursprung liegt in der Texturmitte, die bemalte Figur reicht aber
+## weiter nach unten - bei y = 0 saßen die Hände deshalb auf Kopfhöhe.
+## Gemessen wird die Mitte der bemalten Fläche, dann ein Stück tiefer.
+func _shoulder_height() -> float:
+	var frame := _idle_frame()
+	if not frame:
+		return 0.0
+	var painted_center: float = -PixelDraw.center_offset(frame).y
+	var painted_height: float = PixelDraw.used_size(frame).y
+	return (painted_center + painted_height * HAND_DROP) * animated_sprite.scale.y
+
+## Wie weit unter der Mitte der bemalten Fläche die Hände hängen,
+## als Anteil der Körperhöhe.
+const HAND_DROP := 0.10
+
+## Das Bild, an dem gemessen wird.
+func _idle_frame() -> Texture2D:
 	var frames: SpriteFrames = animated_sprite.sprite_frames
 	if not frames:
-		return 0.0
+		return null
 	var animation: StringName = &"Idle_Front"
 	if not frames.has_animation(animation):
 		var names := frames.get_animation_names()
 		if names.is_empty():
-			return 0.0
+			return null
 		animation = names[0]
 	if frames.get_frame_count(animation) <= 0:
+		return null
+	return frames.get_frame_texture(animation, 0)
+
+## Handabstand in Spieler-Koordinaten, gemessen an der bemalten Breite.
+func _body_reach() -> float:
+	var frame := _idle_frame()
+	if not frame:
 		return 0.0
-	var body := PixelDraw.used_size(frames.get_frame_texture(animation, 0))
-	return body.x * 0.5 * animated_sprite.scale.x * HAND_INSET
+	return PixelDraw.used_size(frame).x * 0.5 * animated_sprite.scale.x * HAND_INSET
 
 func apply_character_data() -> void:
 	if not character_data:

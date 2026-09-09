@@ -134,7 +134,7 @@ shape = SubResource("RectangleShape2D_t1g43")
 debug_color = Color(0.9647059, 0, 0.49019608, 0.13333334)
 
 [node name="Sprite2D" type="Sprite2D" parent="Player/WeaponPivot/FirstHand/Sword" unique_id=2081959995]
-z_index = -2
+z_index = 0
 material = SubResource("ShaderMaterial_bqye8")
 position = Vector2(65.649994, -2.4999998)
 rotation = 1.5707964
