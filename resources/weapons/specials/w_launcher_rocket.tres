@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="WeaponSpecial" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_special.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+special_id = "w_launcher_rocket"
+special_name = "Bombardement"
+description = "Die letzte Rakete faellt senkrecht auf das Ziel."
+kind = 9
+hits_required = 4
+damage_mult = 3.80
+radius = 250.0
+knockback = 600.0
+count = 1
+duration = 0.0
+color = Color(0.91, 0.4, 0.235, 1)

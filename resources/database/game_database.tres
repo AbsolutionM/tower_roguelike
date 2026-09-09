@@ -82,11 +82,38 @@
 [ext_resource type="Resource" path="res://resources/weapons/smg_astral.tres" id="w149_weapon"]
 [ext_resource type="Resource" path="res://resources/weapons/blunderbuss.tres" id="w150_weapon"]
 [ext_resource type="Resource" path="res://resources/weapons/launcher_rocket.tres" id="w151_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/bow_hunter.tres" id="w152_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/bow_cobalt.tres" id="w153_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/bow_astral.tres" id="w154_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/wand_spark.tres" id="w155_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/summon_copper.tres" id="w156_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/tome_flames.tres" id="w157_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/summon_totem.tres" id="w158_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/tome_void.tres" id="w159_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/summon_astral.tres" id="w160_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/whip_thorn.tres" id="w161_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/whip_astral.tres" id="w162_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/boomerang_wood.tres" id="w163_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/chakram.tres" id="w164_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/shuriken_steel.tres" id="w165_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/dagger_throw.tres" id="w166_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/javelin_bone.tres" id="w167_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/spiky_ball.tres" id="w168_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/bomb_fire.tres" id="w169_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/yoyo_disc.tres" id="w170_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/spikyball_cobalt.tres" id="w171_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/chakram_void.tres" id="w172_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/shuriken_astral.tres" id="w173_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/yoyo_void.tres" id="w174_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/bomb_void.tres" id="w175_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/shield_tower.tres" id="w176_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/shield_cobalt.tres" id="w177_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/shield_void.tres" id="w178_weapon"]
 
 [resource]
 script = ExtResource("1_script")
 characters = Array[CharacterData]([ExtResource("2_cowboy"), ExtResource("3_first"), ExtResource("4_ronin"), ExtResource("5_brute"), ExtResource("6_templer"), ExtResource("7_schatten"), ExtResource("8_jaeger"), ExtResource("9_kanonier")])
-weapons = Array[WeaponData]([ExtResource("w100_weapon"), ExtResource("w101_weapon"), ExtResource("w102_weapon"), ExtResource("w103_weapon"), ExtResource("w104_weapon"), ExtResource("w105_weapon"), ExtResource("w106_weapon"), ExtResource("w107_weapon"), ExtResource("w108_weapon"), ExtResource("w109_weapon"), ExtResource("w110_weapon"), ExtResource("w111_weapon"), ExtResource("w112_weapon"), ExtResource("w113_weapon"), ExtResource("w114_weapon"), ExtResource("w115_weapon"), ExtResource("w116_weapon"), ExtResource("w117_weapon"), ExtResource("w118_weapon"), ExtResource("w119_weapon"), ExtResource("w120_weapon"), ExtResource("w121_weapon"), ExtResource("w122_weapon"), ExtResource("w123_weapon"), ExtResource("w124_weapon"), ExtResource("w125_weapon"), ExtResource("w126_weapon"), ExtResource("w127_weapon"), ExtResource("w128_weapon"), ExtResource("w129_weapon"), ExtResource("w130_weapon"), ExtResource("w131_weapon"), ExtResource("w132_weapon"), ExtResource("w133_weapon"), ExtResource("w134_weapon"), ExtResource("w135_weapon"), ExtResource("w136_weapon"), ExtResource("w137_weapon"), ExtResource("w138_weapon"), ExtResource("w139_weapon"), ExtResource("w140_weapon"), ExtResource("w141_weapon"), ExtResource("w142_weapon"), ExtResource("w143_weapon"), ExtResource("w144_weapon"), ExtResource("w145_weapon"), ExtResource("w146_weapon"), ExtResource("w147_weapon"), ExtResource("w148_weapon"), ExtResource("w149_weapon"), ExtResource("w150_weapon"), ExtResource("w151_weapon")])
+weapons = Array[WeaponData]([ExtResource("w100_weapon"), ExtResource("w101_weapon"), ExtResource("w102_weapon"), ExtResource("w103_weapon"), ExtResource("w104_weapon"), ExtResource("w105_weapon"), ExtResource("w106_weapon"), ExtResource("w107_weapon"), ExtResource("w108_weapon"), ExtResource("w109_weapon"), ExtResource("w110_weapon"), ExtResource("w111_weapon"), ExtResource("w112_weapon"), ExtResource("w113_weapon"), ExtResource("w114_weapon"), ExtResource("w115_weapon"), ExtResource("w116_weapon"), ExtResource("w117_weapon"), ExtResource("w118_weapon"), ExtResource("w119_weapon"), ExtResource("w120_weapon"), ExtResource("w121_weapon"), ExtResource("w122_weapon"), ExtResource("w123_weapon"), ExtResource("w124_weapon"), ExtResource("w125_weapon"), ExtResource("w126_weapon"), ExtResource("w127_weapon"), ExtResource("w128_weapon"), ExtResource("w129_weapon"), ExtResource("w130_weapon"), ExtResource("w131_weapon"), ExtResource("w132_weapon"), ExtResource("w133_weapon"), ExtResource("w134_weapon"), ExtResource("w135_weapon"), ExtResource("w136_weapon"), ExtResource("w137_weapon"), ExtResource("w138_weapon"), ExtResource("w139_weapon"), ExtResource("w140_weapon"), ExtResource("w141_weapon"), ExtResource("w142_weapon"), ExtResource("w143_weapon"), ExtResource("w144_weapon"), ExtResource("w145_weapon"), ExtResource("w146_weapon"), ExtResource("w147_weapon"), ExtResource("w148_weapon"), ExtResource("w149_weapon"), ExtResource("w150_weapon"), ExtResource("w151_weapon"), ExtResource("w152_weapon"), ExtResource("w153_weapon"), ExtResource("w154_weapon"), ExtResource("w155_weapon"), ExtResource("w156_weapon"), ExtResource("w157_weapon"), ExtResource("w158_weapon"), ExtResource("w159_weapon"), ExtResource("w160_weapon"), ExtResource("w161_weapon"), ExtResource("w162_weapon"), ExtResource("w163_weapon"), ExtResource("w164_weapon"), ExtResource("w165_weapon"), ExtResource("w166_weapon"), ExtResource("w167_weapon"), ExtResource("w168_weapon"), ExtResource("w169_weapon"), ExtResource("w170_weapon"), ExtResource("w171_weapon"), ExtResource("w172_weapon"), ExtResource("w173_weapon"), ExtResource("w174_weapon"), ExtResource("w175_weapon"), ExtResource("w176_weapon"), ExtResource("w177_weapon"), ExtResource("w178_weapon")])
 towers = Array[TowerData]([ExtResource("24_tower"), ExtResource("33_tower2")])
 items = Array[ItemData]([ExtResource("25_gold"), ExtResource("26_essence"), ExtResource("27_gel"), ExtResource("28_ore"), ExtResource("29_scrap"), ExtResource("30_crystal"), ExtResource("31_core"), ExtResource("32_flask")])
 accessories = Array[AccessoryData]([ExtResource("34_acc1"), ExtResource("35_acc2"), ExtResource("36_acc3"), ExtResource("37_acc4"), ExtResource("38_acc5"), ExtResource("39_acc6")])

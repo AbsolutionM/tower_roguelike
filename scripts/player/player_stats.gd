@@ -5,6 +5,8 @@ class_name PlayerStats
 ## Alle anderen Systeme fragen nur noch hier nach.
 
 signal stats_changed
+## Ein Treffer ist gelandet - laedt den Sonderschlag der Waffe auf.
+signal hit_landed
 
 @export var character_data: CharacterData
 
@@ -86,6 +88,7 @@ func _apply_weapon_upgrades() -> void:
 	crit_damage += weapon.crit_damage_bonus
 	# Gewicht 3.0 ist neutral - alles darüber bremst, alles darunter macht flink.
 	move_speed -= (weapon.weight - 3.0) * 6.0
+	armor += weapon.armor_bonus
 
 	if not weapon.upgrade_tree:
 		return
@@ -99,6 +102,10 @@ func _apply_weather() -> void:
 	damage_mult *= Weather.get_player_damage_mult()
 	health_regen += Weather.get_player_regen_bonus()
 	pickup_radius *= Weather.get_pickup_radius_mult()
+
+## Ein gelandeter Treffer, unabhängig vom Schaden. Treibt den Sonderschlag an.
+func report_hit() -> void:
+	hit_landed.emit()
 
 ## Wird von Waffen und Fähigkeiten gemeldet - treibt den Lebensraub an.
 func report_damage(amount: float) -> void:

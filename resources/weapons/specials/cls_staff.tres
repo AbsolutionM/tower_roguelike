@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="WeaponSpecial" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_special.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+special_id = "cls_staff"
+special_name = "Kettenblitz"
+description = "Ein Blitz springt von Gegner zu Gegner und wird dabei schwaecher."
+kind = 6
+hits_required = 8
+damage_mult = 2.00
+radius = 320.0
+knockback = 0.0
+count = 6
+duration = 0.0
+color = Color(0.545, 0.435, 0.831, 1)

@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/spikyball_cobalt.png" id="2_art"]
+[ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="3_proj"]
+[ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="4_tree"]
+[ext_resource type="Resource" path="res://resources/weapons/specials/cls_thrown.tres" id="5_special"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_id = "spikyball_cobalt"
+weapon_name = "Kobalt-Stachelball"
+category = 10
+icon = ExtResource("2_art")
+hold_texture = ExtResource("2_art")
+hold_scale = 1.13
+hold_rotation_degrees = -45.0
+description = "Schwerer, weiter, haerter."
+rarity = 2
+damage = 11.9
+cooldown = 0.490
+weapon_range = 310.0
+knockback = 140.0
+screen_shake = 2.5
+crit_bonus = 0.04
+scaling_power = 3
+scaling_agility = 5
+scaling_fortune = 3
+required_power = 5
+required_agility = 7
+weight = 2.6
+stagger = 21.6
+bleed_buildup = 0.0
+is_melee = false
+projectile_scene = ExtResource("3_proj")
+projectile_speed = 520.0
+pierce_count = 0
+projectiles_per_shot = 1
+spread_degrees = 3.0
+projectile_color = Color(1, 0.851, 0.541, 1)
+muzzle_flash_size = 18.0
+return_distance = 170.0
+special = ExtResource("5_special")
+upgrade_tree = ExtResource("4_tree")
+shop_price = 900

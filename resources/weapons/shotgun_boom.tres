@@ -3,19 +3,21 @@
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="2_proj"]
 [ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="3_tree"]
-[ext_resource type="Texture2D" path="res://assets/sprites/weapons/shotgun_boom.png" id="4_art"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/shotgun_boom.png" id="8_art"]
+[ext_resource type="Resource" path="res://resources/weapons/specials/cls_shotgun.tres" id="9_special"]
 
 [resource]
 script = ExtResource("1_script")
 weapon_id = "shotgun_boom"
 weapon_name = "Donnerbüchse"
 category = 6
-icon = ExtResource("4_art")
-hold_texture = ExtResource("4_art")
-hold_scale = 0.39
+icon = ExtResource("8_art")
+hold_texture = ExtResource("8_art")
+hold_scale = 0.54
 hold_rotation_degrees = -90.0
 description = "Sieben Schrotkugeln auf kurze Distanz. Räumt auf."
 damage = 3.1
+special = ExtResource("9_special")
 bleed_buildup = 0.0
 stagger = 30.0
 weight = 5.8

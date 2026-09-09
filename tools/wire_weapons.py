@@ -15,11 +15,13 @@ DB = "resources/database/game_database.tres"
 
 # Zielgroesse des Sprites auf dem Bildschirm, in Textur-Pixeln gerechnet.
 # Die Szene skaliert das Haltesprite anschliessend mit Faktor 5.
-TARGET_MELEE = 13.0
-TARGET_RANGED = 11.0
+TARGET_MELEE = 21.0
+TARGET_RANGED = 15.0
 
-CAT = dict(SHORTSWORD=0, BROADSWORD=1, KATANA=2, REVOLVER=3, PISTOL=4, SMG=5, SHOTGUN=6)
-MELEE = {0, 1, 2}
+CAT = dict(SHORTSWORD=0, BROADSWORD=1, KATANA=2, REVOLVER=3, PISTOL=4, SMG=5,
+           SHOTGUN=6, BOW=7, STAFF=8, WHIP=9, THROWN=10, SHIELD=11)
+# Peitsche und Schild schlagen zu, statt zu schiessen.
+MELEE = {0, 1, 2, 9, 11}
 
 # Klingen zeigen im Sprite nach schraeg oben (-45 Grad), Schusswaffen nach
 # rechts (0 Grad). Die Grundhaltung der Szene dreht um +90 Grad; die Werte
@@ -27,11 +29,24 @@ MELEE = {0, 1, 2}
 ROT_MELEE = -45.0
 ROT_RANGED = -90.0
 
+SPECIAL_EXT_PREFIX = '[ext_resource type="Resource" path="res://resources/weapons/specials/'
 
-def sprite_scale(path, ranged):
+
+# Nur Schusswaffen sind im Sprite nach rechts gezeichnet, alles andere
+# diagonal nach oben rechts.
+GUN_CATEGORIES = {"REVOLVER", "PISTOL", "SMG", "SHOTGUN"}
+# Schilde sind flaechig - in Originalgroesse verdecken sie die Figur.
+SIZE_OVERRIDE = {"SHIELD": 16.0, "THROWN": 17.0}
+
+
+def sprite_scale(path, ranged, cat_name=None):
     w, h = Image.open(path).size
-    target = TARGET_RANGED if ranged else TARGET_MELEE
+    target = SIZE_OVERRIDE.get(cat_name, TARGET_RANGED if ranged else TARGET_MELEE)
     return round(target / max(w, h), 2)
+
+
+def hold_rotation(cat_name):
+    return ROT_RANGED if cat_name in GUN_CATEGORIES else ROT_MELEE
 
 
 # --- 1. Bestehende Waffen mit ihren Sprites verbinden ----------------------
@@ -92,12 +107,72 @@ def wire_existing():
         ref = 'ExtResource("%d_art")' % n
         text = set_prop(text, "icon", ref, "category")
         text = set_prop(text, "hold_texture", ref, "icon")
-        text = set_prop(text, "hold_scale", "%.2f" % sprite_scale(png, ranged), "hold_texture")
-        text = set_prop(text, "hold_rotation_degrees",
-                        "%.1f" % (ROT_RANGED if ranged else ROT_MELEE), "hold_scale")
+        cat_name = EXISTING_CATEGORY[stem]
+        text = set_prop(text, "hold_scale", "%.2f" % sprite_scale(png, ranged, cat_name), "hold_texture")
+        text = set_prop(text, "hold_rotation_degrees", "%.1f" % hold_rotation(cat_name), "hold_scale")
+
+        # Sonderschlag der Klasse anhaengen. Alte Eintraege raus,
+        # damit ein zweiter Lauf nicht doppelt schreibt.
+        keep = []
+        for line in text.split(chr(10)):
+            if line.startswith(SPECIAL_EXT_PREFIX):
+                continue
+            if line.startswith('special = ExtResource('):
+                continue
+            keep.append(line)
+        text = chr(10).join(keep)
+
+        sp = special_path(stem, EXISTING_CATEGORY[stem])
+        ext_sp = '[ext_resource type="Resource" path="%s" id="%d_special"]' % (sp, n + 1)
+        keep = text.split(chr(10))
+        last = max(i for i, l in enumerate(keep) if l.startswith('[ext_resource'))
+        keep.insert(last + 1, ext_sp)
+        text = chr(10).join(keep)
+        text = set_prop(text, 'special', 'ExtResource("%d_special")' % (n + 1), 'damage')
 
         io.open(path, "w", encoding="utf-8", newline="\n").write(text)
         print("verbunden: %-20s -> %s" % (stem, sprite))
+
+
+# Standard-Sonderschlag je Klasse.
+CLASS_SPECIAL = {
+    "SHORTSWORD": "cls_shortsword", "BROADSWORD": "cls_broadsword",
+    "KATANA": "cls_katana", "REVOLVER": "cls_revolver", "PISTOL": "cls_pistol",
+    "SMG": "cls_smg", "SHOTGUN": "cls_shotgun", "BOW": "cls_bow",
+    "STAFF": "cls_staff", "WHIP": "cls_whip", "THROWN": "cls_thrown",
+    "SHIELD": "cls_shield",
+}
+
+# Waffen mit eigenem Sonderschlag statt dem der Klasse.
+WEAPON_SPECIAL = {
+    "dagger_bleed": "w_dagger_bleed", "katar": "w_katar",
+    "hammer_war": "w_hammer_war", "greataxe_abyss": "w_greataxe_abyss",
+    "greatsword_flame": "w_greatsword_flame", "blade_astral": "w_blade_astral",
+    "hammer_astral": "w_hammer_astral", "scythe_void": "w_scythe_void",
+    "katana_void": "w_katana_void", "rifle_cobalt": "w_rifle_cobalt",
+    "raygun_astral": "w_raygun_astral", "launcher_rocket": "w_launcher_rocket",
+    "flamethrower": "w_flamethrower", "staff_abyss": "w_staff_abyss",
+    "wand_cobalt": "w_wand_cobalt", "bow_astral": "w_bow_astral",
+    "whip_astral": "w_whip_astral", "yoyo_void": "w_yoyo_void",
+    "shield_void": "w_shield_void", "bomb_void": "w_bomb_void",
+}
+
+
+def special_path(weapon_id, cat_name):
+    sid = WEAPON_SPECIAL.get(weapon_id, CLASS_SPECIAL[cat_name])
+    return "res://resources/weapons/specials/%s.tres" % sid
+
+
+# Klasse jeder bestehenden Waffe - fuer die Zuordnung des Sonderschlags.
+EXISTING_CATEGORY = {
+    "sword_melee": "SHORTSWORD", "shortsword_bone": "SHORTSWORD",
+    "broadsword_iron": "BROADSWORD", "broadsword_titan": "BROADSWORD",
+    "katana_moon": "KATANA", "katana_storm": "KATANA",
+    "revolver": "REVOLVER", "revolver_heavy": "REVOLVER",
+    "pistol_burst": "PISTOL", "pistol_scrap": "PISTOL",
+    "smg_buzz": "SMG", "smg_needle": "SMG",
+    "shotgun_boom": "SHOTGUN", "shotgun_scatter": "SHOTGUN",
+}
 
 
 # --- 2. Neue Waffen aus den freien Sprites --------------------------------
@@ -168,19 +243,19 @@ NEW = [
     # Revolver: harte Einzelschuesse
     ("rifle_cobalt", "rifle_cobalt", "Kobaltgewehr", "REVOLVER", 1,
      "Grosse Reichweite, harter Einschlag, lange Ladezeit."),
-    ("staff_abyss", "staff_abyss", "Abgrundstab", "REVOLVER", 1,
+    ("staff_abyss", "staff_abyss", "Abgrundstab", "STAFF", 1,
      "Schleudert verdichtete Dunkelheit. Durchschlaegt Gegner."),
     ("raygun_astral", "raygun_astral", "Astralstrahler", "REVOLVER", 2,
      "Ein Strahl, der nicht abbremst."),
 
     # Pistolen: schnelle, leichte Schuesse
-    ("crossbow_repeater", "crossbow_repeater", "Repetierarmbrust", "PISTOL", 0,
+    ("crossbow_repeater", "crossbow_repeater", "Repetierarmbrust", "BOW", 0,
      "Bolzen statt Kugeln - langsamer, aber sie durchschlagen."),
-    ("staff_crystal", "staff_crystal", "Kristallstab", "PISTOL", 0,
+    ("staff_crystal", "staff_crystal", "Kristallstab", "STAFF", 0,
      "Kristallsplitter im Dauerfeuer."),
     ("magic_gun", "magic_gun", "Magiepistole", "PISTOL", 1,
      "Halb Waffe, halb Zauber. Trifft haeufig kritisch."),
-    ("wand_cobalt", "wand_cobalt", "Kobaltrute", "PISTOL", 1,
+    ("wand_cobalt", "wand_cobalt", "Kobaltrute", "STAFF", 1,
      "Drei Geschosse pro Wink."),
 
     # MPs: Dauerfeuer
@@ -194,6 +269,69 @@ NEW = [
      "Alles, was reinpasst, kommt vorne wieder raus."),
     ("launcher_rocket", "launcher_rocket", "Raketenwerfer", "SHOTGUN", 1,
      "Wenige Schuesse, dafuer raeumt jeder einen halben Raum."),
+    # --- Bogen ---
+    ("bow_hunter", "bow_hunter", "Jagdbogen", "BOW", 0,
+     "Weit, leise und durchschlagend. Braucht eine ruhige Hand."),
+    ("bow_cobalt", "bow_cobalt", "Kobaltbogen", "BOW", 1,
+     "Kobalt spannt haerter - der Pfeil geht durch zwei Reihen."),
+    ("bow_astral", "bow_astral", "Astralbogen", "BOW", 2,
+     "Der Pfeil bremst nicht ab, egal wie viel im Weg steht."),
+
+    # --- Staebe ---
+    ("wand_spark", "wand_spark", "Funkenrute", "STAFF", 0,
+     "Wirft langsame Funken, die von selbst zum Ziel finden."),
+    ("summon_copper", "summon_copper", "Kupfertotem", "STAFF", 0,
+     "Setzt zaeh fliegende Geister frei, die niemanden auslassen."),
+    ("tome_flames", "tome_flames", "Flammenkodex", "STAFF", 1,
+     "Blaettert sich selbst um und wirft dabei Feuer."),
+    ("summon_totem", "summon_totem", "Beschwoerungsstab", "STAFF", 1,
+     "Ruft Begleiter, die auf eigene Faust nachsetzen."),
+    ("tome_void", "tome_void", "Leerekodex", "STAFF", 2,
+     "Was daraus kommt, sucht sich sein Ziel selbst."),
+    ("summon_astral", "summon_astral", "Astraltotem", "STAFF", 2,
+     "Sternenlicht, das nicht mehr loslaesst."),
+
+    # --- Peitschen ---
+    ("whip_thorn", "whip_thorn", "Dornenpeitsche", "WHIP", 0,
+     "Sehr grosse Reichweite, wenig Wucht - dafuer bluten die Treffer."),
+    ("whip_astral", "whip_astral", "Astralpeitsche", "WHIP", 2,
+     "Der Riemen zieht Leben aus allem, was er streift."),
+
+    # --- Wurfwaffen ---
+    ("boomerang_wood", "boomerang_wood", "Bumerang", "THROWN", 0,
+     "Fliegt hin, trifft auf dem Weg und kommt zurueck."),
+    ("chakram", "chakram", "Wurfring", "THROWN", 0,
+     "Kreist heraus und wieder herein. Trifft auf beiden Wegen."),
+    ("shuriken_steel", "shuriken_steel", "Wurfstern", "THROWN", 0,
+     "Schnell geworfen, schnell zurueck."),
+    ("dagger_throw", "dagger_throw", "Wurfdolch", "THROWN", 0,
+     "Kurze Bahn, harter Einschlag."),
+    ("javelin_bone", "javelin_bone", "Wurfspiess", "THROWN", 0,
+     "Fliegt weiter als alles andere in der Klasse."),
+    ("spiky_ball", "spiky_ball", "Stachelball", "THROWN", 0,
+     "Springt kurz heraus und rollt zurueck."),
+    ("bomb_fire", "bomb_fire", "Brandbombe", "THROWN", 0,
+     "Kommt nicht zurueck, macht dafuer beim Aufschlag Krach."),
+    ("yoyo_disc", "yoyo_disc", "Yoyo", "THROWN", 0,
+     "Bleibt an der Schnur und saegt sich durch."),
+    ("spikyball_cobalt", "spikyball_cobalt", "Kobalt-Stachelball", "THROWN", 1,
+     "Schwerer, weiter, haerter."),
+    ("chakram_void", "chakram_void", "Leerering", "THROWN", 2,
+     "Kreist immer weiter, bis nichts mehr steht."),
+    ("shuriken_astral", "shuriken_astral", "Astralstern", "THROWN", 2,
+     "Teilt sich unterwegs und findet trotzdem zurueck."),
+    ("yoyo_void", "yoyo_void", "Leereyoyo", "THROWN", 2,
+     "Die Schnur reisst nie, das Ziel schon."),
+    ("bomb_void", "bomb_void", "Leerebombe", "THROWN", 2,
+     "Zuendet erst, wenn genug davon liegen."),
+
+    # --- Schilde ---
+    ("shield_tower", "shield_tower", "Turmschild", "SHIELD", 0,
+     "Kaum Schaden, dafuer Ruestung und ein Rempler, der alles umwirft."),
+    ("shield_cobalt", "shield_cobalt", "Kobaltschild", "SHIELD", 1,
+     "Leichter als er aussieht, haerter als alles dahinter."),
+    ("shield_void", "shield_void", "Leereschild", "SHIELD", 2,
+     "Was dagegenlaeuft, gibt Leben ab."),
 ]
 
 
@@ -224,6 +362,30 @@ BASE = {
                     speed=560, shots=7, spread=36.0, pierce=1, flash=46,
                     weight=5.8, stagger=30, bleed=0, crit=0.0,
                     scal=("C", "D", "NONE"), req=(6, 3), price=380),
+    # Bogen: weit, schnell, durchschlagend - lebt von Geschick.
+    "BOW": dict(damage=11.0, cooldown=0.85, rng=430, knock=200, shake=3.0,
+                speed=900, shots=1, spread=2.0, pierce=2, flash=24,
+                weight=3.4, stagger=22, bleed=0, crit=0.05,
+                scal=("E", "A", "D"), req=(3, 6), price=300),
+    # Stab: langsame Geschosse, die dem Ziel nachziehen.
+    "STAFF": dict(damage=7.5, cooldown=0.60, rng=350, knock=90, shake=2.0,
+                  speed=420, shots=1, spread=4.0, pierce=0, flash=30,
+                  homing=5.0, weight=3.6, stagger=12, bleed=0, crit=0.0,
+                  scal=("NONE", "C", "B"), req=(2, 4), price=340),
+    # Peitsche: sehr grosse Reichweite, schmaler Bogen, wenig Wucht.
+    "WHIP": dict(damage=6.5, cooldown=0.50, rng=270, knock=90, shake=2.0,
+                 reach=235, swing=0.12, angle=55, weight=2.2, stagger=10,
+                 bleed=12, crit=0.0, scal=("D", "B", "C"), req=(2, 5), price=260),
+    # Wurfwaffe: fliegt hin, trifft mehrfach und kommt zurueck.
+    "THROWN": dict(damage=8.0, cooldown=0.70, rng=310, knock=140, shake=2.5,
+                   speed=520, shots=1, spread=3.0, pierce=0, flash=18,
+                   ret=230.0, weight=2.6, stagger=16, bleed=0, crit=0.04,
+                   scal=("D", "B", "D"), req=(3, 5), price=280),
+    # Schild: kaum Schaden, dafuer Ruestung und massiver Rueckstoss.
+    "SHIELD": dict(damage=9.0, cooldown=1.10, rng=160, knock=520, shake=6.0,
+                   reach=115, swing=0.18, angle=180, weight=7.5, stagger=55,
+                   bleed=0, crit=0.0, armor=8.0,
+                   scal=("B", "NONE", "NONE"), req=(6, 1), price=300),
 }
 
 # Abweichungen einzelner Waffen vom Kategorie-Grundwert.
@@ -253,6 +415,33 @@ TWEAK = {
     "smg_astral": dict(cooldown=0.8),
     "blunderbuss": dict(shots=5, spread=30.0, damage=1.1),
     "launcher_rocket": dict(shots=2, spread=8.0, damage=2.6, cooldown=1.4, knock=1.5),
+    "javelin_bone": dict(ret=340.0, damage=1.25, cooldown=1.2),
+    "bomb_fire": dict(ret=0.0, damage=1.6, cooldown=1.3, knock=1.6),
+    "bomb_void": dict(ret=0.0, damage=1.6, cooldown=1.3, knock=1.6),
+    "spiky_ball": dict(ret=150.0, cooldown=0.7, damage=0.8),
+    "spikyball_cobalt": dict(ret=170.0, cooldown=0.7, damage=0.85),
+    "yoyo_disc": dict(ret=170.0, cooldown=0.55, damage=0.75),
+    "yoyo_void": dict(ret=190.0, cooldown=0.55, damage=0.8),
+    "shuriken_steel": dict(ret=200.0, cooldown=0.55, damage=0.8, speed=1.3),
+    "shuriken_astral": dict(ret=220.0, cooldown=0.5, damage=0.85, speed=1.35),
+    "dagger_throw": dict(ret=180.0, cooldown=0.6, damage=0.9),
+    "chakram": dict(ret=260.0, damage=1.1),
+    "chakram_void": dict(ret=290.0, damage=1.15),
+    "boomerang_wood": dict(ret=280.0, damage=1.05),
+    "summon_copper": dict(homing=8.0, speed=0.7, damage=0.85),
+    "summon_totem": dict(homing=9.0, speed=0.7, damage=0.9),
+    "summon_astral": dict(homing=11.0, speed=0.75, damage=0.95),
+    "tome_flames": dict(shots=2, spread=14.0, damage=0.8),
+    "tome_void": dict(shots=3, spread=16.0, damage=0.8),
+    "wand_spark": dict(homing=6.0, cooldown=0.85),
+    "bow_hunter": dict(pierce=2),
+    "bow_cobalt": dict(pierce=3),
+    "bow_astral": dict(pierce=4, speed=1.15),
+    "whip_thorn": dict(bleed=20),
+    "whip_astral": dict(bleed=26, reach=1.15),
+    "shield_tower": dict(armor=8.0),
+    "shield_cobalt": dict(armor=13.0),
+    "shield_void": dict(armor=19.0),
 }
 
 TIER_DAMAGE = [1.0, 1.75, 2.9]
@@ -268,9 +457,13 @@ PROJECTILE_COLORS = {
     "PISTOL": "Color(0.29, 0.565, 0.851, 1)",
     "SMG": "Color(0.247, 0.824, 0.78, 1)",
     "SHOTGUN": "Color(0.91, 0.4, 0.235, 1)",
+    "BOW": "Color(0.435, 0.749, 0.353, 1)",
+    "STAFF": "Color(0.545, 0.435, 0.831, 1)",
+    "THROWN": "Color(1, 0.851, 0.541, 1)",
 }
 
-FACTOR_KEYS_EXCLUDED = ("shots", "pierce", "spread", "bleed", "crit")
+FACTOR_KEYS_EXCLUDED = ("shots", "pierce", "spread", "bleed", "crit",
+                        "homing", "ret", "armor", "angle")
 
 
 def bump(grade, steps):
@@ -315,6 +508,7 @@ def build_new():
         if not melee:
             add('[ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="3_proj"]')
         add('[ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="4_tree"]')
+        add('[ext_resource type="Resource" path="%s" id="5_special"]' % special_path(wid, cat_name))
         add("")
         add("[resource]")
         add('script = ExtResource("1_script")')
@@ -323,8 +517,8 @@ def build_new():
         add("category = %d" % cat)
         add('icon = ExtResource("2_art")')
         add('hold_texture = ExtResource("2_art")')
-        add("hold_scale = %.2f" % sprite_scale(png, not melee))
-        add("hold_rotation_degrees = %.1f" % (ROT_MELEE if melee else ROT_RANGED))
+        add("hold_scale = %.2f" % sprite_scale(png, not melee, cat_name))
+        add("hold_rotation_degrees = %.1f" % hold_rotation(cat_name))
         add('description = "%s"' % desc)
         add("rarity = %d" % min(tier + 1, 4))
         add("damage = %.1f" % damage)
@@ -354,6 +548,13 @@ def build_new():
             add("spread_degrees = %.1f" % val("spread"))
             add("projectile_color = %s" % PROJECTILE_COLORS[cat_name])
             add("muzzle_flash_size = %.1f" % val("flash"))
+            if val("homing", 0.0):
+                add("homing_strength = %.1f" % val("homing", 0.0))
+            if val("ret", 0.0):
+                add("return_distance = %.1f" % val("ret", 0.0))
+        if val("armor", 0.0):
+            add("armor_bonus = %.1f" % val("armor", 0.0))
+        add('special = ExtResource("5_special")')
         add('upgrade_tree = ExtResource("4_tree")')
         add("shop_price = %d" % price)
 

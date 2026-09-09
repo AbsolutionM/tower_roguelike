@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/whip_thorn.png" id="2_art"]
+[ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="4_tree"]
+[ext_resource type="Resource" path="res://resources/weapons/specials/cls_whip.tres" id="5_special"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_id = "whip_thorn"
+weapon_name = "Dornenpeitsche"
+category = 9
+icon = ExtResource("2_art")
+hold_texture = ExtResource("2_art")
+hold_scale = 0.62
+hold_rotation_degrees = -45.0
+description = "Sehr grosse Reichweite, wenig Wucht - dafuer bluten die Treffer."
+rarity = 1
+damage = 6.5
+cooldown = 0.500
+weapon_range = 270.0
+knockback = 90.0
+screen_shake = 2.0
+crit_bonus = 0.00
+scaling_power = 2
+scaling_agility = 4
+scaling_fortune = 3
+required_power = 2
+required_agility = 5
+weight = 2.2
+stagger = 10.0
+bleed_buildup = 20.0
+is_melee = true
+attack_reach = 235.0
+swing_duration = 0.12
+swing_angle_degrees = 55.0
+special = ExtResource("5_special")
+upgrade_tree = ExtResource("4_tree")
+shop_price = 260

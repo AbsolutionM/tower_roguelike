@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="WeaponSpecial" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_special.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+special_id = "w_hammer_war"
+special_name = "Bebenschlag"
+description = "Der Hammer trifft den Boden. Der halbe Raum hebt ab."
+kind = 0
+hits_required = 5
+damage_mult = 3.40
+radius = 260.0
+knockback = 760.0
+count = 1
+duration = 0.0
+color = Color(0.91, 0.4, 0.235, 1)

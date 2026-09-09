@@ -90,6 +90,7 @@ func try_hit(area: Area2D) -> void:
 	var stats = get_tree().get_first_node_in_group("player_stats")
 	if stats:
 		stats.report_damage(damage)
+		stats.report_hit()
 
 	FX.shake(shake_amount * (1.6 if is_crit else 1.0))
 

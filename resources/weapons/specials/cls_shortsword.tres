@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="WeaponSpecial" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_special.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+special_id = "cls_shortsword"
+special_name = "Klingenwirbel"
+description = "Nach genug schnellen Stichen dreht sich der Traeger einmal komplett durch."
+kind = 1
+hits_required = 10
+damage_mult = 2.20
+radius = 150.0
+knockback = 240.0
+count = 1
+duration = 0.0
+color = Color(0.847, 0.824, 0.878, 1)

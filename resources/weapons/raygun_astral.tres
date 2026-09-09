@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/weapons/raygun_astral.png" id="2_art"]
 [ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="3_proj"]
 [ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="4_tree"]
+[ext_resource type="Resource" path="res://resources/weapons/specials/w_raygun_astral.tres" id="5_special"]
 
 [resource]
 script = ExtResource("1_script")
@@ -12,7 +13,7 @@ weapon_name = "Astralstrahler"
 category = 3
 icon = ExtResource("2_art")
 hold_texture = ExtResource("2_art")
-hold_scale = 0.42
+hold_scale = 0.58
 hold_rotation_degrees = -90.0
 description = "Ein Strahl, der nicht abbremst."
 rarity = 3
@@ -38,5 +39,6 @@ projectiles_per_shot = 1
 spread_degrees = 3.0
 projectile_color = Color(0.949, 0.694, 0.204, 1)
 muzzle_flash_size = 36.0
+special = ExtResource("5_special")
 upgrade_tree = ExtResource("4_tree")
 shop_price = 2400

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="WeaponSpecial" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_special.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+special_id = "w_shield_void"
+special_name = "Bollwerk"
+description = "Ein Stoss, der alles umwirft und den Traeger heilt."
+kind = 7
+hits_required = 6
+damage_mult = 2.40
+radius = 200.0
+knockback = 700.0
+count = 1
+duration = 0.0
+color = Color(0.29, 0.565, 0.851, 1)

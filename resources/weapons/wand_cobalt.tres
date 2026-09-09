@@ -4,39 +4,42 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/weapons/wand_cobalt.png" id="2_art"]
 [ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="3_proj"]
 [ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="4_tree"]
+[ext_resource type="Resource" path="res://resources/weapons/specials/w_wand_cobalt.tres" id="5_special"]
 
 [resource]
 script = ExtResource("1_script")
 weapon_id = "wand_cobalt"
 weapon_name = "Kobaltrute"
-category = 4
+category = 8
 icon = ExtResource("2_art")
 hold_texture = ExtResource("2_art")
-hold_scale = 0.46
-hold_rotation_degrees = -90.0
+hold_scale = 0.62
+hold_rotation_degrees = -45.0
 description = "Drei Geschosse pro Wink."
 rarity = 2
-damage = 5.3
-cooldown = 0.260
-weapon_range = 320.0
-knockback = 110.0
-screen_shake = 1.5
+damage = 9.2
+cooldown = 0.600
+weapon_range = 350.0
+knockback = 90.0
+screen_shake = 2.0
 crit_bonus = 0.00
-scaling_power = 2
+scaling_power = 0
 scaling_agility = 4
-scaling_fortune = 2
+scaling_fortune = 5
 required_power = 4
 required_agility = 6
-weight = 2.0
-stagger = 10.8
+weight = 3.6
+stagger = 16.2
 bleed_buildup = 0.0
 is_melee = false
 projectile_scene = ExtResource("3_proj")
-projectile_speed = 640.0
+projectile_speed = 420.0
 pierce_count = 0
 projectiles_per_shot = 3
 spread_degrees = 9.0
-projectile_color = Color(0.29, 0.565, 0.851, 1)
-muzzle_flash_size = 26.0
+projectile_color = Color(0.545, 0.435, 0.831, 1)
+muzzle_flash_size = 30.0
+homing_strength = 5.0
+special = ExtResource("5_special")
 upgrade_tree = ExtResource("4_tree")
-shop_price = 610
+shop_price = 1090

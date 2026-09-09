@@ -136,6 +136,19 @@ func _make_weapon_card(weapon: WeaponData, character: CharacterData, is_equipped
 	column.add_child(UIKit.make_section("Werte", accent))
 	column.add_child(UIKit.make_stat_sheet(weapon.describe_sheet(character, level), 2))
 
+	# Der Sonderschlag laedt sich im Kampf von selbst auf.
+	if weapon.special:
+		var special := weapon.special
+		column.add_child(UIKit.make_section("Sonderschlag", special.color))
+		column.add_child(UIKit.make_label(
+			"%s  ·  nach %d Treffern" % [special.special_name, special.hits_required],
+			16, special.color
+		))
+		if not special.description.is_empty():
+			column.add_child(UIKit.make_label(
+				special.description, 14, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_LEFT, true
+			))
+
 	if not weapon.description.is_empty():
 		column.add_child(UIKit.make_label(weapon.description, 14, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_LEFT, true))
 

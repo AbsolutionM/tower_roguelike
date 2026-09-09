@@ -6,10 +6,16 @@ class_name WeaponController
 ## damit man vor dem Schlag sieht, wen es trifft.
 
 signal target_changed(target: Node2D)
+## Der Sonderschlag hat sich weiterbewegt (0..1) - fuers HUD.
+signal special_charge_changed(ratio: float)
 
 ## Der gezeichnete Platzhalter rechnet in ganzen Pixeln - dieser Faktor bringt
 ## ihn auf dieselbe Größe wie ein echtes Haltesprite.
 const PLACEHOLDER_SCALE := 0.55
+
+## Weltdrehung des Haltesprites im Ruhezustand. Die Klingen sind im Sprite
+## diagonal nach oben rechts gezeichnet; -45 Grad stellt sie senkrecht.
+const UPRIGHT_ROTATION := -PI * 0.25
 
 @export var equipped_weapon: WeaponData
 @export var sword: Node
@@ -28,6 +34,8 @@ var _hold_sprite_base_position: Vector2 = Vector2.ZERO
 var _hold_placeholder: WeaponSymbol
 var _marker: TargetMarker
 var _last_cooldown: float = 1.0
+## Gelandete Treffer seit dem letzten Sonderschlag.
+var _special_hits: int = 0
 
 func _ready() -> void:
 	var parent := get_parent()
@@ -41,6 +49,9 @@ func _ready() -> void:
 		_hold_sprite_base_scale = hold_sprite.scale
 		_hold_sprite_base_rotation = hold_sprite.rotation
 		_hold_sprite_base_position = hold_sprite.position
+
+	if _stats:
+		_stats.hit_landed.connect(_on_hit_landed)
 
 	if show_target_marker:
 		_marker = TargetMarker.new()
@@ -66,6 +77,7 @@ func _process(delta: float) -> void:
 
 	_set_target(find_target_in_range())
 	_update_marker()
+	_update_hold_orientation()
 
 	if fire_timer > 0.0 or not current_target:
 		return
@@ -79,6 +91,43 @@ func _process(delta: float) -> void:
 
 	_last_cooldown = equipped_weapon.cooldown / maxf(_get_attack_speed(), 0.05)
 	fire_timer = _last_cooldown
+
+# --- Sonderschlag ----------------------------------------------------------
+
+## Jeder gelandete Treffer laedt auf. Ist die Waffe voll, loest sie von selbst
+## aus - der Spieler muss dafuer nichts druecken.
+func _on_hit_landed() -> void:
+	var special := _current_special()
+	if not special:
+		return
+
+	_special_hits += 1
+	special_charge_changed.emit(get_special_charge())
+	if _special_hits < special.hits_required:
+		return
+
+	_special_hits = 0
+	special_charge_changed.emit(0.0)
+	# Fernkampftreffer melden aus einem Physik-Callback heraus. Geschosse
+	# dort einzuhaengen bricht mit "flushing queries" ab - also verzoegert.
+	_fire_special.call_deferred(special)
+
+func _current_special() -> WeaponSpecial:
+	return equipped_weapon.special if equipped_weapon else null
+
+## Ladestand von 0 bis 1, fuer die Anzeige im HUD.
+func get_special_charge() -> float:
+	var special := _current_special()
+	if not special or special.hits_required <= 0:
+		return 0.0
+	return clampf(float(_special_hits) / float(special.hits_required), 0.0, 1.0)
+
+func _fire_special(special: WeaponSpecial) -> void:
+	var player := get_parent() as Node2D
+	if not player:
+		return
+	var base: float = _stats.get_weapon_base_damage(equipped_weapon) if _stats else equipped_weapon.damage
+	WeaponSpecialRunner.execute(special, equipped_weapon, player, current_target, base)
 
 # --- Zielerfassung ---------------------------------------------------------
 
@@ -147,6 +196,9 @@ func _get_hold_sprite() -> Sprite2D:
 func _apply_weapon_visuals() -> void:
 	_visualized_weapon = equipped_weapon
 	_last_cooldown = equipped_weapon.cooldown
+	# Eine neue Waffe faengt mit leerem Sonderschlag an.
+	_special_hits = 0
+	special_charge_changed.emit(0.0)
 
 	var hold_sprite := _get_hold_sprite()
 	if not hold_sprite:
@@ -156,8 +208,9 @@ func _apply_weapon_visuals() -> void:
 	if has_texture:
 		hold_sprite.texture = equipped_weapon.hold_texture
 	hold_sprite.scale = _hold_sprite_base_scale * equipped_weapon.hold_scale
-	hold_sprite.rotation = _hold_sprite_base_rotation + deg_to_rad(equipped_weapon.hold_rotation_degrees)
-	hold_sprite.position = _hold_position(_drawn_length(hold_sprite))
+	hold_sprite.rotation = _rest_rotation()
+	hold_sprite.position = Vector2.ZERO
+	hold_sprite.offset = _hold_offset(hold_sprite)
 	hold_sprite.visible = has_texture
 
 	# Ohne Haltesprite wird ein Platzhalter gezeichnet - sonst wäre die Waffe
@@ -187,20 +240,40 @@ func _configure_swing() -> void:
 		equipped_weapon.knockback * stagger_mult
 	)
 
-## Wo das Haltesprite relativ zur Faust sitzt.
-## Schusswaffen liegen mittig in der Hand. Klingen ragen heraus, und zwar um
-## ihre halbe gezeichnete Laenge - die feste Position aus der Szene passte nur
-## zu dem einen kleinen Schwert, mit dem sie eingerichtet wurde.
-func _hold_position(drawn_length: float) -> Vector2:
-	if not equipped_weapon.is_melee:
+## Versatz der Textur gegenueber der Faust.
+## Schusswaffen liegen mittig in der Hand. Klingen sind im Sprite diagonal
+## gezeichnet - der Versatz entlang dieser Diagonalen setzt den Griff in die
+## Faust und laesst die Klinge herausragen, egal wie gross das Sprite ist.
+func _hold_offset(sprite: Sprite2D) -> Vector2:
+	if not sprite.texture or not equipped_weapon.holds_upright():
 		return Vector2.ZERO
-	return Vector2(drawn_length * 0.42, 0.0)
+	var size: Vector2 = sprite.texture.get_size()
+	return Vector2(size.x, -size.y) * 0.34
 
-## Diagonale des gezeichneten Sprites in Spieler-Pixeln.
-func _drawn_length(sprite: Sprite2D) -> float:
-	if not sprite.texture:
-		return _hold_sprite_base_position.x * 2.0
-	return sprite.texture.get_size().length() * absf(sprite.scale.x)
+## Ruhehaltung des Sprites, wie sie in den Waffendaten steht.
+func _rest_rotation() -> float:
+	return _hold_sprite_base_rotation + deg_to_rad(equipped_weapon.hold_rotation_degrees)
+
+## Klingen stehen hochkant in der Faust, statt auf den Gegner zu zeigen.
+## Dafuer wird die Drehung von Arm und Schwungarm herausgerechnet - waehrend
+## des Schlags nicht, sonst wuerde der Schwung stehenbleiben.
+func _update_hold_orientation() -> void:
+	if not equipped_weapon or not equipped_weapon.holds_upright() or not weapon_pivot:
+		return
+	var hold_sprite := _get_hold_sprite()
+	if not hold_sprite:
+		return
+
+	if sword and "is_swinging" in sword and sword.is_swinging:
+		hold_sprite.rotation = _rest_rotation()
+		return
+
+	var chain: float = weapon_pivot.rotation
+	if sword is Node2D:
+		chain += (sword as Node2D).rotation
+	# Bei gespiegeltem Arm dreht sich alles andersherum.
+	var flip: float = -1.0 if weapon_pivot.scale.y < 0.0 else 1.0
+	hold_sprite.rotation = flip * (UPRIGHT_ROTATION - chain)
 
 func _ensure_placeholder(hold_sprite: Sprite2D) -> WeaponSymbol:
 	if is_instance_valid(_hold_placeholder):
@@ -256,6 +329,13 @@ func fire_at(target: Node2D, damage: float, crit: bool) -> void:
 				equipped_weapon.pierce_count,
 				equipped_weapon.projectile_color,
 				crit
+			)
+		# Zielsuche und Rueckkehr erst nach setup - das setzt pierce zurueck.
+		if projectile.has_method("set_flight"):
+			projectile.set_flight(
+				equipped_weapon.homing_strength,
+				equipped_weapon.return_distance,
+				get_parent() as Node2D
 			)
 
 	FX.muzzle_flash(

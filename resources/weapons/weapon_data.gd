@@ -1,7 +1,10 @@
 extends Resource
 class_name WeaponData
 
-enum Category { SHORTSWORD, BROADSWORD, KATANA, REVOLVER, PISTOL, SMG, SHOTGUN }
+enum Category {
+	SHORTSWORD, BROADSWORD, KATANA, REVOLVER, PISTOL, SMG, SHOTGUN,
+	BOW, STAFF, WHIP, THROWN, SHIELD
+}
 
 ## Skalierungsnoten wie in Elden Ring: wie stark ein Attribut die Waffe trägt.
 enum Scaling { NONE, E, D, C, B, A, S }
@@ -39,7 +42,12 @@ const CATEGORY_NAMES := {
 	Category.REVOLVER: "Revolver",
 	Category.PISTOL: "Pistole",
 	Category.SMG: "MP",
-	Category.SHOTGUN: "Schrotflinte"
+	Category.SHOTGUN: "Schrotflinte",
+	Category.BOW: "Bogen",
+	Category.STAFF: "Stab",
+	Category.WHIP: "Peitsche",
+	Category.THROWN: "Wurfwaffe",
+	Category.SHIELD: "Schild"
 }
 
 @export var weapon_id: String = ""
@@ -109,11 +117,33 @@ const CATEGORY_NAMES := {
 @export var spread_degrees: float = 0.0
 @export var projectile_color: Color = Color(1.0, 0.85, 0.4)
 @export var muzzle_flash_size: float = 30.0
+## Wie stark das Geschoss dem Ziel nachzieht (0 = fliegt gerade). Stäbe.
+@export_range(0.0, 12.0) var homing_strength: float = 0.0
+## Ab dieser Strecke kehrt das Geschoss zurück (0 = aus). Wurfwaffen.
+@export var return_distance: float = 0.0
+
+@export_group("Sonderschlag")
+## Lädt sich mit Treffern auf und löst von selbst aus.
+@export var special: WeaponSpecial
+
+@export_group("Passiv")
+## Rüstung, solange die Waffe getragen wird. Schilde.
+@export var armor_bonus: float = 0.0
 
 @export_group("Fortschritt")
 @export var upgrade_tree: UpgradeTree
 ## 0 = nicht im Shop erhältlich (z.B. nur über Crafting).
 @export var shop_price: int = 0
+
+## Klassen, die der Held in der Hand hält, statt sie auf das Ziel zu richten.
+## Schusswaffen und Stäbe zeigen auf den Gegner, alles andere steht aufrecht.
+const UPRIGHT_CATEGORIES := [
+	Category.SHORTSWORD, Category.BROADSWORD, Category.KATANA,
+	Category.WHIP, Category.SHIELD, Category.BOW, Category.THROWN
+]
+
+func holds_upright() -> bool:
+	return UPRIGHT_CATEGORIES.has(category)
 
 func get_category_name() -> String:
 	return CATEGORY_NAMES.get(category, "Waffe")

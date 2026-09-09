@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/shield_void.png" id="2_art"]
+[ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="4_tree"]
+[ext_resource type="Resource" path="res://resources/weapons/specials/w_shield_void.tres" id="5_special"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_id = "shield_void"
+weapon_name = "Leereschild"
+category = 11
+icon = ExtResource("2_art")
+hold_texture = ExtResource("2_art")
+hold_scale = 0.52
+hold_rotation_degrees = -45.0
+description = "Was dagegenlaeuft, gibt Leben ab."
+rarity = 3
+damage = 26.1
+cooldown = 1.100
+weapon_range = 160.0
+knockback = 520.0
+screen_shake = 6.0
+crit_bonus = 0.00
+scaling_power = 6
+scaling_agility = 0
+scaling_fortune = 0
+required_power = 9
+required_agility = 4
+weight = 7.5
+stagger = 93.5
+bleed_buildup = 0.0
+is_melee = true
+attack_reach = 115.0
+swing_duration = 0.18
+swing_angle_degrees = 180.0
+armor_bonus = 19.0
+special = ExtResource("5_special")
+upgrade_tree = ExtResource("4_tree")
+shop_price = 2400

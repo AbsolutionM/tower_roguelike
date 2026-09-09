@@ -26,7 +26,7 @@ Kontur, rundum genau 1 px frei.
 | `rifle_cobalt.png` | Kobaltgewehr | Fernkampf | Hardmode | 37x17 | 13 |
 | `shotgun_scatter.png` | Streuflinte | Fernkampf | Hardmode | 37x15 | 12 |
 | `smg_needle.png` | Nadel-MP | Fernkampf | Hardmode | 23x19 | 13 |
-| `bow_astral.png` | Astralbogen | Fernkampf | Post-Moon-Lord | 11x30 | 9 |
+| `bow_astral.png` | Astralbogen | Fernkampf | Post-Moon-Lord | 11x30 | 8 |
 | `raygun_astral.png` | Astralstrahler | Fernkampf | Post-Moon-Lord | 26x17 | 13 |
 | `smg_astral.png` | Astral-MP | Fernkampf | Post-Moon-Lord | 24x19 | 14 |
 | `magic_gun.png` | Magiepistole | Magie | Pre-Hardmode | 23x14 | 19 |
@@ -38,7 +38,7 @@ Kontur, rundum genau 1 px frei.
 | `tome_void.png` | Leerekodex | Magie | Post-Moon-Lord | 20x22 | 12 |
 | `axe_battle.png` | Streitaxt | Nahkampf | Pre-Hardmode | 31x31 | 12 |
 | `axe_copper.png` | Kupferaxt | Nahkampf | Pre-Hardmode | 29x29 | 11 |
-| `broadsword_bone.png` | Knochenbreitschwert | Nahkampf | Pre-Hardmode | 26x26 | 12 |
+| `broadsword_bone.png` | Knochenbreitschwert | Nahkampf | Pre-Hardmode | 26x26 | 11 |
 | `broadsword_iron.png` | Eisen-Breitschwert | Nahkampf | Pre-Hardmode | 25x25 | 13 |
 | `curved_fang.png` | Krummschwert Fang | Nahkampf | Pre-Hardmode | 26x22 | 12 |
 | `dagger_bleed.png` | Blutdolch | Nahkampf | Pre-Hardmode | 19x16 | 14 |
@@ -48,19 +48,19 @@ Kontur, rundum genau 1 px frei.
 | `hammer_war.png` | Kriegshammer | Nahkampf | Pre-Hardmode | 33x34 | 12 |
 | `katar.png` | Katar | Nahkampf | Pre-Hardmode | 27x26 | 11 |
 | `scythe_copper.png` | Kupfersense | Nahkampf | Pre-Hardmode | 27x35 | 16 |
-| `scythe_harvest.png` | Sense | Nahkampf | Pre-Hardmode | 27x36 | 14 |
-| `shield_tower.png` | Schild | Nahkampf | Pre-Hardmode | 23x29 | 13 |
+| `scythe_harvest.png` | Sense | Nahkampf | Pre-Hardmode | 27x36 | 13 |
+| `shield_tower.png` | Schild | Nahkampf | Pre-Hardmode | 23x29 | 12 |
 | `shortsword_bone.png` | Knochen-Kurzschwert | Nahkampf | Pre-Hardmode | 23x23 | 12 |
 | `shortsword_copper.png` | Kupferkurzschwert | Nahkampf | Pre-Hardmode | 23x23 | 8 |
 | `shortsword_iron.png` | Eisenkurzschwert | Nahkampf | Pre-Hardmode | 23x23 | 8 |
-| `sickle_blood.png` | Sichel | Nahkampf | Pre-Hardmode | 16x20 | 13 |
+| `sickle_blood.png` | Sichel | Nahkampf | Pre-Hardmode | 16x20 | 14 |
 | `spear_bone.png` | Knochenspeer | Nahkampf | Pre-Hardmode | 35x35 | 10 |
 | `spear_brim.png` | Speer | Nahkampf | Pre-Hardmode | 34x34 | 10 |
-| `sword_melee.png` | Kurzschwert | Nahkampf | Pre-Hardmode | 24x24 | 10 |
+| `sword_melee.png` | Kurzschwert | Nahkampf | Pre-Hardmode | 24x24 | 11 |
 | `twinblade.png` | Doppelklinge | Nahkampf | Pre-Hardmode | 29x29 | 12 |
 | `whip_thorn.png` | Dornenpeitsche | Nahkampf | Pre-Hardmode | 34x34 | 12 |
-| `yoyo_disc.png` | Yoyo | Nahkampf | Pre-Hardmode | 19x22 | 11 |
-| `broadsword_cobalt.png` | Kobaltbreitschwert | Nahkampf | Hardmode | 27x27 | 15 |
+| `yoyo_disc.png` | Yoyo | Nahkampf | Pre-Hardmode | 19x22 | 10 |
+| `broadsword_cobalt.png` | Kobaltbreitschwert | Nahkampf | Hardmode | 27x27 | 14 |
 | `broadsword_titan.png` | Titanen-Breitschwert | Nahkampf | Hardmode | 32x32 | 12 |
 | `dagger_cobalt.png` | Kobaltdolch | Nahkampf | Hardmode | 17x16 | 14 |
 | `dagger_gold.png` | Gnadendolch | Nahkampf | Hardmode | 16x14 | 10 |
@@ -69,10 +69,10 @@ Kontur, rundum genau 1 px frei.
 | `greatsword_flame.png` | Flammen-Grossschwert | Nahkampf | Hardmode | 25x25 | 15 |
 | `halberd_cobalt.png` | Kobalthellebarde | Nahkampf | Hardmode | 34x34 | 17 |
 | `katana_dawn.png` | Morgenkatana | Nahkampf | Hardmode | 30x27 | 12 |
-| `katana_moon.png` | Mond-Katana | Nahkampf | Hardmode | 28x25 | 11 |
-| `katana_storm.png` | Sturm-Katana | Nahkampf | Hardmode | 27x25 | 15 |
+| `katana_moon.png` | Mond-Katana | Nahkampf | Hardmode | 28x25 | 12 |
+| `katana_storm.png` | Sturm-Katana | Nahkampf | Hardmode | 27x25 | 16 |
 | `rapier_gold.png` | Goldrapier | Nahkampf | Hardmode | 27x27 | 14 |
-| `shield_cobalt.png` | Kobaltschild | Nahkampf | Hardmode | 23x29 | 10 |
+| `shield_cobalt.png` | Kobaltschild | Nahkampf | Hardmode | 23x29 | 11 |
 | `spear_cobalt.png` | Kobaltspeer | Nahkampf | Hardmode | 36x36 | 18 |
 | `blade_astral.png` | Astralklinge | Nahkampf | Post-Moon-Lord | 34x34 | 13 |
 | `dagger_void.png` | Leeredolch | Nahkampf | Post-Moon-Lord | 18x16 | 14 |
@@ -83,7 +83,7 @@ Kontur, rundum genau 1 px frei.
 | `shield_void.png` | Leereschild | Nahkampf | Post-Moon-Lord | 25x31 | 10 |
 | `twinblade_astral.png` | Astraldoppelklinge | Nahkampf | Post-Moon-Lord | 33x33 | 12 |
 | `whip_astral.png` | Astralpeitsche | Nahkampf | Post-Moon-Lord | 34x34 | 12 |
-| `yoyo_void.png` | Leereyoyo | Nahkampf | Post-Moon-Lord | 19x22 | 11 |
+| `yoyo_void.png` | Leereyoyo | Nahkampf | Post-Moon-Lord | 19x22 | 10 |
 | `bomb_fire.png` | Brandbombe | Rogue | Pre-Hardmode | 13x16 | 9 |
 | `boomerang_wood.png` | Bumerang | Rogue | Pre-Hardmode | 22x26 | 9 |
 | `chakram.png` | Wurfring | Rogue | Pre-Hardmode | 27x27 | 10 |
@@ -94,6 +94,6 @@ Kontur, rundum genau 1 px frei.
 | `spikyball_cobalt.png` | Kobaltstachelball | Rogue | Hardmode | 15x15 | 9 |
 | `bomb_void.png` | Leerebombe | Rogue | Post-Moon-Lord | 13x16 | 9 |
 | `chakram_void.png` | Leerering | Rogue | Post-Moon-Lord | 25x25 | 10 |
-| `shuriken_astral.png` | Astralstern | Rogue | Post-Moon-Lord | 23x23 | 9 |
+| `shuriken_astral.png` | Astralstern | Rogue | Post-Moon-Lord | 23x23 | 8 |
 
 Insgesamt 87 Waffen.

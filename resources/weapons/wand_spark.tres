@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/wand_spark.png" id="2_art"]
+[ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="3_proj"]
+[ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="4_tree"]
+[ext_resource type="Resource" path="res://resources/weapons/specials/cls_staff.tres" id="5_special"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_id = "wand_spark"
+weapon_name = "Funkenrute"
+category = 8
+icon = ExtResource("2_art")
+hold_texture = ExtResource("2_art")
+hold_scale = 0.62
+hold_rotation_degrees = -45.0
+description = "Wirft langsame Funken, die von selbst zum Ziel finden."
+rarity = 1
+damage = 7.5
+cooldown = 0.510
+weapon_range = 350.0
+knockback = 90.0
+screen_shake = 2.0
+crit_bonus = 0.00
+scaling_power = 0
+scaling_agility = 3
+scaling_fortune = 4
+required_power = 2
+required_agility = 4
+weight = 3.6
+stagger = 12.0
+bleed_buildup = 0.0
+is_melee = false
+projectile_scene = ExtResource("3_proj")
+projectile_speed = 420.0
+pierce_count = 0
+projectiles_per_shot = 1
+spread_degrees = 4.0
+projectile_color = Color(0.545, 0.435, 0.831, 1)
+muzzle_flash_size = 30.0
+homing_strength = 6.0
+special = ExtResource("5_special")
+upgrade_tree = ExtResource("4_tree")
+shop_price = 340

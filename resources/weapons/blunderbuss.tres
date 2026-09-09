@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/weapons/blunderbuss.png" id="2_art"]
 [ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="3_proj"]
 [ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="4_tree"]
+[ext_resource type="Resource" path="res://resources/weapons/specials/cls_shotgun.tres" id="5_special"]
 
 [resource]
 script = ExtResource("1_script")
@@ -12,7 +13,7 @@ weapon_name = "Donnerbuechse"
 category = 6
 icon = ExtResource("2_art")
 hold_texture = ExtResource("2_art")
-hold_scale = 0.37
+hold_scale = 0.50
 hold_rotation_degrees = -90.0
 description = "Alles, was reinpasst, kommt vorne wieder raus."
 rarity = 1
@@ -38,5 +39,6 @@ projectiles_per_shot = 5
 spread_degrees = 30.0
 projectile_color = Color(0.91, 0.4, 0.235, 1)
 muzzle_flash_size = 46.0
+special = ExtResource("5_special")
 upgrade_tree = ExtResource("4_tree")
 shop_price = 380

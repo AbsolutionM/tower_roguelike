@@ -292,22 +292,8 @@ def grip(img, ox, oy, u_from, u_to, half, r):
 
 
 def pommel(img, ox, oy, u_c, rad, r):
-    """Knauf mit Glanzpunkt, Kernton und Schattenrand."""
-    cx, cy = ox + u_c, oy - u_c
-    for y in range(img.height):
-        for x in range(img.width):
-            if math.hypot(x - cx, y - cy) > rad:
-                continue
-            licht = (x - cx) + (y - cy)
-            if licht < -1.2:
-                col = r['glanz']
-            elif licht < 0.0:
-                col = r['hell']
-            elif licht < 1.2:
-                col = r['mitte']
-            else:
-                col = r['dunkel']
-            put(img, x, y, C(col))
+    """Knauf - eine kleine Kugel, also radial schattiert wie kugel()."""
+    kugel(img, ox + u_c, oy - u_c, rad, r)
 
 
 def gem(img, ox, oy, u_c, hell, mitte, dunkel, glanz='white'):
@@ -604,22 +590,38 @@ def kette(img, ox, oy, u_from, u_to, r):
         hell = not hell
 
 
-def kugel(img, cx, cy, rad, r, dornen=()):
-    """Flegelkopf: runde Masse mit Lichtseite, dazu Dornen."""
+LICHT = (-0.50, -0.50, 0.71)   # von oben links, leicht zum Betrachter
+
+
+def kugel(img, cx, cy, rad, r, dornen=(), saum=True):
+    """Kugel mit radialer Schattierung.
+
+    Eine Kugel darf nicht linear schattiert werden. Die Helligkeit haengt
+    von der Flaechennormale ab: das Glanzlicht ist ein Fleck, der nach allen
+    Seiten abfaellt, und der Schattensaum laeuft als Bogen um die Kugel
+    statt als gerade Kante. saum setzt zusaetzlich ein schwaches Streiflicht
+    an den Schattenrand - so hebt sich die Kugel vom Hintergrund ab.
+    """
+    lx, ly, lz = LICHT
     for y in range(img.height):
         for x in range(img.width):
-            d = math.hypot(x - cx, y - cy)
+            dx, dy = x - cx, y - cy
+            d = math.hypot(dx, dy)
             if d > rad:
                 continue
-            licht = (x - cx) + (y - cy)
-            if licht < -rad * 0.7:
+            nx, ny = dx / rad, dy / rad
+            nz = math.sqrt(max(0.0, 1.0 - nx * nx - ny * ny))
+            hell = nx * lx + ny * ly + nz * lz
+            if hell > 0.95:
                 col = r['glanz']
-            elif licht < -rad * 0.15:
+            elif hell > 0.78:
                 col = r['hell']
-            elif licht < rad * 0.5:
+            elif hell > 0.52:
                 col = r['mitte']
-            elif licht < rad * 0.9:
+            elif hell > 0.26:
                 col = r['dunkel']
+            elif saum and d > rad - 1.0:
+                col = r['dunkel']        # Streiflicht am Schattenrand
             else:
                 col = r['tief']
             put(img, x, y, C(col))
@@ -715,20 +717,34 @@ def schnur(img, punkte, r, dick_von=2.0, dick_bis=0.6, dornen=None):
 
 
 def ring(img, cx, cy, aussen, innen, r):
-    """Kreisring mit Lichtseite oben links - fuer Wurfringe und Beschlaege."""
+    """Kreisring mit Schattierung ueber das Rohr statt ueber das Bild.
+
+    Ein Reif ist ein gebogenes Rohr. Die Helligkeit ergibt sich aus zwei
+    Anteilen: wo der Punkt auf dem Rohrquerschnitt liegt (innen oder aussen)
+    und in welche Richtung die Stelle des Reifs zeigt. Ein linearer Verlauf
+    ueber das Bild macht daraus eine flache Scheibe.
+    """
+    lx, ly, lz = LICHT
+    mitte = (aussen + innen) / 2.0
+    halb = max(0.4, (aussen - innen) / 2.0)
     for y in range(img.height):
         for x in range(img.width):
-            d = math.hypot(x - cx, y - cy)
-            if not (innen <= d <= aussen):
+            dx, dy = x - cx, y - cy
+            d = math.hypot(dx, dy)
+            if not (innen <= d <= aussen) or d < 0.01:
                 continue
-            licht = ((x - cx) + (y - cy)) / max(aussen, 1.0)
-            if licht < -0.75:
+            quer = (d - mitte) / halb          # -1 innen, +1 aussen
+            quer = max(-1.0, min(1.0, quer))
+            nz = math.sqrt(max(0.0, 1.0 - quer * quer))
+            nx, ny = (dx / d) * quer, (dy / d) * quer
+            hell = nx * lx + ny * ly + nz * lz
+            if hell > 0.93:
                 col = r['glanz']
-            elif licht < -0.25:
+            elif hell > 0.74:
                 col = r['hell']
-            elif licht < 0.25:
+            elif hell > 0.50:
                 col = r['mitte']
-            elif licht < 0.70:
+            elif hell > 0.24:
                 col = r['dunkel']
             else:
                 col = r['tief']
@@ -767,27 +783,33 @@ def platte(img, cx, y0, breite, hoehe, r, spitz=2.4):
 
 
 def kristall(img, cx, cy, rad, r, zacken=True):
-    """Geschliffener Kristall: Raute mit Facetten, heller Kern, Zacken.
+    """Geschliffener Kristall: Raute mit vier Facetten, heller Kern, Zacken.
 
-    Die Zacken haengen am Koerper, damit der spaetere schwarze Rand die ganze
-    Form umschliesst statt einzelne Punkte zu umkringeln.
+    Ein Schliff besteht aus ebenen Flaechen, nicht aus einem Verlauf. Jede
+    Facette bekommt deshalb ihren eigenen Ton, je nachdem, wie sie zum Licht
+    steht - oben links am hellsten, unten rechts am dunkelsten.
+    Die Zacken haengen am Koerper, damit der spaetere schwarze Rand die
+    ganze Form umschliesst statt einzelne Punkte zu umkringeln.
     """
     for y in range(img.height):
         for x in range(img.width):
-            d = abs(x - cx) + abs(y - cy)          # Rautenabstand
+            dx, dy = x - cx, y - cy
+            d = abs(dx) + abs(dy)                  # Rautenabstand
             if d > rad:
                 continue
-            licht = (x - cx) + (y - cy)
-            if d <= 1:
-                col = r['glanz']
-            elif licht < -rad * 0.45:
-                col = r['hell']
-            elif licht < rad * 0.1:
+            if d <= (0.4 if rad <= 2 else rad * 0.30):
+                col = r['glanz']                   # Kern
+            elif rad <= 2:                         # zu klein fuer
+                col = (r['hell'] if dx + dy <= 0    # vier Facetten
+                       else r['dunkel'])
+            elif dx <= 0 and dy <= 0:
+                col = r['hell']                    # Facette zum Licht
+            elif dx > 0 and dy <= 0:
                 col = r['mitte']
-            elif licht < rad * 0.6:
+            elif dx <= 0 and dy > 0:
                 col = r['dunkel']
             else:
-                col = r['tief']
+                col = r['tief']                    # abgewandte Facette
             put(img, x, y, C(col))
     if zacken:
         for dx, dy in ((0, -1), (0, 1), (-1, 0), (1, 0)):
@@ -1537,27 +1559,28 @@ def w_smg_astral(img):
 # sich Nabe, Kantenlicht und Stufendeko, unterscheiden sich nur in der Form.
 
 def stern(img, cx, cy, zacken, laenge, r, spitzwinkel=0.45):
-    """Sternfoermige Klingen um eine Nabe - fuer Wurfsterne."""
+    """Sternfoermige Klingen um eine Nabe.
+
+    Jede Zacke ist eine eigene ebene Flaeche und bekommt ihren Grundton
+    daraus, wie sie zum Licht steht. Ein Verlauf ueber den ganzen Stern
+    wuerde ihn in eine helle und eine dunkle Haelfte zerschneiden.
+    """
+    leiter = [r['glanz'], r['hell'], r['mitte'], r['dunkel'], r['tief']]
     for k in range(zacken):
         a = 2.0 * math.pi * k / zacken - math.pi / 2.0
         dx, dy = math.cos(a), -math.sin(a)
+        richt = -(dx + dy) / 1.42          # 1 = zum Licht, -1 = davon weg
+        grund = 0 if richt > 0.6 else (1 if richt > 0.1 else
+                                       (2 if richt > -0.5 else 3))
         for i in range(laenge + 1):
             br = int(round((laenge - i) * spitzwinkel))
             for j in range(-br, br + 1):
                 x = int(round(cx + dx * i - dy * j))
                 y = int(round(cy + dy * i + dx * j))
-                licht = (x - cx) + (y - cy)
-                if licht < -laenge * 0.5:
-                    col = r['glanz']
-                elif licht < -laenge * 0.15:
-                    col = r['hell']
-                elif licht < laenge * 0.25:
-                    col = r['mitte']
-                elif licht < laenge * 0.6:
-                    col = r['dunkel']
-                else:
-                    col = r['tief']
-                put(img, x, y, C(col))
+                stufe = grund + (0 if j < 0 else 1)   # Lichtkante der Zacke
+                if i > laenge - 2:
+                    stufe += 1                        # Spitze faellt ab
+                put(img, x, y, C(leiter[min(stufe, 4)]))
 
 
 def wurfwaffe(img, form, klinge, beschlag=EISEN, stufe=0, cx=12, cy=12,
@@ -1569,7 +1592,7 @@ def wurfwaffe(img, form, klinge, beschlag=EISEN, stufe=0, cx=12, cy=12,
     """
     if form == 'stern':
         stern(img, cx, cy, 4, int(groesse * 2), klinge)
-        ring(img, cx, cy, groesse * 0.55, groesse * 0.25, beschlag)
+        kugel(img, cx, cy, groesse * 0.52, beschlag, saum=False)
     elif form == 'ring':
         ring(img, cx, cy, groesse * 1.6, groesse, klinge)
         aussen = int(math.ceil(groesse * 1.6))
@@ -1593,7 +1616,11 @@ def wurfwaffe(img, form, klinge, beschlag=EISEN, stufe=0, cx=12, cy=12,
             put(img, cx + dx * fern, cy + dy * fern,
                 C(klinge['hell'] if hell else klinge['tief']))
         for i in range(-int(groesse) + 1, int(groesse)):     # Naht
-            put(img, cx + i, cy + int(groesse * 0.45),
+            # folgt der Woelbung: in der Mitte tiefer als an den Raendern,
+            # eine gerade Linie wuerde die Kugel wieder flach machen
+            bogen = 0.30 * groesse + 0.34 * groesse * math.cos(
+                math.pi * 0.5 * i / max(1.0, groesse))
+            put(img, cx + i, cy + int(round(bogen)),
                 C(beschlag['mitte'] if i % 2 else beschlag['dunkel']))
         for ax, ay in ((1, -2), (-2, 1)):                    # Verschleiss
             put(img, cx + ax, cy + ay, C(beschlag['hell']))
@@ -1676,8 +1703,8 @@ def bogen(img, x0, y0, hoehe, bauch, holz, sehne='mint', stufe=0,
 def zauberbuch(img, x0, y0, breite, hoehe, deckel, stein, stufe=0):
     """Zauberbuch mit Beschlagbaendern und Wappenstein."""
     buch(img, x0, y0, breite, hoehe, deckel, KNOCHEN)
-    kristall(img, x0 + breite // 2 - 1, y0 + hoehe // 2, 3, stein,
-             zacken=stufe >= 2)
+    kristall(img, x0 + breite // 2 - 1, y0 + hoehe // 2, 4, stein,
+             zacken=False)          # in den Deckel eingelassen
     for y in (y0 + 3, y0 + hoehe - 4):
         for x in range(x0 + 2, x0 + breite - 3):
             put(img, x, y, C('gold' if x % 3 else 'amber'))

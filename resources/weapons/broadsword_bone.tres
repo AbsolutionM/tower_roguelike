@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/sprites/weapons/broadsword_bone.png" id="2_art"]
 [ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="4_tree"]
+[ext_resource type="Resource" path="res://resources/weapons/specials/cls_broadsword.tres" id="5_special"]
 
 [resource]
 script = ExtResource("1_script")
@@ -11,7 +12,7 @@ weapon_name = "Knochen-Breitschwert"
 category = 1
 icon = ExtResource("2_art")
 hold_texture = ExtResource("2_art")
-hold_scale = 0.50
+hold_scale = 0.81
 hold_rotation_degrees = -45.0
 description = "Grob geschliffener Knochen. Schwer, aber billig."
 rarity = 1
@@ -33,5 +34,6 @@ is_melee = true
 attack_reach = 175.0
 swing_duration = 0.16
 swing_angle_degrees = 160.0
+special = ExtResource("5_special")
 upgrade_tree = ExtResource("4_tree")
 shop_price = 260

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="WeaponSpecial" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_special.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+special_id = "cls_thrown"
+special_name = "Klingenregen"
+description = "Wurfgeschosse fliegen in alle Richtungen ab."
+kind = 5
+hits_required = 10
+damage_mult = 1.60
+radius = 0.0
+knockback = 0.0
+count = 10
+duration = 0.0
+color = Color(1, 0.851, 0.541, 1)

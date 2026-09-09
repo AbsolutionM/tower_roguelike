@@ -62,6 +62,17 @@ script = ExtResource("2_bar")
 fill_color = Color(0.29, 0.565, 0.851, 1)
 ghost_color = Color(0.271, 0.247, 0.361, 1)
 
+[node name="SpecialBar" type="Control" parent="HUD/TopBar"]
+visible = false
+offset_left = 24.0
+offset_top = 100.0
+offset_right = 180.0
+offset_bottom = 112.0
+mouse_filter = 2
+script = ExtResource("2_bar")
+fill_color = Color(0.545, 0.435, 0.831, 1)
+ghost_color = Color(0.271, 0.247, 0.361, 1)
+
 [node name="RoomLabel" type="Label" parent="HUD/TopBar"]
 offset_top = 130.0
 offset_right = 720.0

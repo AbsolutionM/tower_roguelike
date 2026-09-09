@@ -24,6 +24,15 @@ var pierce_remaining: int = 0
 var is_crit: bool = false
 var hit_targets: Array = []
 
+## Zielsuche: wie schnell das Geschoss einschwenkt (0 = fliegt gerade).
+var homing_strength: float = 0.0
+## Wurfwaffen kehren nach dieser Strecke um und fliegen zum Werfer zurueck.
+var return_distance: float = 0.0
+
+var _owner_node: Node2D
+var _travelled: float = 0.0
+var _returning: bool = false
+
 var _trail: Line2D
 var _visual: Node2D
 var _glow: Polygon2D
@@ -51,6 +60,15 @@ func setup(dir: Vector2, spd: float, dmg: float, pierce: int, tint: Color = Colo
 		color = tint
 	rotation = direction.angle()
 	_refresh_colors()
+
+## Zusatzflugbahnen. Ohne Aufruf fliegt das Geschoss weiter geradeaus.
+func set_flight(homing: float, returns_after: float, source: Node2D = null) -> void:
+	homing_strength = homing
+	return_distance = returns_after
+	_owner_node = source
+	if returns_after > 0.0:
+		# Rueckkehrende Waffen duerfen unterwegs mehrfach treffen.
+		pierce_remaining = maxi(pierce_remaining, 99)
 
 func _build_visuals() -> void:
 	var additive := CanvasItemMaterial.new()
@@ -139,11 +157,52 @@ func _physics_process(delta: float) -> void:
 	if _dead:
 		return
 
+	if homing_strength > 0.0:
+		_steer_to_target(delta)
+	if return_distance > 0.0:
+		_tick_return(delta)
+
 	global_position += direction * speed * delta
+	_travelled += speed * delta
+	rotation = direction.angle()
 	_update_trail()
 
 	_elapsed += delta
 	if _elapsed >= lifetime:
+		_expire()
+
+## Zieht sanft auf den naechsten Gegner zu, statt hart einzurasten.
+func _steer_to_target(delta: float) -> void:
+	var nearest: Node2D = null
+	var best: float = 420.0
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if not is_instance_valid(enemy) or enemy in hit_targets:
+			continue
+		var distance := global_position.distance_to(enemy.global_position)
+		if distance < best:
+			best = distance
+			nearest = enemy
+	if not nearest:
+		return
+	var wanted := global_position.direction_to(nearest.global_position)
+	direction = direction.slerp(wanted, clampf(homing_strength * delta, 0.0, 1.0)).normalized()
+
+## Fliegt bis zur halben Strecke, dreht um und kommt zurueck.
+func _tick_return(delta: float) -> void:
+	if not _returning:
+		if _travelled >= return_distance:
+			_returning = true
+			hit_targets.clear()
+		return
+
+	if not is_instance_valid(_owner_node):
+		_expire()
+		return
+
+	var home := global_position.direction_to(_owner_node.global_position)
+	direction = direction.slerp(home, clampf(9.0 * delta, 0.0, 1.0)).normalized()
+	# Wieder in der Hand: einsammeln statt liegen lassen.
+	if global_position.distance_to(_owner_node.global_position) < 26.0:
 		_expire()
 
 func _update_trail() -> void:
@@ -189,6 +248,7 @@ func _damage_target(target: Node) -> void:
 	var stats = get_tree().get_first_node_in_group("player_stats")
 	if stats:
 		stats.report_damage(damage)
+		stats.report_hit()
 
 	if target is Enemy:
 		target.take_damage(damage, global_position, is_crit)
@@ -201,6 +261,8 @@ func _register_hit(hit_position: Vector2) -> void:
 	FX.impact(hit_position, direction, color, 0.8)
 	FX.shake(1.5)
 
+	if return_distance > 0.0:
+		return
 	if pierce_remaining <= 0:
 		_expire()
 	else:

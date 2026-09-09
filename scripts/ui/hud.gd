@@ -17,6 +17,7 @@ class_name HUD
 @onready var boss_label: Label = get_node_or_null("TopBar/BossLabel")
 @onready var boss_bar: StatBar = get_node_or_null("TopBar/BossBar")
 @onready var floor_label: Label = get_node_or_null("TopBar/FloorLabel")
+@onready var special_bar: StatBar = get_node_or_null("TopBar/SpecialBar")
 
 var _boss: Node = null
 var _pause_overlay: Control = null
@@ -61,6 +62,12 @@ func _bind_player() -> void:
 	if health:
 		health.health_changed.connect(_on_health_changed)
 		_on_health_changed(health.current_health, health.max_health)
+
+	# Ladebalken des Waffen-Sonderschlags.
+	var controller = player.get_node_or_null("WeaponController")
+	if controller and controller.has_signal("special_charge_changed"):
+		controller.special_charge_changed.connect(_on_special_charge)
+		_on_special_charge(controller.get_special_charge())
 
 	if player.has_signal("dash_cooldown_changed"):
 		player.dash_cooldown_changed.connect(_on_dash_cooldown)
@@ -198,6 +205,13 @@ func _update_boss() -> void:
 func _on_health_changed(current: float, maximum: float) -> void:
 	if health_bar:
 		health_bar.set_value(current, maximum)
+
+## Der Sonderschlag laedt sich mit Treffern auf und loest von selbst aus.
+func _on_special_charge(ratio: float) -> void:
+	if not special_bar:
+		return
+	special_bar.visible = ratio > 0.0
+	special_bar.set_value(ratio, 1.0)
 
 func _on_dash_cooldown(remaining: float, total: float) -> void:
 	if dash_button:
