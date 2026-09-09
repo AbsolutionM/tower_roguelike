@@ -1,0 +1,46 @@
+[gd_scene format=3 uid="uid://rv3d44ko4stl"]
+
+[ext_resource type="Script" uid="uid://dlmwka1yfcd73" path="res://scripts/enemies/enemy.gd" id="1_v48in"]
+[ext_resource type="Resource" uid="uid://17ws7t6cm6ul" path="res://resources/enemies/slime_normal.tres" id="2_b02n1"]
+[ext_resource type="Material" uid="uid://bsnlimq5y1eiy" path="res://resources/materials/outline_red.tres" id="3_ewtqv"]
+[ext_resource type="Material" path="res://resources/materials/outline_target.tres" id="5_target"]
+[ext_resource type="Texture2D" uid="uid://iy3w1m7ghusg" path="res://resources/enemies/green_slime/greenslime.png" id="4_wsmac"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_fp34w"]
+
+[node name="DummyEnemy" type="Area2D" unique_id=1668898822 node_paths=PackedStringArray("health_bar_bg", "health_bar_fill", "sprite") groups=["enemies"]]
+script = ExtResource("1_v48in")
+enemy_data = ExtResource("2_b02n1")
+health_bar_bg = NodePath("HealthBarBG")
+health_bar_fill = NodePath("HealthBarBG/HealthBarFill")
+sprite = NodePath("Sprite2D")
+outline_material = ExtResource("5_target")
+squash_speed = 3.27
+trail_offset = 39.965
+trail_colors = Array[Color]([Color(0.007843138, 0.8, 0.3019608, 0.4509804), Color(0.3, 0.6, 0.25, 0.4), Color(0.55, 0.85, 0.4, 0.5)])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=806511996]
+visible = false
+scale = Vector2(4.305, 4.305)
+shape = SubResource("CircleShape2D_fp34w")
+
+[node name="HealthBarBG" type="ColorRect" parent="." unique_id=141980625]
+offset_left = -32.11499
+offset_top = 26.0
+offset_right = 33.88501
+offset_bottom = 36.0
+color = Color(0, 0, 0, 1)
+
+[node name="HealthBarFill" type="ColorRect" parent="HealthBarBG" unique_id=1472540585]
+layout_mode = 0
+offset_left = 4.415
+offset_top = 3.0
+offset_right = 62.0
+offset_bottom = 7.0
+color = Color(1, 0, 0, 1)
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=878219782]
+material = ExtResource("3_ewtqv")
+position = Vector2(1.8850098, -26)
+scale = Vector2(3, 3)
+texture = ExtResource("4_wsmac")

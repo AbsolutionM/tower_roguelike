@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="RoomData" format=3]
+
+[ext_resource type="Script" path="res://resources/rooms/room_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_shooter.tres" id="2_shooter"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_normal.tres" id="3_normal"]
+[ext_resource type="PackedScene" path="res://scenes/props/ore.tscn" id="4_ore"]
+[ext_resource type="PackedScene" path="res://scenes/props/obstacle.tscn" id="5_rock"]
+[ext_resource type="Resource" path="res://resources/rooms/layouts/slime_layouts.tres" id="6_layouts"]
+
+[resource]
+script = ExtResource("1_script")
+room_name = "Spucker-Nest"
+enemy_pool = Array[EnemyData]([ExtResource("2_shooter"), ExtResource("3_normal")])
+enemy_count = 5
+room_size = Vector2(660, 1150)
+fixed_camera = true
+spawn_margin = 90.0
+min_player_distance = 260.0
+layout_set = ExtResource("6_layouts")
+obstacle_scene = ExtResource("5_rock")
+obstacle_count = 6
+harvestable_scene = ExtResource("4_ore")
+harvestable_count = 1

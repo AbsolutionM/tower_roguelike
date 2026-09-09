@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeatherData" format=3]
+
+[ext_resource type="Script" path="res://resources/weather/weather_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+weather_id = "snow"
+weather_name = "Schneefall"
+kind = 2
+description = "Alles wird zäh - du und die Gegner gleichermaßen."
+ambient_tint = Color(0.9, 0.94, 1.08, 1)
+overlay_color = Color(0.7, 0.78, 0.9, 0.08)
+particle_count = 90
+particle_color = Color(0.847, 0.824, 0.878, 0.55)
+particle_speed = 230.0
+particle_length = 6.0
+particle_width = 2.4
+particle_angle_degrees = 22.0
+player_speed_mult = 0.9
+player_regen_bonus = 0.3
+enemy_speed_mult = 0.86

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="RoomData" format=3]
+
+[ext_resource type="Script" path="res://resources/rooms/room_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_fast.tres" id="2_fast"]
+[ext_resource type="PackedScene" path="res://scenes/props/obstacle.tscn" id="3_rock"]
+[ext_resource type="Resource" path="res://resources/rooms/layouts/slime_layouts.tres" id="4_layouts"]
+
+[resource]
+script = ExtResource("1_script")
+room_name = "Flitzer-Schwarm"
+enemy_pool = Array[EnemyData]([ExtResource("2_fast")])
+enemy_count = 8
+room_size = Vector2(660, 1150)
+fixed_camera = true
+spawn_margin = 70.0
+min_player_distance = 230.0
+layout_set = ExtResource("4_layouts")
+obstacle_scene = ExtResource("3_rock")

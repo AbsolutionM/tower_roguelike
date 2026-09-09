@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeatherData" format=3]
+
+[ext_resource type="Script" path="res://resources/weather/weather_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+weather_id = "rain"
+weather_name = "Regen"
+kind = 1
+description = "Nasser Boden bremst dich, aber Wunden schließen sich schneller."
+ambient_tint = Color(0.82, 0.88, 1.05, 1)
+overlay_color = Color(0.4, 0.5, 0.7, 0.06)
+particle_count = 110
+particle_color = Color(0.55, 0.72, 0.95, 0.45)
+particle_speed = 1150.0
+particle_length = 30.0
+particle_width = 2.0
+particle_angle_degrees = 14.0
+player_speed_mult = 0.94
+player_regen_bonus = 0.7
+enemy_speed_mult = 0.97

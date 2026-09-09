@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="StarPowerData" format=3]
+
+[ext_resource type="Script" path="res://resources/character/star_power.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+star_id = "ronin_blutzoll"
+star_name = "Blutzoll"
+description = "Ein Teil des ausgeteilten Schadens kommt als Leben zurück."
+stat_add = { "lifesteal": 0.09 }
+stat_mult = {}

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://resources/enemies/enemy_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/loot/dt_elite.tres" id="2_drops"]
+
+[resource]
+script = ExtResource("1_script")
+enemy_name = "Irrlicht"
+max_health = 105.3
+move_speed = 74.0
+sprite_scale = 1.0
+tint = Color(0.247, 0.824, 0.78, 1)
+symbol = 6
+symbol_size = 32.0
+movement = 2
+fly_height = 26.0
+fly_bob = 12.0
+behavior = 3
+contact_damage = 24.8
+contact_range = 34.0
+attack_cooldown = 1.2
+keep_distance = 150.0
+trail_colors = Array[Color]([Color(0.5, 0.95, 0.9, 0.3)])
+knockback_friction = 380.0
+shadow_radius = 12.0
+drop_table = ExtResource("2_drops")

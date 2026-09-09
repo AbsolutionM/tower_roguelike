@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RoomData" format=3]
+
+[ext_resource type="Script" path="res://resources/rooms/room_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/enemies/bat_common.tres" id="2_bat"]
+[ext_resource type="Resource" path="res://resources/enemies/bat_screech.tres" id="3_screech"]
+[ext_resource type="Resource" path="res://resources/enemies/eye_watcher.tres" id="4_eye"]
+
+[resource]
+script = ExtResource("1_script")
+room_name = "Glockenstube"
+enemy_pool = Array[EnemyData]([ExtResource("2_bat"), ExtResource("2_bat"), ExtResource("3_screech"), ExtResource("4_eye")])
+enemy_count = 6
+room_size = Vector2(700, 1200)
+fixed_camera = true
+spawn_margin = 90.0
+min_player_distance = 260.0

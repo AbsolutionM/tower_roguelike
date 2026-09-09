@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+item_id = "slime_gel"
+item_name = "Schleimgel"
+description = "Klebriges Grundmaterial. Fällt überall im Schleimturm an."
+item_type = 0
+rarity = 0
+max_stack = 99
+value = 1
+color = Color(0.45, 0.9, 0.45, 1)
+pickup_scale = 0.95

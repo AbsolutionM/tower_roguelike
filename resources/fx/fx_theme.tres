@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="FXTheme" format=3]
+
+[ext_resource type="Script" path="res://resources/fx/fx_theme.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+pixel_size = 4.0

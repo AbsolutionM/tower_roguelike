@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AccessoryData" format=3]
+
+[ext_resource type="Script" path="res://resources/accessories/accessory_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+accessory_id = "power_ring"
+accessory_name = "Kraftring"
+description = "Schlichter Ring, der jeden Schlag schwerer macht."
+rarity = 1
+shop_price = 180
+flat_damage_bonus = 3.0
+damage_multiplier = 1.08

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AccessoryData" format=3]
+
+[ext_resource type="Script" path="res://resources/accessories/accessory_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+accessory_id = "swift_boots"
+accessory_name = "Windstiefel"
+description = "Leichte Sohlen für schnelle Beine."
+rarity = 1
+shop_price = 160
+flat_speed_bonus = 28.0
+pickup_radius_bonus = 20.0

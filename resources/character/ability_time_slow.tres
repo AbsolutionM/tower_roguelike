@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://resources/character/ability_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+ability_id = "time_slow"
+ability_name = "Zeitriss"
+description = "Bremst alle Gegner fünf Sekunden lang auf ein Drittel ihres Tempos."
+kind = 7
+cooldown = 12.0
+damage = 0.0
+radius = 700.0
+color = Color(0.545, 0.435, 0.831, 1)
+duration = 5.0
+slow_factor = 0.33

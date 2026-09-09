@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="DropTable" format=3]
+
+[ext_resource type="Script" path="res://resources/loot/drop_table.gd" id="1_table"]
+[ext_resource type="Script" path="res://resources/loot/drop_entry.gd" id="2_entry"]
+[ext_resource type="Resource" path="res://resources/items/gold_coin.tres" id="3_gold"]
+[ext_resource type="Resource" path="res://resources/items/essence_slime.tres" id="4_essence"]
+[ext_resource type="Resource" path="res://resources/items/slime_gel.tres" id="5_gel"]
+[ext_resource type="Resource" path="res://resources/items/health_flask.tres" id="6_flask"]
+
+[sub_resource type="Resource" id="Entry_essence"]
+script = ExtResource("2_entry")
+item = ExtResource("4_essence")
+chance = 0.28
+count_min = 1
+count_max = 1
+
+[sub_resource type="Resource" id="Entry_gel"]
+script = ExtResource("2_entry")
+item = ExtResource("5_gel")
+chance = 0.5
+count_min = 1
+count_max = 2
+
+[sub_resource type="Resource" id="Entry_flask"]
+script = ExtResource("2_entry")
+item = ExtResource("6_flask")
+chance = 0.07
+count_min = 1
+count_max = 1
+
+[resource]
+script = ExtResource("1_table")
+entries = Array[DropEntry]([SubResource("Entry_essence"), SubResource("Entry_gel"), SubResource("Entry_flask")])
+gold_item = ExtResource("3_gold")
+gold_chance = 0.85
+gold_min = 1
+gold_max = 3

@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="2_proj"]
+[ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="3_tree"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_id = "shotgun_scatter"
+weapon_name = "Streufeuer"
+category = 6
+description = "Platzhalter - zehn Kugeln, breiter Kegel, sehr kurze Reichweite."
+damage = 2.5
+bleed_buildup = 0.0
+stagger = 26.0
+weight = 5.2
+required_agility = 3
+required_power = 5
+scaling_fortune = 0
+scaling_agility = 1
+scaling_power = 3
+cooldown = 1.15
+weapon_range = 200.0
+knockback = 300.0
+screen_shake = 8.0
+is_melee = false
+projectile_scene = ExtResource("2_proj")
+projectile_speed = 520.0
+pierce_count = 1
+projectiles_per_shot = 10
+spread_degrees = 52.0
+projectile_color = Color(1, 0.851, 0.541, 1)
+muzzle_flash_size = 52.0
+upgrade_tree = ExtResource("3_tree")

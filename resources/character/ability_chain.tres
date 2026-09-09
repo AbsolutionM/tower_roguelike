@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://resources/character/ability_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+ability_id = "chain_lightning"
+ability_name = "Kettenblitz"
+description = "Ein Blitz springt von Gegner zu Gegner und wird dabei schwächer."
+kind = 9
+cooldown = 7.0
+damage = 34.0
+radius = 220.0
+color = Color(0.29, 0.565, 0.851, 1)
+chain_jumps = 6
+chain_range = 240.0

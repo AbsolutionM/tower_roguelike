@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AccessoryData" format=3]
+
+[ext_resource type="Script" path="res://resources/accessories/accessory_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+accessory_id = "life_amulet"
+accessory_name = "Lebensamulett"
+description = "Wärmt die Brust und schließt Wunden von allein."
+rarity = 2
+shop_price = 300
+flat_hp_bonus = 35.0
+regen_bonus = 0.8

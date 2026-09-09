@@ -1,0 +1,164 @@
+[gd_scene format=3 uid="uid://bhhnrk2i5ajqx"]
+
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud"]
+[ext_resource type="Script" path="res://scripts/ui/stat_bar.gd" id="2_bar"]
+[ext_resource type="Script" path="res://scripts/ui/virtual_joystick.gd" id="3_stick"]
+[ext_resource type="Script" path="res://scripts/ui/action_button.gd" id="4_button"]
+
+[node name="UiLayer" type="CanvasLayer" unique_id=251034318]
+
+[node name="HUD" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("1_hud")
+
+[node name="TopBar" type="Control" parent="HUD"]
+anchor_right = 1.0
+offset_bottom = 170.0
+mouse_filter = 2
+
+[node name="HealthBar" type="Control" parent="HUD/TopBar"]
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 360.0
+offset_bottom = 54.0
+mouse_filter = 2
+script = ExtResource("2_bar")
+fill_color = Color(0.435, 0.749, 0.353, 1)
+ghost_color = Color(0.851, 0.31, 0.31, 1)
+
+[node name="GoldLabel" type="Label" parent="HUD/TopBar"]
+offset_left = 24.0
+offset_top = 62.0
+offset_right = 204.0
+offset_bottom = 96.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.949, 0.694, 0.204, 1)
+theme_override_colors/font_outline_color = Color(0.078, 0.071, 0.122, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 26
+text = "0"
+
+[node name="EssenceLabel" type="Label" parent="HUD/TopBar"]
+offset_left = 212.0
+offset_top = 62.0
+offset_right = 392.0
+offset_bottom = 96.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.247, 0.824, 0.78, 1)
+theme_override_colors/font_outline_color = Color(0.078, 0.071, 0.122, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 26
+text = "0"
+
+[node name="TimerBar" type="Control" parent="HUD/TopBar"]
+offset_left = 200.0
+offset_top = 108.0
+offset_right = 520.0
+offset_bottom = 124.0
+mouse_filter = 2
+script = ExtResource("2_bar")
+fill_color = Color(0.29, 0.565, 0.851, 1)
+ghost_color = Color(0.271, 0.247, 0.361, 1)
+
+[node name="RoomLabel" type="Label" parent="HUD/TopBar"]
+offset_top = 130.0
+offset_right = 720.0
+offset_bottom = 166.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.847, 0.824, 0.878, 1)
+theme_override_colors/font_outline_color = Color(0.078, 0.071, 0.122, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 28
+text = "Raum"
+horizontal_alignment = 1
+
+[node name="FloorLabel" type="Label" parent="HUD/TopBar"]
+offset_left = 380.0
+offset_top = 20.0
+offset_right = 700.0
+offset_bottom = 52.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.42, 0.392, 0.518, 1)
+theme_override_colors/font_outline_color = Color(0.078, 0.071, 0.122, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 22
+text = "Etage 1"
+horizontal_alignment = 2
+
+[node name="BagLabel" type="Label" parent="HUD/TopBar"]
+offset_left = 420.0
+offset_top = 62.0
+offset_right = 700.0
+offset_bottom = 96.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.847, 0.824, 0.878, 1)
+theme_override_colors/font_outline_color = Color(0.078, 0.071, 0.122, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 24
+text = "Beutel 0/12"
+horizontal_alignment = 2
+
+[node name="BossLabel" type="Label" parent="HUD/TopBar"]
+visible = false
+offset_top = 176.0
+offset_right = 720.0
+offset_bottom = 210.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.851, 0.31, 0.31, 1)
+theme_override_colors/font_outline_color = Color(0.078, 0.071, 0.122, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 26
+text = "Boss"
+horizontal_alignment = 1
+
+[node name="BossBar" type="Control" parent="HUD/TopBar"]
+visible = false
+offset_left = 90.0
+offset_top = 214.0
+offset_right = 630.0
+offset_bottom = 240.0
+mouse_filter = 2
+script = ExtResource("2_bar")
+fill_color = Color(0.851, 0.31, 0.31, 1)
+ghost_color = Color(0.271, 0.247, 0.361, 1)
+
+[node name="Joystick" type="Control" parent="HUD"]
+offset_left = 20.0
+offset_top = 800.0
+offset_right = 420.0
+offset_bottom = 1200.0
+script = ExtResource("3_stick")
+
+[node name="AbilityButton" type="Control" parent="HUD"]
+offset_left = 452.0
+offset_top = 960.0
+offset_right = 552.0
+offset_bottom = 1060.0
+script = ExtResource("4_button")
+action = 2
+label_text = "Q"
+button_color = Color(0.247, 0.824, 0.78, 1)
+
+[node name="DashButton" type="Control" parent="HUD"]
+offset_left = 580.0
+offset_top = 1080.0
+offset_right = 680.0
+offset_bottom = 1180.0
+script = ExtResource("4_button")
+action = 1
+label_text = "»"
+button_color = Color(0.949, 0.694, 0.204, 1)
+
+[node name="FadeOverlay" type="ColorRect" parent="HUD"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.078, 0.071, 0.122, 0)
+
+[node name="FlashOverlay" type="ColorRect" parent="HUD"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0)

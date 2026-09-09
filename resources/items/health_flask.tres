@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+item_id = "health_flask"
+item_name = "Heiltrank"
+description = "Heilt sofort beim Aufsammeln."
+item_type = 3
+rarity = 1
+max_stack = 10
+value = 8
+heal_amount = 28.0
+color = Color(1, 0.4, 0.5, 1)
+pickup_scale = 1.1

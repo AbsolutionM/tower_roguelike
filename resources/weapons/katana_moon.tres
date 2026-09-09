@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://fb22nb73w7sg" path="res://assets/sprites/weapons/GoldenSword.png" id="2_hold"]
+[ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="3_tree"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_id = "katana_moon"
+weapon_name = "Mondklinge"
+category = 2
+hold_texture = ExtResource("2_hold")
+hold_scale = 1.1
+description = "Blitzschnelle Schnitte mit hoher kritischer Chance."
+damage = 9.3
+bleed_buildup = 18.0
+stagger = 20.0
+weight = 3.0
+required_agility = 6
+required_power = 3
+scaling_fortune = 2
+scaling_agility = 4
+scaling_power = 2
+cooldown = 0.42
+weapon_range = 200.0
+knockback = 170.0
+screen_shake = 3.0
+crit_bonus = 0.12
+is_melee = true
+attack_reach = 175.0
+swing_duration = 0.085
+swing_angle_degrees = 175.0
+upgrade_tree = ExtResource("3_tree")
+shop_price = 260

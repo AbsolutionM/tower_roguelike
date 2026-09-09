@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://fb22nb73w7sg" path="res://assets/sprites/weapons/GoldenSword.png" id="2_hold"]
+[ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="3_tree"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_id = "shortsword_bone"
+weapon_name = "Knochendolch"
+category = 0
+hold_texture = ExtResource("2_hold")
+hold_scale = 0.9
+description = "Platzhalter - kurz, leicht, überraschend fies."
+damage = 7.4
+bleed_buildup = 22.0
+stagger = 12.0
+weight = 2.0
+required_agility = 4
+required_power = 2
+scaling_fortune = 3
+scaling_agility = 3
+scaling_power = 1
+cooldown = 0.36
+weapon_range = 175.0
+knockback = 170.0
+screen_shake = 2.5
+crit_bonus = 0.05
+is_melee = true
+attack_reach = 145.0
+swing_duration = 0.11
+swing_angle_degrees = 135.0
+upgrade_tree = ExtResource("3_tree")
+shop_price = 140

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="StarPowerData" format=3]
+
+[ext_resource type="Script" path="res://resources/character/star_power.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+star_id = "kanonier_nachbrenner"
+star_name = "Nachbrenner"
+description = "Die Fähigkeit lädt merklich schneller nach."
+stat_add = {}
+stat_mult = { "ability_cooldown_mult": 0.70 }

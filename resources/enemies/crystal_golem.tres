@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://resources/enemies/enemy_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/loot/dt_elite.tres" id="2_drops"]
+[ext_resource type="Resource" path="res://resources/enemies/crystal_shard_enemy.tres" id="3_shard"]
+
+[resource]
+script = ExtResource("1_script")
+enemy_name = "Kristallwächter"
+max_health = 333.5
+move_speed = 34.0
+sprite_scale = 1.0
+tint = Color(0.29, 0.565, 0.851, 1)
+symbol = 5
+symbol_size = 44.0
+movement = 0
+behavior = 0
+contact_damage = 44.1
+contact_range = 50.0
+attack_cooldown = 1.5
+trail_colors = Array[Color]([Color(0.45, 0.7, 1, 0.35)])
+knockback_friction = 950.0
+shadow_radius = 22.0
+split_data = ExtResource("3_shard")
+split_count = 4
+drop_table = ExtResource("2_drops")

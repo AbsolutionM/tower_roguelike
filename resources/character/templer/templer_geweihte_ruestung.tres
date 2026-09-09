@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="StarPowerData" format=3]
+
+[ext_resource type="Script" path="res://resources/character/star_power.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+star_id = "templer_geweihte_ruestung"
+star_name = "Geweihte Rüstung"
+description = "Mehr Leben, mehr Rüstung, weniger Sorgen."
+stat_add = { "armor": 5.00 }
+stat_mult = { "max_health": 1.18 }

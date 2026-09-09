@@ -1,0 +1,23 @@
+# Godot 4: lokaler Cache und importierte Binärdateien.
+# Wird auf jedem Gerät neu erzeugt - darf nicht synchronisiert werden,
+# sonst streiten sich Windows und iPad um dieselben Dateien.
+.godot/
+/android/
+
+# Exportierte Builds
+export_presets.cfg
+*.apk
+*.aab
+*.ipa
+*.exe
+*.pck
+*.zip
+
+# Arbeitsdateien der Grafikprogramme (die PNGs daneben reichen dem Projekt)
+*.aseprite~
+*.tmp
+
+# Betriebssystem
+Thumbs.db
+desktop.ini
+.DS_Store

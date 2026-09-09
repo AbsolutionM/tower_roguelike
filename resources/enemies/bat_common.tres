@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://resources/enemies/enemy_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/loot/dt_slime.tres" id="2_drops"]
+
+[resource]
+script = ExtResource("1_script")
+enemy_name = "Fledermaus"
+max_health = 49.1
+move_speed = 128.0
+sprite_scale = 1.0
+tint = Color(0.545, 0.435, 0.831, 1)
+symbol = 1
+symbol_size = 28.0
+movement = 2
+fly_height = 34.0
+fly_bob = 9.0
+behavior = 0
+contact_damage = 16.5
+contact_range = 32.0
+attack_cooldown = 0.8
+trail_colors = Array[Color]([Color(0.6, 0.45, 0.9, 0.35)])
+knockback_friction = 420.0
+shadow_radius = 11.0
+drop_table = ExtResource("2_drops")

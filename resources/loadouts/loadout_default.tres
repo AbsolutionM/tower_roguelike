@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="TestLoadout" format=3]
+
+[ext_resource type="Script" path="res://resources/loadouts/test_loadout.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/character/cowboy/cowboy_data.tres" id="2_char"]
+[ext_resource type="Resource" path="res://resources/weapons/sword_melee.tres" id="3_weapon"]
+
+[resource]
+script = ExtResource("1_script")
+loadout_name = "Default"
+character = ExtResource("2_char")
+weapon = ExtResource("3_weapon")

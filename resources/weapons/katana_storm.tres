@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://fb22nb73w7sg" path="res://assets/sprites/weapons/GoldenSword.png" id="2_hold"]
+[ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="3_tree"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_id = "katana_storm"
+weapon_name = "Sturmklinge"
+category = 2
+hold_texture = ExtResource("2_hold")
+hold_scale = 1.05
+description = "Platzhalter - sehr schnelle Schnitte, extrem hohe Krit-Chance."
+damage = 7.4
+bleed_buildup = 26.0
+stagger = 16.0
+weight = 2.6
+required_agility = 7
+required_power = 3
+scaling_fortune = 2
+scaling_agility = 5
+scaling_power = 1
+cooldown = 0.3
+weapon_range = 195.0
+knockback = 130.0
+screen_shake = 2.5
+crit_bonus = 0.18
+is_melee = true
+attack_reach = 170.0
+swing_duration = 0.07
+swing_angle_degrees = 165.0
+upgrade_tree = ExtResource("3_tree")

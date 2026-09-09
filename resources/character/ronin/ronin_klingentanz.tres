@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="StarPowerData" format=3]
+
+[ext_resource type="Script" path="res://resources/character/star_power.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+star_id = "ronin_klingentanz"
+star_name = "Klingentanz"
+description = "Schnittfolge ohne Pause: höhere Angriffsgeschwindigkeit."
+stat_add = {}
+stat_mult = { "attack_speed_mult": 1.22 }

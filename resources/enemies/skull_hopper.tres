@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://resources/enemies/enemy_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/loot/dt_slime.tres" id="2_drops"]
+
+[resource]
+script = ExtResource("1_script")
+enemy_name = "Knochenhüpfer"
+max_health = 119.3
+move_speed = 62.0
+sprite_scale = 1.0
+tint = Color(0.847, 0.824, 0.878, 1)
+symbol = 2
+symbol_size = 30.0
+movement = 1
+hop_interval = 0.75
+hop_height = 44.0
+hop_duration = 0.38
+hop_speed_mult = 3.4
+behavior = 0
+contact_damage = 30.3
+contact_range = 36.0
+attack_cooldown = 1.1
+trail_colors = Array[Color]([Color(0.85, 0.83, 0.75, 0.3)])
+knockback_friction = 560.0
+shadow_radius = 13.0
+drop_table = ExtResource("2_drops")

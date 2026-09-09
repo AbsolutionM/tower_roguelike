@@ -1,0 +1,205 @@
+[gd_resource type="SpriteFrames" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Back1.png" id="bk1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Back2.png" id="bk2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Back3.png" id="bk3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Back4.png" id="bk4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Back5.png" id="bk5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Back6.png" id="bk6"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Back7.png" id="bk7"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Back8.png" id="bk8"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Back9.png" id="bk9"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Back10.png" id="bk10"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Front1.png" id="fr1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Front2.png" id="fr2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Front3.png" id="fr3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Front4.png" id="fr4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Front5.png" id="fr5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Front6.png" id="fr6"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Front7.png" id="fr7"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Front8.png" id="fr8"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Front9.png" id="fr9"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/Front10.png" id="fr10"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideBack1.png" id="sb1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideBack2.png" id="sb2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideBack3.png" id="sb3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideBack4.png" id="sb4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideBack5.png" id="sb5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideBack6.png" id="sb6"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideBack7.png" id="sb7"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideBack8.png" id="sb8"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideBack9.png" id="sb9"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideBack10.png" id="sb10"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideFront1.png" id="sf1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideFront2.png" id="sf2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideFront3.png" id="sf3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideFront4.png" id="sf4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideFront5.png" id="sf5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideFront6.png" id="sf6"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideFront7.png" id="sf7"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideFront8.png" id="sf8"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideFront9.png" id="sf9"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/SideFront10.png" id="sf10"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 0.5,
+"texture": ExtResource("bk1")
+}, {
+"duration": 0.5,
+"texture": ExtResource("bk2")
+}, {
+"duration": 0.5,
+"texture": ExtResource("bk3")
+}, {
+"duration": 0.5,
+"texture": ExtResource("bk4")
+}],
+"loop": 1,
+"name": &"Idle_Back",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 0.5,
+"texture": ExtResource("fr1")
+}, {
+"duration": 0.5,
+"texture": ExtResource("fr2")
+}, {
+"duration": 0.5,
+"texture": ExtResource("fr3")
+}, {
+"duration": 0.5,
+"texture": ExtResource("fr4")
+}],
+"loop": 1,
+"name": &"Idle_Front",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 0.5,
+"texture": ExtResource("sb1")
+}, {
+"duration": 0.5,
+"texture": ExtResource("sb2")
+}, {
+"duration": 0.5,
+"texture": ExtResource("sb3")
+}, {
+"duration": 0.5,
+"texture": ExtResource("sb4")
+}],
+"loop": 1,
+"name": &"Idle_Side_Back",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 0.5,
+"texture": ExtResource("sf1")
+}, {
+"duration": 0.5,
+"texture": ExtResource("sf2")
+}, {
+"duration": 0.5,
+"texture": ExtResource("sf3")
+}, {
+"duration": 0.5,
+"texture": ExtResource("sf4")
+}],
+"loop": 1,
+"name": &"Idle_Side_Front",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 0.5,
+"texture": ExtResource("bk5")
+}, {
+"duration": 0.5,
+"texture": ExtResource("bk6")
+}, {
+"duration": 0.5,
+"texture": ExtResource("bk7")
+}, {
+"duration": 0.5,
+"texture": ExtResource("bk8")
+}, {
+"duration": 0.5,
+"texture": ExtResource("bk9")
+}, {
+"duration": 0.5,
+"texture": ExtResource("bk10")
+}],
+"loop": 1,
+"name": &"Walking_Back",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 0.5,
+"texture": ExtResource("fr5")
+}, {
+"duration": 0.5,
+"texture": ExtResource("fr6")
+}, {
+"duration": 0.5,
+"texture": ExtResource("fr7")
+}, {
+"duration": 0.5,
+"texture": ExtResource("fr8")
+}, {
+"duration": 0.5,
+"texture": ExtResource("fr9")
+}, {
+"duration": 0.5,
+"texture": ExtResource("fr10")
+}],
+"loop": 1,
+"name": &"Walking_Front",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 0.5,
+"texture": ExtResource("sb5")
+}, {
+"duration": 0.5,
+"texture": ExtResource("sb6")
+}, {
+"duration": 0.5,
+"texture": ExtResource("sb7")
+}, {
+"duration": 0.5,
+"texture": ExtResource("sb8")
+}, {
+"duration": 0.5,
+"texture": ExtResource("sb9")
+}, {
+"duration": 0.5,
+"texture": ExtResource("sb10")
+}],
+"loop": 1,
+"name": &"Walking_Side_Back",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 0.5,
+"texture": ExtResource("sf5")
+}, {
+"duration": 0.5,
+"texture": ExtResource("sf6")
+}, {
+"duration": 0.5,
+"texture": ExtResource("sf7")
+}, {
+"duration": 0.5,
+"texture": ExtResource("sf8")
+}, {
+"duration": 0.5,
+"texture": ExtResource("sf9")
+}, {
+"duration": 0.5,
+"texture": ExtResource("sf10")
+}],
+"loop": 1,
+"name": &"Walking_Side_Front",
+"speed": 5.0
+}]

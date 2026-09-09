@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="StarPowerData" format=3]
+
+[ext_resource type="Script" path="res://resources/character/star_power.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+star_id = "brute_bollwerk"
+star_name = "Bollwerk"
+description = "Die Haut wird zur Wand: dauerhaft mehr Rüstung."
+stat_add = { "armor": 6.00 }
+stat_mult = {}

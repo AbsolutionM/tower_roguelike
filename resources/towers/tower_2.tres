@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="TowerData" format=3]
+
+[ext_resource type="Script" path="res://resources/towers/tower_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/rooms/room_mixed.tres" id="2_room1"]
+[ext_resource type="Resource" path="res://resources/rooms/room_spitters.tres" id="3_room2"]
+[ext_resource type="Resource" path="res://resources/rooms/room_elite.tres" id="4_room3"]
+[ext_resource type="Resource" path="res://resources/rooms/room_arena.tres" id="5_room4"]
+[ext_resource type="Resource" path="res://resources/rooms/room_boss.tres" id="6_boss"]
+[ext_resource type="Resource" path="res://resources/rooms/room_crypt.tres" id="10_crypt"]
+[ext_resource type="Resource" path="res://resources/rooms/room_belfry.tres" id="11_belfry"]
+[ext_resource type="Resource" path="res://resources/weather/weather_storm.tres" id="7_storm"]
+[ext_resource type="Resource" path="res://resources/weather/weather_rain.tres" id="8_rain"]
+[ext_resource type="Resource" path="res://resources/weather/weather_ash.tres" id="9_ash"]
+
+[resource]
+script = ExtResource("1_script")
+tower_id = "tower_2"
+tower_name = "Sturmturm"
+description = "Offene Etagen im Dauergewitter. Härtere Räume, launisches Wetter."
+accent_color = Color(0.6, 0.75, 1, 1)
+ambient_color = Color(0.3, 0.33, 0.5, 1)
+floors = 7
+rooms = Array[RoomData]([ExtResource("2_room1"), ExtResource("3_room2"), ExtResource("4_room3"), ExtResource("5_room4"), ExtResource("10_crypt"), ExtResource("11_belfry"), ExtResource("6_boss")])
+weather_options = Array[WeatherData]([ExtResource("7_storm"), ExtResource("8_rain"), ExtResource("9_ash")])
+unlocked = true

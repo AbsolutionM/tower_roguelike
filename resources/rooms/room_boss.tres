@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RoomData" format=3]
+
+[ext_resource type="Script" path="res://resources/rooms/room_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/enemies/boss_slime_king.tres" id="2_boss"]
+[ext_resource type="PackedScene" path="res://scenes/props/chest.tscn" id="3_chest"]
+
+[resource]
+script = ExtResource("1_script")
+room_name = "Thronsaal"
+enemy_pool = Array[EnemyData]([])
+enemy_count = 0
+room_size = Vector2(900, 1400)
+fixed_camera = false
+spawn_margin = 120.0
+min_player_distance = 300.0
+boss_data = ExtResource("2_boss")
+disable_timer = true
+chest_scene = ExtResource("3_chest")
+chest_count = 1

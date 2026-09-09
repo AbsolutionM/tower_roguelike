@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="CharacterData" format=3]
+
+[ext_resource type="Script" path="res://resources/character/character_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://resources/character/weapon_affinity.gd" id="2_affinity"]
+[ext_resource type="SpriteFrames" path="res://resources/character/first/first_frames.tres" id="3_frames"]
+[ext_resource type="Resource" path="res://resources/character/ability_time_slow.tres" id="4_ability"]
+[ext_resource type="Resource" path="res://resources/upgrades/tree_character.tres" id="5_tree"]
+[ext_resource type="Resource" path="res://resources/weapons/katana_storm.tres" id="6_weapon"]
+[ext_resource type="Resource" path="res://resources/character/schatten/schatten_rauchtritt.tres" id="7_gadget"]
+[ext_resource type="Resource" path="res://resources/character/schatten/schatten_meuchler.tres" id="8_star"]
+[ext_resource type="Texture2D" path="res://assets/sprites/first/hand.png" id="9_hand"]
+
+[sub_resource type="Resource" id="aff_katana"]
+script = ExtResource("2_affinity")
+category = 2
+damage_mult = 1.2
+attack_speed_mult = 1.2
+crit_bonus = 0.12
+
+[sub_resource type="Resource" id="aff_shortsword"]
+script = ExtResource("2_affinity")
+category = 0
+damage_mult = 1.15
+attack_speed_mult = 1.1
+crit_bonus = 0.06
+
+[resource]
+script = ExtResource("1_script")
+character_id = "schatten"
+character_name = "Schatten"
+description = "Platzhalter - Glaskanone. Trifft extrem oft kritisch, stirbt schnell."
+sprite_frames = ExtResource("3_frames")
+hand_texture = ExtResource("9_hand")
+sprite_modulate = Color(0.8, 0.74, 0.92, 1)
+accent_color = Color(0.545, 0.435, 0.831, 1)
+power = 7
+agility = 9
+vitality = 3
+fortune = 8
+base_speed = 215.0
+base_health = 68.0
+dash_speed = 940.0
+dash_duration = 0.14
+dash_cooldown = 0.7
+starting_weapon = ExtResource("6_weapon")
+ability = ExtResource("4_ability")
+upgrade_tree = ExtResource("5_tree")
+affinities = Array[WeaponAffinity]([SubResource("aff_katana"), SubResource("aff_shortsword")])
+gadget = ExtResource("7_gadget")
+star_power = ExtResource("8_star")

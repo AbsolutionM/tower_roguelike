@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="2_proj"]
+[ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="3_tree"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_id = "shotgun_boom"
+weapon_name = "Donnerbüchse"
+category = 6
+description = "Sieben Schrotkugeln auf kurze Distanz. Räumt auf."
+damage = 3.1
+bleed_buildup = 0.0
+stagger = 30.0
+weight = 5.8
+required_agility = 3
+required_power = 6
+scaling_fortune = 0
+scaling_agility = 2
+scaling_power = 3
+cooldown = 0.95
+weapon_range = 230.0
+knockback = 260.0
+screen_shake = 7.0
+is_melee = false
+projectile_scene = ExtResource("2_proj")
+projectile_speed = 560.0
+pierce_count = 1
+projectiles_per_shot = 7
+spread_degrees = 36.0
+projectile_color = Color(0.91, 0.4, 0.235, 1)
+muzzle_flash_size = 46.0
+upgrade_tree = ExtResource("3_tree")
+shop_price = 380

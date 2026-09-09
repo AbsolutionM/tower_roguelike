@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://resources/enemies/enemy_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://iy3w1m7ghusg" path="res://resources/enemies/green_slime/greenslime.png" id="2_tex"]
+[ext_resource type="Resource" path="res://resources/loot/dt_slime.tres" id="3_drops"]
+
+[resource]
+script = ExtResource("1_script")
+enemy_name = "Zünder"
+max_health = 77.2
+move_speed = 98.0
+sprite_texture = ExtResource("2_tex")
+sprite_scale = 1.0
+tint = Color(0.91, 0.4, 0.235, 1)
+behavior = 0
+movement = 1
+hop_interval = 0.45
+hop_height = 32.0
+hop_duration = 0.3
+hop_speed_mult = 3.6
+contact_damage = 16.5
+contact_range = 36.0
+attack_cooldown = 1.0
+trail_colors = Array[Color]([Color(1, 0.45, 0.2, 0.5), Color(0.8, 0.3, 0.15, 0.4)])
+squash_amount = 0.3
+squash_speed = 13.0
+knockback_friction = 480.0
+shadow_radius = 15.0
+explode_on_death = true
+explosion_damage = 22.0
+explosion_radius = 145.0
+drop_table = ExtResource("3_drops")

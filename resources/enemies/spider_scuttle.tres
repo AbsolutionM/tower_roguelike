@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://resources/enemies/enemy_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/loot/dt_slime.tres" id="2_drops"]
+
+[resource]
+script = ExtResource("1_script")
+enemy_name = "Huscher"
+max_health = 105.3
+move_speed = 70.0
+sprite_scale = 1.0
+tint = Color(0.851, 0.31, 0.31, 1)
+symbol = 4
+symbol_size = 30.0
+movement = 0
+behavior = 1
+contact_damage = 33.0
+contact_range = 36.0
+attack_cooldown = 1.6
+charge_speed = 500.0
+charge_windup = 0.4
+charge_trigger_range = 300.0
+trail_colors = Array[Color]([Color(0.7, 0.3, 0.3, 0.35)])
+knockback_friction = 620.0
+shadow_radius = 14.0
+drop_table = ExtResource("2_drops")

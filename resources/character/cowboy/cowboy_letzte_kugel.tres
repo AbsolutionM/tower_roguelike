@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="StarPowerData" format=3]
+
+[ext_resource type="Script" path="res://resources/character/star_power.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+star_id = "cowboy_letzte_kugel"
+star_name = "Letzte Kugel"
+description = "Jeder Schuss kann tödlich enden: mehr Krit-Chance und Krit-Schaden."
+stat_add = { "crit_chance": 0.10, "crit_damage": 0.45 }
+stat_mult = {}

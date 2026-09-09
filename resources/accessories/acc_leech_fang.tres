@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AccessoryData" format=3]
+
+[ext_resource type="Script" path="res://resources/accessories/accessory_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+accessory_id = "leech_fang"
+accessory_name = "Blutzahn"
+description = "Ein Zahn, der trinkt, was deine Waffe vergießt."
+rarity = 3
+shop_price = 520
+lifesteal_bonus = 0.06
+flat_damage_bonus = 2.0

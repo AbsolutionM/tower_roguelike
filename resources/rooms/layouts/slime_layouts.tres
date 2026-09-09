@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="RoomLayoutSet" format=3]
+
+[ext_resource type="Script" path="res://resources/rooms/room_layout_set.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+set_name = "Schleimturm"
+columns = 9
+layout_file = "res://resources/rooms/layouts/slime_tower.txt"

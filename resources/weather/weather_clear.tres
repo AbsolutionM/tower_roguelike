@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WeatherData" format=3]
+
+[ext_resource type="Script" path="res://resources/weather/weather_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+weather_id = "clear"
+weather_name = "Klar"
+kind = 0
+description = "Ruhige Luft. Keine Auswirkungen."
+ambient_tint = Color(1, 1, 1, 1)
+overlay_color = Color(0.5, 0.6, 0.8, 0)
+particle_count = 0

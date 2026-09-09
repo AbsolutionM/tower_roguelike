@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://resources/enemies/enemy_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://iy3w1m7ghusg" path="res://resources/enemies/green_slime/greenslime.png" id="2_tex"]
+[ext_resource type="Resource" path="res://resources/loot/dt_slime.tres" id="3_drops"]
+
+[resource]
+script = ExtResource("1_script")
+enemy_name = "Tropfen"
+max_health = 31.6
+move_speed = 120.0
+sprite_texture = ExtResource("2_tex")
+sprite_scale = 0.5
+tint = Color(0.659, 0.878, 0.373, 1)
+behavior = 0
+movement = 1
+hop_interval = 0.4
+hop_height = 24.0
+hop_duration = 0.26
+hop_speed_mult = 3.0
+contact_damage = 11.0
+contact_range = 28.0
+attack_cooldown = 0.7
+squash_amount = 0.26
+squash_speed = 11.0
+knockback_friction = 420.0
+shadow_radius = 9.0
+drop_table = ExtResource("3_drops")

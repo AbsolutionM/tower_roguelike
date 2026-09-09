@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="RoomData" format=3]
+
+[ext_resource type="Script" path="res://resources/rooms/room_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_normal.tres" id="2_normal"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_fast.tres" id="3_fast"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_tank.tres" id="4_tank"]
+[ext_resource type="PackedScene" path="res://scenes/props/chest.tscn" id="5_chest"]
+[ext_resource type="PackedScene" path="res://scenes/props/obstacle.tscn" id="6_rock"]
+[ext_resource type="Resource" path="res://resources/rooms/layouts/slime_layouts.tres" id="7_layouts"]
+
+[resource]
+script = ExtResource("1_script")
+room_name = "Gemischte Brut"
+enemy_pool = Array[EnemyData]([ExtResource("2_normal"), ExtResource("3_fast"), ExtResource("4_tank")])
+enemy_count = 5
+room_size = Vector2(660, 1150)
+fixed_camera = true
+spawn_margin = 80.0
+min_player_distance = 210.0
+layout_set = ExtResource("7_layouts")
+obstacle_scene = ExtResource("6_rock")
+obstacle_count = 4
+chest_scene = ExtResource("5_chest")
+chest_count = 1

@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://resources/enemies/enemy_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/loot/dt_elite.tres" id="2_drops"]
+[ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="3_projectile"]
+
+[resource]
+script = ExtResource("1_script")
+enemy_name = "Kreischer"
+max_health = 91.3
+move_speed = 86.0
+sprite_scale = 1.0
+tint = Color(0.29, 0.565, 0.851, 1)
+symbol = 1
+symbol_size = 33.0
+movement = 2
+fly_height = 44.0
+fly_bob = 6.0
+behavior = 2
+contact_damage = 13.8
+contact_range = 30.0
+attack_cooldown = 1.5
+keep_distance = 230.0
+shoot_range = 360.0
+projectile_scene = ExtResource("3_projectile")
+projectile_speed = 280.0
+projectile_damage = 22.0
+trail_colors = Array[Color]([Color(0.4, 0.7, 1, 0.35)])
+knockback_friction = 480.0
+shadow_radius = 12.0
+drop_table = ExtResource("2_drops")

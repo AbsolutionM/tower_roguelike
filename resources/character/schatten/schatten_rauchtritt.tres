@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="StarPowerData" format=3]
+
+[ext_resource type="Script" path="res://resources/character/star_power.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+star_id = "schatten_rauchtritt"
+star_name = "Rauchtritt"
+description = "Aus dem Nichts zurück: kürzere Dash-Abklingzeit."
+stat_add = {}
+stat_mult = { "dash_cooldown_mult": 0.60 }

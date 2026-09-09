@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://resources/character/ability_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+ability_id = "magnet_pulse"
+ability_name = "Magnetpuls"
+description = "Zieht sämtliche Beute im Raum an und heilt dabei ein Stück."
+kind = 8
+cooldown = 9.0
+damage = 0.0
+radius = 620.0
+color = Color(0.435, 0.749, 0.353, 1)
+heal_amount = 18.0

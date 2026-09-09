@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="WeatherData" format=3]
+
+[ext_resource type="Script" path="res://resources/weather/weather_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+weather_id = "storm"
+weather_name = "Gewitter"
+kind = 4
+description = "Blitze laden die Luft auf: mehr Schaden, aber auch schnellere Gegner."
+ambient_tint = Color(0.68, 0.7, 0.96, 1)
+overlay_color = Color(0.3, 0.35, 0.6, 0.1)
+particle_count = 150
+particle_color = Color(0.65, 0.76, 1, 0.5)
+particle_speed = 1500.0
+particle_length = 42.0
+particle_width = 2.5
+particle_angle_degrees = 24.0
+lightning_interval = 4.5
+lightning_color = Color(0.85, 0.9, 1, 0.45)
+player_speed_mult = 0.92
+player_damage_mult = 1.12
+enemy_speed_mult = 1.08

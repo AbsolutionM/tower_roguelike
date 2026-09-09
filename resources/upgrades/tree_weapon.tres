@@ -1,0 +1,94 @@
+[gd_resource type="Resource" script_class="UpgradeTree" format=3]
+
+[ext_resource type="Script" path="res://resources/upgrades/upgrade_tree.gd" id="1_tree"]
+[ext_resource type="Script" path="res://resources/upgrades/upgrade_data.gd" id="2_upgrade"]
+
+[sub_resource type="Resource" id="w_damage"]
+script = ExtResource("2_upgrade")
+upgrade_id = "w_damage"
+display_name = "Geschärft"
+description = "+10% Waffenschaden pro Stufe."
+tier = 0
+max_level = 6
+base_gold_cost = 30
+gold_cost_growth = 1.55
+stat_mult = {
+"damage_mult": 1.1
+}
+
+[sub_resource type="Resource" id="w_flat"]
+script = ExtResource("2_upgrade")
+upgrade_id = "w_flat"
+display_name = "Gewichtet"
+description = "+2 Grundschaden pro Stufe."
+tier = 0
+max_level = 5
+base_gold_cost = 24
+gold_cost_growth = 1.5
+stat_add = {
+"flat_damage": 2.0
+}
+
+[sub_resource type="Resource" id="w_speed"]
+script = ExtResource("2_upgrade")
+upgrade_id = "w_speed"
+display_name = "Ausbalanciert"
+description = "+8% Angriffstempo pro Stufe."
+tier = 0
+max_level = 6
+base_gold_cost = 34
+gold_cost_growth = 1.6
+stat_mult = {
+"attack_speed_mult": 1.08
+}
+
+[sub_resource type="Resource" id="w_crit"]
+script = ExtResource("2_upgrade")
+upgrade_id = "w_crit"
+display_name = "Präzision"
+description = "+4% kritische Trefferchance pro Stufe."
+tier = 1
+max_level = 5
+requires = Array[String](["w_damage"])
+base_gold_cost = 44
+gold_cost_growth = 1.65
+stat_add = {
+"crit_chance": 0.04
+}
+
+[sub_resource type="Resource" id="w_master"]
+script = ExtResource("2_upgrade")
+upgrade_id = "w_master"
+display_name = "Meisterarbeit"
+description = "+16% Waffenschaden pro Stufe."
+tier = 2
+max_level = 3
+requires = Array[String](["w_crit"])
+base_gold_cost = 95
+gold_cost_growth = 1.8
+essence_id = "slime"
+base_essence_cost = 2
+stat_mult = {
+"damage_mult": 1.16
+}
+
+[sub_resource type="Resource" id="w_lifesteal"]
+script = ExtResource("2_upgrade")
+upgrade_id = "w_lifesteal"
+display_name = "Blutrinne"
+description = "Diese Waffe gibt +1.5% des Schadens als Leben zurück."
+tier = 1
+max_level = 4
+requires = Array[String](["w_damage"])
+base_gold_cost = 70
+gold_cost_growth = 1.75
+essence_id = "slime"
+base_essence_cost = 1
+stat_add = {
+"lifesteal": 0.015
+}
+
+[resource]
+script = ExtResource("1_tree")
+tree_name = "Waffe"
+upgrades = Array[UpgradeData]([SubResource("w_damage"), SubResource("w_flat"), SubResource("w_speed"), SubResource("w_crit"), SubResource("w_lifesteal"), SubResource("w_master")])

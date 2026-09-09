@@ -1,0 +1,56 @@
+[gd_resource type="Resource" script_class="GameDatabase" format=3]
+
+[ext_resource type="Script" path="res://resources/database/game_database.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/character/cowboy/cowboy_data.tres" id="2_cowboy"]
+[ext_resource type="Resource" path="res://resources/character/first/first_data.tres" id="3_first"]
+[ext_resource type="Resource" path="res://resources/character/ronin/ronin_data.tres" id="4_ronin"]
+[ext_resource type="Resource" path="res://resources/character/brute/brute_data.tres" id="5_brute"]
+[ext_resource type="Resource" path="res://resources/character/templer/templer_data.tres" id="6_templer"]
+[ext_resource type="Resource" path="res://resources/character/schatten/schatten_data.tres" id="7_schatten"]
+[ext_resource type="Resource" path="res://resources/character/jaeger/jaeger_data.tres" id="8_jaeger"]
+[ext_resource type="Resource" path="res://resources/character/kanonier/kanonier_data.tres" id="9_kanonier"]
+[ext_resource type="Resource" path="res://resources/weapons/sword_melee.tres" id="10_shortsword"]
+[ext_resource type="Resource" path="res://resources/weapons/shortsword_bone.tres" id="11_shortsword2"]
+[ext_resource type="Resource" path="res://resources/weapons/broadsword_iron.tres" id="12_broadsword"]
+[ext_resource type="Resource" path="res://resources/weapons/broadsword_titan.tres" id="13_broadsword2"]
+[ext_resource type="Resource" path="res://resources/weapons/katana_moon.tres" id="14_katana"]
+[ext_resource type="Resource" path="res://resources/weapons/katana_storm.tres" id="15_katana2"]
+[ext_resource type="Resource" path="res://resources/weapons/revolver.tres" id="16_revolver"]
+[ext_resource type="Resource" path="res://resources/weapons/revolver_heavy.tres" id="17_revolver2"]
+[ext_resource type="Resource" path="res://resources/weapons/pistol_scrap.tres" id="18_pistol"]
+[ext_resource type="Resource" path="res://resources/weapons/pistol_burst.tres" id="19_pistol2"]
+[ext_resource type="Resource" path="res://resources/weapons/smg_buzz.tres" id="20_smg"]
+[ext_resource type="Resource" path="res://resources/weapons/smg_needle.tres" id="21_smg2"]
+[ext_resource type="Resource" path="res://resources/weapons/shotgun_boom.tres" id="22_shotgun"]
+[ext_resource type="Resource" path="res://resources/weapons/shotgun_scatter.tres" id="23_shotgun2"]
+[ext_resource type="Resource" path="res://resources/towers/tower_1.tres" id="24_tower"]
+[ext_resource type="Resource" path="res://resources/towers/tower_2.tres" id="33_tower2"]
+[ext_resource type="Resource" path="res://resources/accessories/acc_power_ring.tres" id="34_acc1"]
+[ext_resource type="Resource" path="res://resources/accessories/acc_swift_boots.tres" id="35_acc2"]
+[ext_resource type="Resource" path="res://resources/accessories/acc_life_amulet.tres" id="36_acc3"]
+[ext_resource type="Resource" path="res://resources/accessories/acc_leech_fang.tres" id="37_acc4"]
+[ext_resource type="Resource" path="res://resources/accessories/acc_hawk_eye.tres" id="38_acc5"]
+[ext_resource type="Resource" path="res://resources/accessories/acc_iron_plate.tres" id="39_acc6"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_broadsword_titan.tres" id="40_rec1"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_katana_storm.tres" id="41_rec2"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_revolver_heavy.tres" id="42_rec3"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_smg_needle.tres" id="43_rec4"]
+[ext_resource type="Resource" path="res://resources/crafting/recipe_shotgun_scatter.tres" id="44_rec5"]
+[ext_resource type="Resource" path="res://resources/items/gold_coin.tres" id="25_gold"]
+[ext_resource type="Resource" path="res://resources/items/essence_slime.tres" id="26_essence"]
+[ext_resource type="Resource" path="res://resources/items/slime_gel.tres" id="27_gel"]
+[ext_resource type="Resource" path="res://resources/items/ore_chunk.tres" id="28_ore"]
+[ext_resource type="Resource" path="res://resources/items/iron_scrap.tres" id="29_scrap"]
+[ext_resource type="Resource" path="res://resources/items/crystal_shard.tres" id="30_crystal"]
+[ext_resource type="Resource" path="res://resources/items/boss_core.tres" id="31_core"]
+[ext_resource type="Resource" path="res://resources/items/health_flask.tres" id="32_flask"]
+
+[resource]
+script = ExtResource("1_script")
+characters = Array[CharacterData]([ExtResource("2_cowboy"), ExtResource("3_first"), ExtResource("4_ronin"), ExtResource("5_brute"), ExtResource("6_templer"), ExtResource("7_schatten"), ExtResource("8_jaeger"), ExtResource("9_kanonier")])
+weapons = Array[WeaponData]([ExtResource("10_shortsword"), ExtResource("11_shortsword2"), ExtResource("12_broadsword"), ExtResource("13_broadsword2"), ExtResource("14_katana"), ExtResource("15_katana2"), ExtResource("16_revolver"), ExtResource("17_revolver2"), ExtResource("18_pistol"), ExtResource("19_pistol2"), ExtResource("20_smg"), ExtResource("21_smg2"), ExtResource("22_shotgun"), ExtResource("23_shotgun2")])
+towers = Array[TowerData]([ExtResource("24_tower"), ExtResource("33_tower2")])
+items = Array[ItemData]([ExtResource("25_gold"), ExtResource("26_essence"), ExtResource("27_gel"), ExtResource("28_ore"), ExtResource("29_scrap"), ExtResource("30_crystal"), ExtResource("31_core"), ExtResource("32_flask")])
+accessories = Array[AccessoryData]([ExtResource("34_acc1"), ExtResource("35_acc2"), ExtResource("36_acc3"), ExtResource("37_acc4"), ExtResource("38_acc5"), ExtResource("39_acc6")])
+recipes = Array[CraftingRecipe]([ExtResource("40_rec1"), ExtResource("41_rec2"), ExtResource("42_rec3"), ExtResource("43_rec4"), ExtResource("44_rec5")])
+starting_weapon_ids = Array[String](["shortsword_iron", "revolver_ordinary", "pistol_scrap"])

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+item_id = "boss_core"
+item_name = "Bosskern"
+description = "Der pulsierende Kern eines besiegten Turmwächters."
+item_type = 0
+rarity = 3
+max_stack = 20
+value = 60
+color = Color(1, 0.45, 0.75, 1)
+pickup_scale = 1.5

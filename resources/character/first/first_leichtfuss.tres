@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="StarPowerData" format=3]
+
+[ext_resource type="Script" path="res://resources/character/star_power.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+star_id = "first_leichtfuss"
+star_name = "Leichtfuß"
+description = "Kürzere Dash-Abklingzeit und mehr Lauftempo."
+stat_add = { "move_speed": 22.00 }
+stat_mult = { "dash_cooldown_mult": 0.75 }

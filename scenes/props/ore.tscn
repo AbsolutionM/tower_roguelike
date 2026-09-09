@@ -1,0 +1,21 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/props/harvestable.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/ItemPickup.tscn" id="2_pickup"]
+[ext_resource type="Resource" path="res://resources/items/ore_chunk.tres" id="3_item"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ore"]
+radius = 20.0
+
+[node name="Ore" type="Area2D"]
+script = ExtResource("1_script")
+hit_points = 3
+drop_item = ExtResource("3_item")
+drop_count_min = 1
+drop_count_max = 3
+pickup_scene = ExtResource("2_pickup")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_ore")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]

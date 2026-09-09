@@ -1,0 +1,147 @@
+[gd_resource type="Resource" script_class="UpgradeTree" format=3]
+
+[ext_resource type="Script" path="res://resources/upgrades/upgrade_tree.gd" id="1_tree"]
+[ext_resource type="Script" path="res://resources/upgrades/upgrade_data.gd" id="2_upgrade"]
+
+[sub_resource type="Resource" id="char_damage"]
+script = ExtResource("2_upgrade")
+upgrade_id = "char_damage"
+display_name = "Schlagkraft"
+description = "+10% Schaden pro Stufe."
+tier = 0
+max_level = 6
+base_gold_cost = 28
+gold_cost_growth = 1.55
+stat_mult = {
+"damage_mult": 1.1
+}
+
+[sub_resource type="Resource" id="char_health"]
+script = ExtResource("2_upgrade")
+upgrade_id = "char_health"
+display_name = "Konstitution"
+description = "+18 maximale Leben pro Stufe."
+tier = 0
+max_level = 6
+base_gold_cost = 26
+gold_cost_growth = 1.5
+stat_add = {
+"max_health": 18.0
+}
+
+[sub_resource type="Resource" id="char_speed"]
+script = ExtResource("2_upgrade")
+upgrade_id = "char_speed"
+display_name = "Laufwerk"
+description = "+12 Lauftempo pro Stufe."
+tier = 0
+max_level = 5
+base_gold_cost = 22
+gold_cost_growth = 1.5
+stat_add = {
+"move_speed": 12.0
+}
+
+[sub_resource type="Resource" id="char_magnet"]
+script = ExtResource("2_upgrade")
+upgrade_id = "char_magnet"
+display_name = "Sammler"
+description = "Loot wird aus größerer Entfernung eingezogen."
+tier = 0
+max_level = 3
+base_gold_cost = 20
+gold_cost_growth = 1.45
+stat_add = {
+"pickup_radius": 40.0
+}
+
+[sub_resource type="Resource" id="char_crit"]
+script = ExtResource("2_upgrade")
+upgrade_id = "char_crit"
+display_name = "Schwachstelle"
+description = "+4% kritische Trefferchance pro Stufe."
+tier = 1
+max_level = 5
+requires = Array[String](["char_damage"])
+base_gold_cost = 42
+gold_cost_growth = 1.65
+stat_add = {
+"crit_chance": 0.04
+}
+
+[sub_resource type="Resource" id="char_dash"]
+script = ExtResource("2_upgrade")
+upgrade_id = "char_dash"
+display_name = "Windschritt"
+description = "Dash lädt 12% schneller nach."
+tier = 1
+max_level = 3
+requires = Array[String](["char_speed"])
+base_gold_cost = 40
+gold_cost_growth = 1.7
+essence_id = "slime"
+base_essence_cost = 1
+stat_mult = {
+"dash_cooldown_mult": 0.88
+}
+
+[sub_resource type="Resource" id="char_regen"]
+script = ExtResource("2_upgrade")
+upgrade_id = "char_regen"
+display_name = "Regeneration"
+description = "+0.5 Leben pro Sekunde je Stufe."
+tier = 0
+max_level = 5
+base_gold_cost = 38
+gold_cost_growth = 1.6
+stat_add = {
+"health_regen": 0.5
+}
+
+[sub_resource type="Resource" id="char_thorns"]
+script = ExtResource("2_upgrade")
+upgrade_id = "char_thorns"
+display_name = "Dornen"
+description = "Getroffen zu werden verletzt nahe Gegner (+4 Schaden je Stufe)."
+tier = 0
+max_level = 4
+base_gold_cost = 32
+gold_cost_growth = 1.55
+stat_add = {
+"thorns": 4.0
+}
+
+[sub_resource type="Resource" id="char_lifesteal"]
+script = ExtResource("2_upgrade")
+upgrade_id = "char_lifesteal"
+display_name = "Lebensraub"
+description = "+2% des ausgeteilten Schadens kommen als Leben zurück."
+tier = 1
+max_level = 5
+requires = Array[String](["char_damage"])
+base_gold_cost = 55
+gold_cost_growth = 1.7
+essence_id = "slime"
+base_essence_cost = 1
+stat_add = {
+"lifesteal": 0.02
+}
+
+[sub_resource type="Resource" id="char_dodge"]
+script = ExtResource("2_upgrade")
+upgrade_id = "char_dodge"
+display_name = "Ausweichen"
+description = "+3% Chance, einen Treffer komplett zu vermeiden."
+tier = 1
+max_level = 4
+requires = Array[String](["char_speed"])
+base_gold_cost = 60
+gold_cost_growth = 1.75
+stat_add = {
+"dodge_chance": 0.03
+}
+
+[resource]
+script = ExtResource("1_tree")
+tree_name = "Charakter"
+upgrades = Array[UpgradeData]([SubResource("char_damage"), SubResource("char_health"), SubResource("char_speed"), SubResource("char_magnet"), SubResource("char_regen"), SubResource("char_thorns"), SubResource("char_crit"), SubResource("char_lifesteal"), SubResource("char_dodge"), SubResource("char_dash")])

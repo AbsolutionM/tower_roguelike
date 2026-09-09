@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeatherData" format=3]
+
+[ext_resource type="Script" path="res://resources/weather/weather_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+weather_id = "ash"
+weather_name = "Ascheregen"
+kind = 5
+description = "Heiße Asche treibt alles an: mehr Schaden auf beiden Seiten."
+ambient_tint = Color(1.08, 0.86, 0.74, 1)
+overlay_color = Color(0.6, 0.35, 0.25, 0.12)
+particle_count = 70
+particle_color = Color(0.91, 0.4, 0.235, 0.5)
+particle_speed = 190.0
+particle_length = 5.0
+particle_width = 2.2
+particle_angle_degrees = -18.0
+player_damage_mult = 1.1
+player_speed_mult = 1.05
+enemy_speed_mult = 1.06
