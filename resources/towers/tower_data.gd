@@ -8,6 +8,8 @@ class_name TowerData
 @export var image: Texture2D
 @export var accent_color: Color = Color(0.55, 0.75, 1.0)
 ## Grundbeleuchtung des Turms - dunkler = stimmungsvoller.
+## Kachelsatz für Boden und Wände. Leer = gezeichnetes Platzhaltermuster.
+@export var tileset: RoomTileset
 @export var ambient_color: Color = Color(0.58, 0.57, 0.74)
 @export var floors: int = 5
 @export var rooms: Array[RoomData] = []

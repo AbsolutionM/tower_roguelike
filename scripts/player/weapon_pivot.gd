@@ -41,10 +41,10 @@ func update_visuals() -> void:
 
 	if hand:
 		hand.set_radius(radius)
-		hand.z_index = -5 if facing_up else 5
+		hand.z_index = -2 if facing_up else 2
 
 	if off_hand:
 		off_hand.set_side(facing_left)
 
 	if sword:
-		sword.z_index = -5 if facing_up else 5
+		sword.z_index = -2 if facing_up else 2

@@ -344,6 +344,65 @@ func _despawn_group(group_name: String) -> void:
 		if is_instance_valid(node):
 			node.queue_free()
 
+func _get_tileset() -> RoomTileset:
+	var tower := RunState.get_selected_tower()
+	return tower.tileset if tower else null
+
+## Platzhalter, solange kein Kachelsatz hinterlegt ist.
+func _draw_placeholder_floor(half: Vector2, rect: Rect2) -> void:
+	draw_rect(rect, floor_color)
+	var x := -half.x
+	while x < half.x:
+		var y := -half.y
+		while y < half.y:
+			if int((x + half.x) / grid_size) % 2 == int((y + half.y) / grid_size) % 2:
+				draw_rect(Rect2(
+					Vector2(x, y),
+					Vector2(minf(grid_size, half.x - x), minf(grid_size, half.y - y))
+				), floor_accent)
+			y += grid_size
+		x += grid_size
+
+## Boden, Wandkante und Streudeko aus dem Kachelsatz.
+## Der Zufall hängt am Raum-Index, damit ein Raum bei jedem Neuzeichnen
+## gleich aussieht und trotzdem jeder Raum anders.
+func _draw_tiles(tileset: RoomTileset, half: Vector2, rect: Rect2) -> void:
+	var size: float = maxf(tileset.tile_size, 8.0)
+	var columns: int = int(ceil(rect.size.x / size))
+	var rows: int = int(ceil(rect.size.y / size))
+
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash(Vector2i(current_room_index, rows * 131 + columns))
+
+	# Unterlage, damit an den Rändern keine Lücke aufblitzt.
+	draw_rect(rect, floor_color)
+
+	var has_walls := tileset.has_walls()
+	for row in rows:
+		for column in columns:
+			var cell := Rect2(
+				Vector2(-half.x + float(column) * size, -half.y + float(row) * size),
+				Vector2.ONE * size
+			)
+			var on_left: bool = column == 0
+			var on_right: bool = column == columns - 1
+			var on_top: bool = row == 0
+			var on_bottom: bool = row == rows - 1
+
+			if has_walls and (on_left or on_right or on_top or on_bottom):
+				var wall := tileset.pick_wall(on_left, on_right, on_top, on_bottom)
+				if wall:
+					draw_texture_rect(wall, cell, false)
+					continue
+
+			var floor_tile := tileset.pick_floor(rng)
+			if floor_tile:
+				draw_texture_rect(floor_tile, cell, false)
+
+			var decor := tileset.pick_decor(rng)
+			if decor:
+				draw_texture_rect(decor, cell, false)
+
 func _draw() -> void:
 	if not draw_room:
 		return
@@ -354,32 +413,24 @@ func _draw() -> void:
 	var half: Vector2 = room.room_size * 0.5
 	var rect := Rect2(-half, room.room_size)
 
-	if floor_texture:
+	var tileset := _get_tileset()
+	if tileset and tileset.has_floor():
+		_draw_tiles(tileset, half, rect)
+	elif floor_texture:
 		draw_texture_rect(floor_texture, rect, true)
 	else:
-		draw_rect(rect, floor_color)
-		var x := -half.x
-		while x < half.x:
-			var y := -half.y
-			while y < half.y:
-				if int((x + half.x) / grid_size) % 2 == int((y + half.y) / grid_size) % 2:
-					var tile := Rect2(
-						Vector2(x, y),
-						Vector2(minf(grid_size, half.x - x), minf(grid_size, half.y - y))
-					)
-					draw_rect(tile, floor_accent)
-				y += grid_size
-			x += grid_size
+		_draw_placeholder_floor(half, rect)
 
-	if wall_texture:
-		var thickness := wall_thickness
-		draw_texture_rect(wall_texture, Rect2(-half, Vector2(room.room_size.x, thickness)), true)
-		draw_texture_rect(wall_texture, Rect2(Vector2(-half.x, half.y - thickness), Vector2(room.room_size.x, thickness)), true)
-		draw_texture_rect(wall_texture, Rect2(-half, Vector2(thickness, room.room_size.y)), true)
-		draw_texture_rect(wall_texture, Rect2(Vector2(half.x - thickness, -half.y), Vector2(thickness, room.room_size.y)), true)
-	else:
-		draw_rect(rect, wall_color, false, 10.0)
-		draw_rect(rect.grow(-10.0), Palette.edge(wall_color), false, 3.0)
+	if not (tileset and tileset.has_walls()):
+		if wall_texture:
+			var thickness := wall_thickness
+			draw_texture_rect(wall_texture, Rect2(-half, Vector2(room.room_size.x, thickness)), true)
+			draw_texture_rect(wall_texture, Rect2(Vector2(-half.x, half.y - thickness), Vector2(room.room_size.x, thickness)), true)
+			draw_texture_rect(wall_texture, Rect2(-half, Vector2(thickness, room.room_size.y)), true)
+			draw_texture_rect(wall_texture, Rect2(Vector2(half.x - thickness, -half.y), Vector2(thickness, room.room_size.y)), true)
+		else:
+			draw_rect(rect, wall_color, false, 10.0)
+			draw_rect(rect.grow(-10.0), Palette.edge(wall_color), false, 3.0)
 
 	# Weicher Schattenrand nach innen - lässt den Raum tiefer wirken,
 	# statt wie eine flache Testfläche auszusehen.
