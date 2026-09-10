@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("1_script")
 enemy_name = "Tropfen"
-max_health = 31.6
+max_health = 67.7
 move_speed = 120.0
 sprite_texture = ExtResource("2_tex")
 sprite_scale = 0.5

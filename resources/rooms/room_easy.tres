@@ -1,22 +1,26 @@
 [gd_resource type="Resource" script_class="RoomData" format=3]
 
 [ext_resource type="Script" path="res://resources/rooms/room_data.gd" id="1_script"]
-[ext_resource type="Resource" path="res://resources/enemies/slime_normal.tres" id="2_slime"]
-[ext_resource type="PackedScene" path="res://scenes/props/ore.tscn" id="3_ore"]
-[ext_resource type="PackedScene" path="res://scenes/props/obstacle.tscn" id="4_rock"]
-[ext_resource type="Resource" path="res://resources/rooms/layouts/slime_layouts.tres" id="5_layouts"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_normal.tres" id="2_enemy"]
+[ext_resource type="PackedScene" path="res://scenes/props/obstacle.tscn" id="90_rock"]
+[ext_resource type="PackedScene" path="res://scenes/props/chest.tscn" id="91_chest"]
+[ext_resource type="PackedScene" path="res://scenes/props/ore.tscn" id="92_ore"]
+[ext_resource type="Resource" path="res://resources/rooms/layouts/geometric_layouts.tres" id="93_layouts"]
 
 [resource]
 script = ExtResource("1_script")
 room_name = "Schleimgrube"
-enemy_pool = Array[EnemyData]([ExtResource("2_slime")])
-enemy_count = 4
-room_size = Vector2(660, 1150)
-fixed_camera = true
-spawn_margin = 80.0
-min_player_distance = 200.0
-layout_set = ExtResource("5_layouts")
-obstacle_scene = ExtResource("4_rock")
-obstacle_count = 3
-harvestable_scene = ExtResource("3_ore")
-harvestable_count = 2
+enemy_pool = Array[EnemyData]([ExtResource("2_enemy")])
+enemy_count = 5
+wave_interval = 7.0
+wave_size = 2
+wave_growth = 2.0
+max_alive = 16
+room_size = Vector2(1900, 2300)
+fixed_camera = false
+spawn_margin = 150.0
+min_player_distance = 430.0
+layout_set = ExtResource("93_layouts")
+obstacle_scene = ExtResource("90_rock")
+chest_scene = ExtResource("91_chest")
+harvestable_scene = ExtResource("92_ore")

@@ -1,22 +1,27 @@
 [gd_resource type="Resource" script_class="RoomData" format=3]
 
 [ext_resource type="Script" path="res://resources/rooms/room_data.gd" id="1_script"]
-[ext_resource type="Resource" path="res://resources/enemies/slime_charger.tres" id="2_charger"]
-[ext_resource type="Resource" path="res://resources/enemies/slime_fast.tres" id="3_fast"]
-[ext_resource type="PackedScene" path="res://scenes/props/chest.tscn" id="4_chest"]
-[ext_resource type="PackedScene" path="res://scenes/props/obstacle.tscn" id="5_rock"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_charger.tres" id="2_enemy"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_fast.tres" id="3_enemy"]
+[ext_resource type="PackedScene" path="res://scenes/props/obstacle.tscn" id="90_rock"]
+[ext_resource type="PackedScene" path="res://scenes/props/chest.tscn" id="91_chest"]
+[ext_resource type="PackedScene" path="res://scenes/props/ore.tscn" id="92_ore"]
+[ext_resource type="Resource" path="res://resources/rooms/layouts/geometric_layouts.tres" id="93_layouts"]
 
 [resource]
 script = ExtResource("1_script")
 room_name = "Große Halle"
-enemy_pool = Array[EnemyData]([ExtResource("2_charger"), ExtResource("3_fast")])
-enemy_count = 7
-room_size = Vector2(1500, 1700)
+enemy_pool = Array[EnemyData]([ExtResource("2_enemy"), ExtResource("3_enemy")])
+enemy_count = 8
+wave_interval = 5.0
+wave_size = 3
+wave_growth = 2.5
+max_alive = 28
+room_size = Vector2(2400, 2800)
 fixed_camera = false
-spawn_margin = 120.0
-min_player_distance = 320.0
-duration_override = 14.0
-obstacle_scene = ExtResource("5_rock")
-obstacle_count = 8
-chest_scene = ExtResource("4_chest")
-chest_count = 2
+spawn_margin = 180.0
+min_player_distance = 520.0
+layout_set = ExtResource("93_layouts")
+obstacle_scene = ExtResource("90_rock")
+chest_scene = ExtResource("91_chest")
+harvestable_scene = ExtResource("92_ore")

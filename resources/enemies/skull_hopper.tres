@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_script")
 enemy_name = "Knochenhüpfer"
-max_health = 119.3
+max_health = 255.6
 move_speed = 62.0
 sprite_scale = 1.0
 tint = Color(0.847, 0.824, 0.878, 1)

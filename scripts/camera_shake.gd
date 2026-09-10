@@ -91,6 +91,24 @@ func punch_zoom(amount: float = 0.06) -> void:
 	_zoom_punch = maxf(_zoom_punch, amount)
 
 ## Vom RoomController aufgerufen, wenn ein neuer Raum startet.
-func set_room(center: Vector2, use_fixed_camera: bool) -> void:
+func set_room(center: Vector2, use_fixed_camera: bool, room_size: Vector2 = Vector2.ZERO) -> void:
 	fixed_position = center
 	mode = Mode.FIXED if use_fixed_camera else Mode.FOLLOW
+	_apply_limits(center, room_size)
+
+## Hält die folgende Kamera innerhalb der Raumwände. Ist der Raum kleiner als
+## der Bildschirm, bleiben die Grenzen aus - sonst zappelt die Kamera.
+func _apply_limits(center: Vector2, room_size: Vector2) -> void:
+	var view: Vector2 = get_viewport_rect().size / maxf(_base_zoom.x, 0.01)
+	if room_size.x <= view.x or room_size.y <= view.y:
+		limit_left = -10000000
+		limit_right = 10000000
+		limit_top = -10000000
+		limit_bottom = 10000000
+		return
+
+	var half: Vector2 = room_size * 0.5
+	limit_left = int(center.x - half.x)
+	limit_right = int(center.x + half.x)
+	limit_top = int(center.y - half.y)
+	limit_bottom = int(center.y + half.y)

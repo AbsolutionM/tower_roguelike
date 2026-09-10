@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("1_script")
 enemy_name = "Flitzer"
-max_health = 56.2
+max_health = 120.4
 move_speed = 105.0
 sprite_texture = ExtResource("2_tex")
 sprite_scale = 0.8

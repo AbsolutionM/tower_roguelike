@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("1_script")
 enemy_name = "Brocken"
-max_health = 298.4
+max_health = 639.4
 move_speed = 32.0
 sprite_texture = ExtResource("2_tex")
 sprite_scale = 1.45

@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_script")
 enemy_name = "Scherbe"
-max_health = 42.1
+max_health = 90.2
 move_speed = 110.0
 sprite_scale = 1.0
 tint = Color(0.247, 0.824, 0.78, 1)

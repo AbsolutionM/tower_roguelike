@@ -164,7 +164,9 @@ func _process(_delta: float) -> void:
 	if not timer_bar:
 		return
 	timer_bar.set_value(GameManager.get_time_remaining(), maxf(GameManager.current_duration, 0.001))
-	timer_bar.fill_color = Palette.BLOOD if GameManager.get_time_remaining() < 3.0 else Palette.AZURE
+	# Die letzte halbe Minute faerbt sich rot - bei halbstuendigen Raeumen waeren
+	# drei Sekunden Vorwarnung keine.
+	timer_bar.fill_color = Palette.BLOOD if GameManager.get_time_remaining() < 30.0 else Palette.AZURE
 
 func _update_bag_label() -> void:
 	if bag_label:

@@ -4,6 +4,6 @@
 
 [resource]
 script = ExtResource("1_script")
-set_name = "Schleimturm"
-columns = 9
-layout_file = "res://resources/rooms/layouts/slime_tower.txt"
+set_name = "Geometrie"
+columns = 15
+layout_file = "res://resources/rooms/layouts/geometric.txt"

@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("1_script")
 enemy_name = "Wächterauge"
-max_health = 154.4
+max_health = 330.9
 move_speed = 52.0
 sprite_scale = 1.0
 tint = Color(0.949, 0.694, 0.204, 1)

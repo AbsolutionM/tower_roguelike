@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("1_script")
 enemy_name = "Rammer"
-max_health = 140.4
+max_health = 300.9
 move_speed = 48.0
 sprite_texture = ExtResource("2_tex")
 sprite_scale = 1.15

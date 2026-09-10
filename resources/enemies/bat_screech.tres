@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("1_script")
 enemy_name = "Kreischer"
-max_health = 91.3
+max_health = 195.6
 move_speed = 86.0
 sprite_scale = 1.0
 tint = Color(0.29, 0.565, 0.851, 1)

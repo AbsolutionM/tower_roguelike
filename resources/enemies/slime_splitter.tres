@@ -8,7 +8,7 @@
 [resource]
 script = ExtResource("1_script")
 enemy_name = "Teiler"
-max_health = 168.5
+max_health = 361.1
 move_speed = 46.0
 sprite_texture = ExtResource("2_tex")
 sprite_scale = 1.3

@@ -1,24 +1,29 @@
 [gd_resource type="Resource" script_class="RoomData" format=3]
 
 [ext_resource type="Script" path="res://resources/rooms/room_data.gd" id="1_script"]
-[ext_resource type="Resource" path="res://resources/enemies/skull_hopper.tres" id="2_skull"]
-[ext_resource type="Resource" path="res://resources/enemies/spider_scuttle.tres" id="3_spider"]
-[ext_resource type="Resource" path="res://resources/enemies/ghost_wisp.tres" id="4_ghost"]
-[ext_resource type="Resource" path="res://resources/enemies/crystal_golem.tres" id="5_golem"]
-[ext_resource type="PackedScene" path="res://scenes/props/chest.tscn" id="6_chest"]
-[ext_resource type="PackedScene" path="res://scenes/props/obstacle.tscn" id="7_rock"]
+[ext_resource type="Resource" path="res://resources/enemies/skull_hopper.tres" id="2_enemy"]
+[ext_resource type="Resource" path="res://resources/enemies/spider_scuttle.tres" id="3_enemy"]
+[ext_resource type="Resource" path="res://resources/enemies/ghost_wisp.tres" id="4_enemy"]
+[ext_resource type="Resource" path="res://resources/enemies/crystal_golem.tres" id="5_enemy"]
+[ext_resource type="PackedScene" path="res://scenes/props/obstacle.tscn" id="90_rock"]
+[ext_resource type="PackedScene" path="res://scenes/props/chest.tscn" id="91_chest"]
+[ext_resource type="PackedScene" path="res://scenes/props/ore.tscn" id="92_ore"]
+[ext_resource type="Resource" path="res://resources/rooms/layouts/geometric_layouts.tres" id="93_layouts"]
 
 [resource]
 script = ExtResource("1_script")
 room_name = "Gruft"
-enemy_pool = Array[EnemyData]([ExtResource("2_skull"), ExtResource("3_spider"), ExtResource("4_ghost"), ExtResource("5_golem")])
-enemy_count = 5
-room_size = Vector2(700, 1200)
-fixed_camera = true
-spawn_margin = 90.0
-min_player_distance = 250.0
-duration_override = 13.0
-obstacle_scene = ExtResource("7_rock")
-obstacle_count = 5
-chest_scene = ExtResource("6_chest")
-chest_count = 1
+enemy_pool = Array[EnemyData]([ExtResource("2_enemy"), ExtResource("3_enemy"), ExtResource("4_enemy"), ExtResource("5_enemy")])
+enemy_count = 6
+wave_interval = 6.0
+wave_size = 3
+wave_growth = 2.0
+max_alive = 22
+room_size = Vector2(1900, 2300)
+fixed_camera = false
+spawn_margin = 150.0
+min_player_distance = 440.0
+layout_set = ExtResource("93_layouts")
+obstacle_scene = ExtResource("90_rock")
+chest_scene = ExtResource("91_chest")
+harvestable_scene = ExtResource("92_ore")

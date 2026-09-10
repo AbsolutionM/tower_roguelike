@@ -14,7 +14,7 @@ signal room_finished
 @export var transition_delay: float = 0.55
 
 ## Nach so vielen geschafften Räumen kommt garantiert ein Bossraum (0 = aus).
-@export var boss_every: int = 4
+@export var boss_every: int = 1
 ## Gold pro Sekunde Restzeit, wenn der Raum leergeräumt wurde.
 @export var CLEAR_BONUS_PER_SECOND: float = 5.0
 
@@ -40,6 +40,9 @@ signal room_finished
 var is_transitioning: bool = false
 var current_room_index: int = -1
 
+## Zeit bis zur nächsten Welle. Nur in Räumen mit `wave_interval`.
+var _wave_timer: float = 0.0
+
 var _ambient: CanvasModulate
 
 func _ready() -> void:
@@ -56,11 +59,16 @@ func _process(_delta: float) -> void:
 	if time_label:
 		var room := get_current_room()
 		var room_name: String = room.room_name if room else ""
-		time_label.text = "%s  %.1f" % [room_name, GameManager.get_time_remaining()]
+		time_label.text = "%s  %s" % [room_name, GameManager.get_time_text()]
 
 	_clamp_player()
+	_tick_waves(_delta)
 
-	if not is_transitioning and GameManager.room_active and get_tree().get_nodes_in_group("enemies").is_empty():
+	# In Wellenräumen ist ein leerer Raum nur eine Atempause, kein Ende.
+	var room := get_current_room()
+	var waves: bool = room != null and room.wave_interval > 0.0
+	var empty: bool = get_tree().get_nodes_in_group("enemies").is_empty()
+	if not waves and not is_transitioning and GameManager.room_active and empty:
 		clear_room(true)
 
 ## Übernimmt Räume und Grundbeleuchtung des gewählten Turms.
@@ -105,6 +113,8 @@ func start_room() -> void:
 	if room and room.disable_timer:
 		duration = 99999.0
 	GameManager.start_room(duration)
+
+	_wave_timer = room.wave_interval if room else 0.0
 
 	spawn_boss()
 	# Feste Layouts haben Vorrang; ohne Layout wird zufällig verteilt.
@@ -160,7 +170,8 @@ func _setup_camera(room: RoomData) -> void:
 	var camera := get_tree().get_first_node_in_group("camera")
 	if not camera or not camera.has_method("set_room"):
 		return
-	camera.set_room(global_position, room.fixed_camera if room else true)
+	var size: Vector2 = room.room_size if room else Vector2.ZERO
+	camera.set_room(global_position, room.fixed_camera if room else true, size)
 
 func _clamp_player() -> void:
 	var room := get_current_room()
@@ -351,6 +362,10 @@ func _award_clear_bonus() -> void:
 	var room := get_current_room()
 	if room and room.disable_timer:
 		return
+	# Wellenräume laufen die volle Zeit - dort gäbe es nichts leerzuräumen,
+	# und die Restzeit wäre ein vierstelliger Goldsegen.
+	if room and room.wave_interval > 0.0:
+		return
 
 	# Zusätzlich auf die Raumdauer deckeln, damit kein Sonderfall durchrutscht.
 	var remaining: float = minf(GameManager.get_time_remaining(), GameManager.current_duration)
@@ -367,6 +382,40 @@ func _award_clear_bonus() -> void:
 	FX.floating_text(origin + Vector2(0.0, -62.0), "+%d Gold" % bonus, Palette.AMBER, 20, 48.0)
 	FX.ring_burst(origin, Palette.GOLD, 12.0, 190.0, 0.45, 8.0)
 	Audio.play(Audio.ID_LEVEL_UP)
+
+## Nachschub in Wellen. Die Wellen wachsen über die Raumdauer, damit ein
+## halbstündiger Raum am Ende anders aussieht als am Anfang.
+func _tick_waves(delta: float) -> void:
+	var room := get_current_room()
+	if not room or room.wave_interval <= 0.0 or is_transitioning or not GameManager.room_active:
+		return
+
+	# Wie die Raumuhr: echte Sekunden, damit der Hit-Stop den Nachschub
+	# nicht ausbremst.
+	_wave_timer -= delta / maxf(Engine.time_scale, 0.001)
+	if _wave_timer > 0.0:
+		return
+	_wave_timer = room.wave_interval
+
+	var alive: int = get_tree().get_nodes_in_group("enemies").size()
+	if alive >= room.max_alive:
+		return
+
+	var progress: float = 1.0 - clampf(
+		GameManager.get_time_remaining() / maxf(GameManager.current_duration, 1.0), 0.0, 1.0)
+	var count: int = int(round(float(room.wave_size) * (1.0 + room.wave_growth * progress)))
+	count = mini(count, room.max_alive - alive)
+
+	for i in count:
+		_spawn_wave_enemy(room)
+
+func _spawn_wave_enemy(room: RoomData) -> void:
+	if not enemy_scene or room.enemy_pool.is_empty():
+		return
+	var enemy = enemy_scene.instantiate()
+	enemy.enemy_data = room.enemy_pool[randi() % room.enemy_pool.size()]
+	get_tree().current_scene.add_child(enemy)
+	enemy.global_position = _random_spawn_position(room)
 
 ## Übrig gebliebenes Loot fliegt beim Raumwechsel automatisch zum Spieler.
 func _collect_remaining_pickups() -> void:
