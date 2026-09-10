@@ -6,7 +6,7 @@
 script = ExtResource("1_script")
 special_id = "cls_pistol"
 special_name = "Streufeuer"
-description = "Ein breiter Faecher aus Kugeln nach vorn."
+description = "Ein breiter Fächer aus Kugeln nach vorn."
 kind = 4
 hits_required = 12
 damage_mult = 1.40

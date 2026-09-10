@@ -46,6 +46,7 @@ func _make_character_strip(selected: CharacterData) -> Control:
 	var row := UIKit.make_row(8)
 	scroll.add_child(row)
 
+	var selected_panel: Control = null
 	for character in Database.get_characters():
 		if not character:
 			continue
@@ -64,6 +65,18 @@ func _make_character_strip(selected: CharacterData) -> Control:
 				refresh()
 		)
 		row.add_child(panel)
+		if is_selected:
+			selected_panel = panel
+
+	# Nach dem Layout: den gewählten Helden in die Mitte der Leiste holen.
+	if selected_panel:
+		scroll.ready.connect(func() -> void:
+			await get_tree().process_frame
+			if not is_instance_valid(scroll) or not is_instance_valid(selected_panel):
+				return
+			var center: float = selected_panel.position.x + selected_panel.size.x * 0.5
+			scroll.scroll_horizontal = int(maxf(center - scroll.size.x * 0.5, 0.0))
+		, CONNECT_ONE_SHOT)
 
 	return scroll
 
@@ -195,7 +208,7 @@ func _make_weapon_card(character: CharacterData, weapon: WeaponData, is_equipped
 	card.add_child(UIKit.make_label(weapon.get_category_name(), 14, UIKit.TEXT_DIM))
 	# Der Schaden, den genau dieser Held mit genau dieser Schmiedestufe macht.
 	card.add_child(UIKit.make_label(
-		"%.0f Schaden · %.2fs" % [weapon.get_effective_damage(character, level), weapon.cooldown],
+		"%s · %.2fs" % [weapon.describe_damage(character, level), weapon.cooldown],
 		14, UIKit.TEXT_DIM
 	))
 	var missing := weapon.describe_missing_requirements(character)

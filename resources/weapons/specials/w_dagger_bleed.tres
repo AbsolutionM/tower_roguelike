@@ -6,7 +6,7 @@
 script = ExtResource("1_script")
 special_id = "w_dagger_bleed"
 special_name = "Verbluten"
-description = "Der Blutdolch reisst alle offenen Wunden gleichzeitig auf."
+description = "Der Blutdolch reißt alle offenen Wunden gleichzeitig auf."
 kind = 2
 hits_required = 6
 damage_mult = 3.40

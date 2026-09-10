@@ -6,7 +6,7 @@
 script = ExtResource("1_script")
 special_id = "cls_smg"
 special_name = "Rundumschlag"
-description = "Der Lauf laeuft heiss und feuert in alle Richtungen."
+description = "Der Lauf läuft heiß und feuert in alle Richtungen."
 kind = 5
 hits_required = 30
 damage_mult = 1.20

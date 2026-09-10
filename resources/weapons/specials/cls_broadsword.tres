@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_script")
 special_id = "cls_broadsword"
-special_name = "Erdstoss"
+special_name = "Erdstoß"
 description = "Ein Hieb in den Boden. Die Druckwelle wirft alles im Umkreis weg."
 kind = 0
 hits_required = 6

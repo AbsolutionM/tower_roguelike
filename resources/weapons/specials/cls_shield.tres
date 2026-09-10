@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_script")
 special_id = "cls_shield"
-special_name = "Schildstoss"
-description = "Ein Rempler, der alles vor dem Traeger umwirft."
+special_name = "Schildstoß"
+description = "Ein Rempler, der alles vor dem Träger umwirft."
 kind = 0
 hits_required = 7
 damage_mult = 2.00

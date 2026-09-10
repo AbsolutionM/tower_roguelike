@@ -6,7 +6,7 @@
 script = ExtResource("1_script")
 special_id = "w_raygun_astral"
 special_name = "Strahlensturm"
-description = "Der Strahler entlaedt sich in alle Richtungen."
+description = "Der Strahler entlädt sich in alle Richtungen."
 kind = 5
 hits_required = 8
 damage_mult = 2.20

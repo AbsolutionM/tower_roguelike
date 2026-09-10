@@ -6,7 +6,7 @@
 script = ExtResource("1_script")
 special_id = "w_flamethrower"
 special_name = "Feuersturm"
-description = "Der Druck entlaedt sich als Ring aus Flammen."
+description = "Der Druck entlädt sich als Ring aus Flammen."
 kind = 0
 hits_required = 24
 damage_mult = 1.80

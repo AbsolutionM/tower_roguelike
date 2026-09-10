@@ -7,13 +7,13 @@
 [resource]
 script = ExtResource("1_script")
 weapon_id = "greataxe"
-weapon_name = "Grossaxt"
+weapon_name = "Großaxt"
 category = 1
 icon = ExtResource("2_art")
 hold_texture = ExtResource("2_art")
 hold_scale = 0.68
 hold_rotation_degrees = -45.0
-description = "Zwei Haende, ein Schlag, viel Platz drumherum."
+description = "Zwei Hände, ein Schlag, viel Platz drumherum."
 rarity = 1
 damage = 20.0
 cooldown = 1.140

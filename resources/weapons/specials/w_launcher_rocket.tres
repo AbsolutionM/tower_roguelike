@@ -6,7 +6,7 @@
 script = ExtResource("1_script")
 special_id = "w_launcher_rocket"
 special_name = "Bombardement"
-description = "Die letzte Rakete faellt senkrecht auf das Ziel."
+description = "Die letzte Rakete fällt senkrecht auf das Ziel."
 kind = 9
 hits_required = 4
 damage_mult = 3.80

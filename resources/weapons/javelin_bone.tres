@@ -8,7 +8,7 @@
 [resource]
 script = ExtResource("1_script")
 weapon_id = "javelin_bone"
-weapon_name = "Wurfspiess"
+weapon_name = "Wurfspieß"
 category = 10
 icon = ExtResource("2_art")
 hold_texture = ExtResource("2_art")

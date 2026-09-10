@@ -201,11 +201,24 @@ func get_effective_damage(character: CharacterData, level: int) -> float:
 		total *= REQUIREMENT_PENALTY
 	return total
 
+## Schaden pro Schuss als Text. Eine Schrotflinte mit "2 Schaden" liest sich
+## kaputt, solange nicht danebensteht, dass sie zehn Kugeln auf einmal wirft.
+func describe_damage(character: CharacterData = null, level: int = 0) -> String:
+	var value := get_effective_damage(character, level)
+	if projectiles_per_shot > 1:
+		return "%d x %.0f Schaden" % [projectiles_per_shot, value]
+	return "%.0f Schaden" % value
+
+## Einzeiler für Listen: Klasse, Schaden, Takt.
+func describe_line(character: CharacterData = null, level: int = 0) -> String:
+	return "%s · %s · %.2fs" % [get_category_name(), describe_damage(character, level), cooldown]
+
 ## Werteblatt für die Menüs: [{ "name": String, "value": String }, ...]
 func describe_sheet(character: CharacterData, level: int) -> Array:
 	return [
 		{"name": "Angriff", "value": "%.0f" % get_effective_damage(character, level)},
 		{"name": "Angriffe/s", "value": "%.2f" % (attack_speed_mult / maxf(cooldown, 0.01))},
+		{"name": "Geschosse", "value": "%d" % maxi(projectiles_per_shot, 1)},
 		{"name": "Reichweite", "value": "%.0f" % weapon_range},
 		{"name": "Gewicht", "value": "%.1f" % weight},
 		{"name": "Standfestigkeit", "value": "%.0f" % (stagger * Progression.reinforce_stagger_mult(level))},

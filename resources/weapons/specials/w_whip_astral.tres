@@ -6,7 +6,7 @@
 script = ExtResource("1_script")
 special_id = "w_whip_astral"
 special_name = "Sternenriemen"
-description = "Der Riemen zieht Leben aus einem viel groesseren Umkreis."
+description = "Der Riemen zieht Leben aus einem viel größeren Umkreis."
 kind = 7
 hits_required = 7
 damage_mult = 2.60

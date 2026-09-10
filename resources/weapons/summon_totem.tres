@@ -8,7 +8,7 @@
 [resource]
 script = ExtResource("1_script")
 weapon_id = "summon_totem"
-weapon_name = "Beschwoerungsstab"
+weapon_name = "Beschwörungsstab"
 category = 8
 icon = ExtResource("2_art")
 hold_texture = ExtResource("2_art")

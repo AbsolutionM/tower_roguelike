@@ -6,7 +6,7 @@
 script = ExtResource("1_script")
 special_id = "w_wand_cobalt"
 special_name = "Frostnova"
-description = "Ein Kaelteschock, der alle Gegner spuerbar ausbremst."
+description = "Ein Kälteschock, der alle Gegner spürbar ausbremst."
 kind = 8
 hits_required = 10
 damage_mult = 1.80

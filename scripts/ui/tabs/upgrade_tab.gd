@@ -113,7 +113,7 @@ func _make_weapon_card(weapon: WeaponData, character: CharacterData, is_equipped
 	title.add_child(UIKit.make_label(subtitle, 14, UIKit.TEXT_DIM))
 
 	header.add_child(UIKit.make_label(
-		"%.0f Schaden" % weapon.get_effective_damage(character, level),
+		weapon.describe_damage(character, level),
 		18, accent, HORIZONTAL_ALIGNMENT_RIGHT
 	))
 

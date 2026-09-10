@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_script")
 special_id = "w_greatsword_flame"
-special_name = "Flammenstoss"
-description = "Die glühende Klinge zuendet alles im Umkreis an."
+special_name = "Flammenstoß"
+description = "Die glühende Klinge zündet alles im Umkreis an."
 kind = 0
 hits_required = 6
 damage_mult = 3.20

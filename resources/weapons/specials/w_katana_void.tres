@@ -6,7 +6,7 @@
 script = ExtResource("1_script")
 special_id = "w_katana_void"
 special_name = "Leereschnitt"
-description = "Ein Schnitt, der ueber jede Entfernung hinweg trifft."
+description = "Ein Schnitt, der über jede Entfernung hinweg trifft."
 kind = 2
 hits_required = 7
 damage_mult = 3.60

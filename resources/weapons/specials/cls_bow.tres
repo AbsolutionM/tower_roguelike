@@ -6,7 +6,7 @@
 script = ExtResource("1_script")
 special_id = "cls_bow"
 special_name = "Sperrfeuer"
-description = "Ein gespannter Pfeil, der nichts aufhaelt."
+description = "Ein gespannter Pfeil, der nichts aufhält."
 kind = 3
 hits_required = 7
 damage_mult = 3.60

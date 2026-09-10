@@ -109,6 +109,10 @@ func _make_hand(mirrored: bool) -> Sprite2D:
 
 ## Nur das Haltesprite - Inventar-Icons sind teils undurchsichtige JPGs und
 ## würden als weißer Klotz in der Hand landen.
+##
+## Versatz und Ruhedrehung kommen aus denselben Regeln wie im Kampf
+## (WeaponController._hold_offset und _rest_rotation), damit eine Waffe im
+## Heldenbild so in der Faust liegt wie nachher im Turm.
 func _make_weapon() -> Sprite2D:
 	if not weapon or not weapon.hold_texture:
 		return null
@@ -122,8 +126,10 @@ func _make_weapon() -> Sprite2D:
 	var factor: float = _body_size.y * 0.7 / maxf(texture_size.length(), 1.0)
 	sprite.scale = Vector2.ONE * factor
 
-	# Der Griff sitzt in der Hand, die Klinge zeigt nach schräg oben hinaus.
-	sprite.offset = Vector2(texture_size.x * 0.35, -texture_size.y * 0.25)
+	# Klingen sind diagonal gezeichnet: der Versatz entlang dieser Diagonalen
+	# setzt den Griff in die Faust. Schusswaffen liegen mittig darin.
+	if weapon.holds_upright():
+		sprite.offset = Vector2(texture_size.x, -texture_size.y) * 0.34
 	return sprite
 
 ## Skaliert die Figur auf die aktuelle Panelgröße und setzt die Handpunkte.
@@ -155,16 +161,25 @@ func _process(delta: float) -> void:
 		# Minimales Stauchen - die Figur wirkt dadurch, als würde sie atmen.
 		_body.scale = Vector2(1.0, 1.0 + breathe * 0.02)
 
+	# Die Handpunkte sind, wo die Hand *gemalt* ist. Die Knotenposition liegt
+	# um `_hand_center` daneben, weil die Handtextur viel leeren Rand hat -
+	# die Waffe muss dem gemalten Punkt folgen, nicht dem Knoten, sonst hängt
+	# sie neben dem Kopf statt in der Faust.
+	var left_point := Vector2(-_hand_anchor.x, _hand_anchor.y + sin(_time * breathe_speed + 0.9) * 0.7)
+	var right_point := Vector2(_hand_anchor.x, _hand_anchor.y + sin(_time * breathe_speed + 0.4) * 0.7)
+	var right_tilt: float = sin(_time * sway_speed) * 0.14
+
 	if _left_hand:
-		_left_hand.position = Vector2(-_hand_anchor.x, _hand_anchor.y + sin(_time * breathe_speed + 0.9) * 0.7) 			+ Vector2(-_hand_center.x, _hand_center.y)
+		_left_hand.position = left_point + Vector2(-_hand_center.x, _hand_center.y)
 		_left_hand.rotation = sin(_time * sway_speed + 1.7) * 0.10
 
 	if _right_hand:
-		_right_hand.position = Vector2(_hand_anchor.x, _hand_anchor.y + sin(_time * breathe_speed + 0.4) * 0.7) 			+ _hand_center
-		_right_hand.rotation = sin(_time * sway_speed) * 0.14
-		if _weapon_sprite:
-			_weapon_sprite.position = _right_hand.position
-			_weapon_sprite.rotation = _right_hand.rotation - PI * 0.22
+		_right_hand.position = right_point + _hand_center
+		_right_hand.rotation = right_tilt
+
+	if _weapon_sprite:
+		_weapon_sprite.position = right_point
+		_weapon_sprite.rotation = right_tilt + deg_to_rad(weapon.hold_rotation_degrees)
 
 	queue_redraw()
 

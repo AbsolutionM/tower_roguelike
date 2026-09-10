@@ -6,7 +6,7 @@
 script = ExtResource("1_script")
 special_id = "w_shield_void"
 special_name = "Bollwerk"
-description = "Ein Stoss, der alles umwirft und den Traeger heilt."
+description = "Ein Stoß, der alles umwirft und den Träger heilt."
 kind = 7
 hits_required = 6
 damage_mult = 2.40

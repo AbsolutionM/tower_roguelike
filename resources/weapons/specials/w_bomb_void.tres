@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_script")
 special_id = "w_bomb_void"
-special_name = "Kettenzuendung"
+special_name = "Kettenzündung"
 description = "Alle geworfenen Bomben gehen gleichzeitig hoch."
 kind = 0
 hits_required = 5

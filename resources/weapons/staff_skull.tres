@@ -8,7 +8,7 @@
 [resource]
 script = ExtResource("1_script")
 weapon_id = "staff_skull"
-weapon_name = "Schaedelstab"
+weapon_name = "Schädelstab"
 category = 8
 icon = ExtResource("2_art")
 hold_texture = ExtResource("2_art")

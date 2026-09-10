@@ -6,7 +6,7 @@
 script = ExtResource("1_script")
 special_id = "cls_shortsword"
 special_name = "Klingenwirbel"
-description = "Nach genug schnellen Stichen dreht sich der Traeger einmal komplett durch."
+description = "Nach genug schnellen Stichen dreht sich der Träger einmal komplett durch."
 kind = 1
 hits_required = 10
 damage_mult = 2.20

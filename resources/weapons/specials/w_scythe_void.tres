@@ -6,7 +6,7 @@
 script = ExtResource("1_script")
 special_id = "w_scythe_void"
 special_name = "Ernte"
-description = "Was die Sense schneidet, naehrt den Traeger."
+description = "Was die Sense schneidet, nährt den Träger."
 kind = 7
 hits_required = 7
 damage_mult = 3.00

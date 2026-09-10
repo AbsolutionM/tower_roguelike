@@ -84,7 +84,7 @@ func _make_row(title: String, subtitle: String, detail: String, accent: Color, p
 func _make_weapon_row(weapon: WeaponData) -> Control:
 	return _make_row(
 		weapon.weapon_name,
-		"%s · %.0f Schaden · %.2fs" % [weapon.get_category_name(), weapon.damage, weapon.cooldown],
+		weapon.describe_line(),
 		weapon.description,
 		UIKit.ACCENT,
 		weapon.shop_price,

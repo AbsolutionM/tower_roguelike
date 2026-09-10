@@ -6,7 +6,7 @@
 script = ExtResource("1_script")
 special_id = "cls_staff"
 special_name = "Kettenblitz"
-description = "Ein Blitz springt von Gegner zu Gegner und wird dabei schwaecher."
+description = "Ein Blitz springt von Gegner zu Gegner und wird dabei schwächer."
 kind = 6
 hits_required = 8
 damage_mult = 2.00

@@ -8,7 +8,7 @@
 [resource]
 script = ExtResource("1_script")
 weapon_id = "blunderbuss"
-weapon_name = "Donnerbuechse"
+weapon_name = "Donnerbüchse"
 category = 6
 icon = ExtResource("2_art")
 hold_texture = ExtResource("2_art")

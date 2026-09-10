@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("1_script")
 weapon_id = "greatsword_crystal"
-weapon_name = "Kristall-Grossschwert"
+weapon_name = "Kristall-Großschwert"
 category = 1
 icon = ExtResource("2_art")
 hold_texture = ExtResource("2_art")

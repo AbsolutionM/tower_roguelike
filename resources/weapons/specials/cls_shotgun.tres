@@ -6,7 +6,7 @@
 script = ExtResource("1_script")
 special_id = "cls_shotgun"
 special_name = "Doppelladung"
-description = "Beide Laeufe auf einmal, aus naechster Naehe."
+description = "Beide Läufe auf einmal, aus nächster Nähe."
 kind = 4
 hits_required = 5
 damage_mult = 2.40

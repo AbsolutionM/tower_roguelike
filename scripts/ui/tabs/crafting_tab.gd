@@ -7,12 +7,11 @@ func build() -> void:
 	var content := make_scroll(column, 10)
 
 	content.add_child(UIKit.make_label("Baupläne", 20, UIKit.TEXT_DIM))
-	var recipes := Database.get_recipes()
+	var recipes := _sorted_recipes()
 	if recipes.is_empty():
 		content.add_child(UIKit.make_label("Keine Baupläne bekannt.", 15, UIKit.TEXT_DIM))
 	for recipe in recipes:
-		if recipe and recipe.result_weapon:
-			content.add_child(_make_recipe_row(recipe))
+		content.add_child(_make_recipe_row(recipe))
 
 	content.add_child(UIKit.make_label("Lager", 20, UIKit.TEXT_DIM))
 	var entries := RunState.get_stash_entries()
@@ -26,6 +25,30 @@ func build() -> void:
 		content.add_child(_make_stash_row(entry["item"], int(entry["count"])))
 
 # --- Bauen -----------------------------------------------------------------
+
+## Was jetzt gebaut werden kann, steht oben; danach das Erreichbare nach Preis;
+## Gebautes ganz unten. Ungeordnet sucht man in einer langen Liste zu lange.
+func _sorted_recipes() -> Array[CraftingRecipe]:
+	var usable: Array[CraftingRecipe] = []
+	for recipe in Database.get_recipes():
+		if recipe and recipe.result_weapon:
+			usable.append(recipe)
+
+	usable.sort_custom(func(a: CraftingRecipe, b: CraftingRecipe) -> bool:
+		var rank_a := _recipe_rank(a)
+		var rank_b := _recipe_rank(b)
+		if rank_a != rank_b:
+			return rank_a < rank_b
+		if a.gold_cost != b.gold_cost:
+			return a.gold_cost < b.gold_cost
+		return a.result_weapon.weapon_name < b.result_weapon.weapon_name
+	)
+	return usable
+
+func _recipe_rank(recipe: CraftingRecipe) -> int:
+	if RunState.is_weapon_owned(recipe.result_weapon.weapon_id):
+		return 2
+	return 0 if recipe.can_craft() else 1
 
 func _make_recipe_row(recipe: CraftingRecipe) -> Control:
 	var weapon := recipe.result_weapon
@@ -43,7 +66,7 @@ func _make_recipe_row(recipe: CraftingRecipe) -> Control:
 	row.add_child(info)
 	info.add_child(UIKit.make_label(weapon.weapon_name, 19, UIKit.TEXT))
 	info.add_child(UIKit.make_label(
-		"%s · %.0f Schaden · %.2fs" % [weapon.get_category_name(), weapon.damage, weapon.cooldown],
+		weapon.describe_line(),
 		14, UIKit.TEXT_DIM
 	))
 
