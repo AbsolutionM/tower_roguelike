@@ -33,5 +33,5 @@ script = ExtResource("1_table")
 entries = Array[DropEntry]([SubResource("Entry_essence"), SubResource("Entry_gel"), SubResource("Entry_flask")])
 gold_item = ExtResource("3_gold")
 gold_chance = 0.85
-gold_min = 1
-gold_max = 3
+gold_min = 2
+gold_max = 6

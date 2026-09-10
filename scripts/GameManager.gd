@@ -3,18 +3,15 @@ extends Node
 signal room_time_up
 signal floor_completed(floor_number: int)
 
-## Ein Raum ist eine halbstuendige Arena. Der Nachschub laeuft in Wellen,
-## siehe RoomData.wave_interval.
-@export var room_duration: float = 1800.0
-## Arena + Bossraum ergeben eine Etage.
-const ROOMS_PER_FLOOR: int = 2
+@export var room_duration: float = 30.0
+const ROOMS_PER_FLOOR: int = 10
 const TOTAL_FLOORS: int = 50
 
 var current_floor: int = 1
 var rooms_cleared_this_floor: int = 0
 var room_timer: float = 0.0
 var room_active: bool = false
-var current_duration: float = 1800.0
+var current_duration: float = 30.0
 
 ## Zahlen des laufenden Durchgangs - der Abschlussbildschirm liest sie aus.
 var run_rooms_cleared: int = 0
@@ -74,7 +71,7 @@ func start_room(duration_override: float = 0.0) -> void:
 
 func _process(delta: float) -> void:
 	# Der Hit-Stop verlangsamt die ganze Engine. Die Raumuhr laeuft trotzdem in
-	# echten Sekunden - sonst dauert ein Dreissig-Minuten-Raum vierzig.
+	# echten Sekunden - sonst dehnt jeder Treffer den Raum ein Stueck laenger.
 	var real_delta: float = delta / maxf(Engine.time_scale, 0.001)
 	if run_active:
 		run_elapsed += real_delta
@@ -87,15 +84,6 @@ func _process(delta: float) -> void:
 
 func get_time_remaining() -> float:
 	return max(room_timer, 0.0)
-
-## Restzeit als m:ss - bei halbstuendigen Raeumen ist eine Sekundenzahl
-## unlesbar geworden.
-func get_time_text() -> String:
-	var remaining: float = get_time_remaining()
-	if remaining >= 5999.0:
-		return "--:--"
-	var total: int = int(ceil(remaining))
-	return "%d:%02d" % [total / 60, total % 60]
 
 ## Gegner werden pro Etage zäher und gefährlicher.
 func get_health_scale() -> float:

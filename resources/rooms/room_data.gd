@@ -8,17 +8,6 @@ class_name RoomData
 ## Gegner beim Betreten des Raums.
 @export var enemy_count: int = 4
 
-@export_group("Nachschub")
-## Sekunden zwischen zwei Wellen. 0 = kein Nachschub, der Raum ist nach dem
-## letzten Gegner leer. Lange Arenaräume brauchen einen Wert, sonst steht man
-## neunundzwanzig Minuten in einem leeren Raum.
-@export var wave_interval: float = 0.0
-## Gegner pro Welle zu Beginn.
-@export var wave_size: int = 3
-## Wie stark die Wellen über die Raumdauer anwachsen (1.0 = doppelt am Ende).
-@export var wave_growth: float = 1.0
-## Obergrenze gleichzeitig lebender Gegner - schützt Bildrate und Nerven.
-@export var max_alive: int = 26
 
 @export_group("Layout")
 ## Größe des Raums. Ist er größer als der Bildschirm, folgt die Kamera dem Spieler.
