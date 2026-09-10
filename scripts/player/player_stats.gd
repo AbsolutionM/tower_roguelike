@@ -41,7 +41,6 @@ static func preview(character: CharacterData) -> PlayerStats:
 
 func _ready() -> void:
 	add_to_group("player_stats")
-	RunState.upgrade_purchased.connect(_on_upgrade_purchased)
 	RunState.loadout_changed.connect(recalculate)
 	Weather.weather_changed.connect(_on_weather_changed)
 	recalculate()
@@ -49,13 +48,9 @@ func _ready() -> void:
 func _on_weather_changed(_weather: WeatherData) -> void:
 	recalculate()
 
-func _on_upgrade_purchased(_upgrade_id: String, _level: int) -> void:
-	recalculate()
-
 func recalculate() -> void:
 	_apply_base()
 	_apply_power_level()
-	_apply_upgrades()
 	_apply_weapon_upgrades()
 	_apply_accessories()
 	_apply_weather()
@@ -89,12 +84,6 @@ func _apply_weapon_upgrades() -> void:
 	# Gewicht 3.0 ist neutral - alles darüber bremst, alles darunter macht flink.
 	move_speed -= (weapon.weight - 3.0) * 6.0
 	armor += weapon.armor_bonus
-
-	if not weapon.upgrade_tree:
-		return
-	var prefix := weapon.upgrade_prefix()
-	lifesteal += weapon.upgrade_tree.get_stat_add("lifesteal", prefix)
-	health_regen += weapon.upgrade_tree.get_stat_add("health_regen", prefix)
 
 ## Wetter wirkt zuletzt, damit es auf allem anderen aufsetzt.
 func _apply_weather() -> void:
@@ -147,21 +136,6 @@ func _apply_base() -> void:
 	thorns = 0.0
 	dodge_chance = 0.0
 
-func _apply_upgrades() -> void:
-	if not character_data or not character_data.upgrade_tree:
-		return
-	var prefix := character_data.upgrade_prefix()
-	for upgrade in character_data.upgrade_tree.upgrades:
-		if not upgrade:
-			continue
-		var level := RunState.get_upgrade_level(prefix + upgrade.upgrade_id)
-		if level <= 0:
-			continue
-		for stat_name in upgrade.stat_add:
-			_add_stat(str(stat_name), float(upgrade.stat_add[stat_name]) * level)
-		for stat_name in upgrade.stat_mult:
-			_mult_stat(str(stat_name), pow(float(upgrade.stat_mult[stat_name]), level))
-
 func _apply_accessories() -> void:
 	if not character_data:
 		return
@@ -200,13 +174,6 @@ func get_weapon_modifiers(weapon: WeaponData) -> Dictionary:
 	}
 	if not weapon:
 		return mods
-
-	if weapon.upgrade_tree:
-		var prefix := weapon.upgrade_prefix()
-		mods["damage"] = float(mods["damage"]) * weapon.upgrade_tree.get_stat_mult("damage_mult", prefix)
-		mods["attack_speed"] = float(mods["attack_speed"]) * weapon.upgrade_tree.get_stat_mult("attack_speed_mult", prefix)
-		mods["crit"] = float(mods["crit"]) + weapon.upgrade_tree.get_stat_add("crit_chance", prefix)
-		mods["flat"] = float(mods["flat"]) + weapon.upgrade_tree.get_stat_add("flat_damage", prefix)
 
 	if character_data:
 		var affinity := character_data.get_affinity(weapon.category)

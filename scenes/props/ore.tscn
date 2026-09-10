@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/props/harvestable.gd" id="1_script"]
-[ext_resource type="PackedScene" path="res://scenes/ItemPickup.tscn" id="2_pickup"]
+[ext_resource type="PackedScene" path="res://scenes/props/item_pickup.tscn" id="2_pickup"]
 [ext_resource type="Resource" path="res://resources/items/ore_chunk.tres" id="3_item"]
 [ext_resource type="Texture2D" path="res://assets/sprites/tiles/erz_schleim.png" id="4_erz"]
 

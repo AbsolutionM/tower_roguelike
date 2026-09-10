@@ -2,7 +2,7 @@ extends TownTab
 
 ## Mittlerer Reiter: zeigt den Turm, den man betreten wird.
 
-const GAME_SCENE := "res://scenes/test/test_weapons.tscn"
+const GAME_SCENE := "res://scenes/game.tscn"
 
 func build() -> void:
 	var tower := RunState.get_selected_tower()

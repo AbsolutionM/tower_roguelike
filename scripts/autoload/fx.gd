@@ -66,9 +66,9 @@ func floating_text(world_pos: Vector2, text: String, tint: Color = COLOR_DAMAGE,
 func damage_number(world_pos: Vector2, amount: float, crit: bool = false, tint: Color = COLOR_DAMAGE) -> void:
 	var text := str(int(round(amount)))
 	if crit:
-		floating_text(world_pos, text + "!", COLOR_CRIT, 30, 62.0)
+		floating_text(world_pos, text + "!", COLOR_CRIT, 26, 54.0)
 	else:
-		floating_text(world_pos, text, tint, 20, 46.0)
+		floating_text(world_pos, text, tint, 18, 40.0)
 
 func hit_spark(world_pos: Vector2, tint: Color = COLOR_DAMAGE, count: int = 8, direction: Vector2 = Vector2.ZERO, spread: float = TAU, length: float = 34.0) -> void:
 	var host := _host()

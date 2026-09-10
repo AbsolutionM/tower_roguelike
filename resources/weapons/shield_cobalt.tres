@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/sprites/weapons/shield_cobalt.png" id="2_art"]
-[ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="4_tree"]
 [ext_resource type="Resource" path="res://resources/weapons/specials/cls_shield.tres" id="5_special"]
 
 [resource]
@@ -36,5 +35,4 @@ swing_duration = 0.18
 swing_angle_degrees = 180.0
 armor_bonus = 13.0
 special = ExtResource("5_special")
-upgrade_tree = ExtResource("4_tree")
 shop_price = 960

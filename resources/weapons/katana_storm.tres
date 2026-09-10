@@ -1,7 +1,6 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
-[ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="3_tree"]
 [ext_resource type="Texture2D" path="res://assets/sprites/weapons/katana_storm.png" id="14_art"]
 [ext_resource type="Resource" path="res://resources/weapons/specials/cls_katana.tres" id="15_special"]
 
@@ -34,5 +33,4 @@ is_melee = true
 attack_reach = 102.0
 swing_duration = 0.07
 swing_angle_degrees = 165.0
-upgrade_tree = ExtResource("3_tree")
 shop_price = 0

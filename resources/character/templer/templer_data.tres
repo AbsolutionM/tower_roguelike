@@ -4,7 +4,6 @@
 [ext_resource type="Script" path="res://resources/character/weapon_affinity.gd" id="2_affinity"]
 [ext_resource type="SpriteFrames" path="res://resources/character/cowboy/frames.tres" id="3_frames"]
 [ext_resource type="Resource" path="res://resources/character/ability_shield.tres" id="4_ability"]
-[ext_resource type="Resource" path="res://resources/upgrades/tree_character.tres" id="5_tree"]
 [ext_resource type="Resource" path="res://resources/weapons/broadsword_titan.tres" id="6_weapon"]
 [ext_resource type="Resource" path="res://resources/character/templer/templer_gebet.tres" id="7_gadget"]
 [ext_resource type="Resource" path="res://resources/character/templer/templer_geweihte_ruestung.tres" id="8_star"]
@@ -44,7 +43,6 @@ dash_duration = 0.18
 dash_cooldown = 1.25
 starting_weapon = ExtResource("6_weapon")
 ability = ExtResource("4_ability")
-upgrade_tree = ExtResource("5_tree")
 affinities = Array[WeaponAffinity]([SubResource("aff_broadsword"), SubResource("aff_shortsword")])
 gadget = ExtResource("7_gadget")
 star_power = ExtResource("8_star")

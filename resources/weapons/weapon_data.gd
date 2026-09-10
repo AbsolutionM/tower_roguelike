@@ -131,7 +131,6 @@ const CATEGORY_NAMES := {
 @export var armor_bonus: float = 0.0
 
 @export_group("Fortschritt")
-@export var upgrade_tree: UpgradeTree
 ## 0 = nicht im Shop erhältlich (z.B. nur über Crafting).
 @export var shop_price: int = 0
 
@@ -147,10 +146,6 @@ func holds_upright() -> bool:
 
 func get_category_name() -> String:
 	return CATEGORY_NAMES.get(category, "Waffe")
-
-## Trennt den Upgrade-Fortschritt pro Waffe, auch wenn sich alle einen Baum teilen.
-func upgrade_prefix() -> String:
-	return weapon_id + ":"
 
 func is_ranged() -> bool:
 	return not is_melee

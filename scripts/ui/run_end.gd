@@ -3,7 +3,7 @@ extends Control
 ## Abschluss eines Runs: was gerettet wurde und was der Tod gekostet hat.
 
 const TOWN_SCENE := "res://scenes/ui/town.tscn"
-const GAME_SCENE := "res://scenes/test/test_weapons.tscn"
+const GAME_SCENE := "res://scenes/game.tscn"
 
 func _ready() -> void:
 	UIKit.apply_pixel_theme(self)

@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/props/chest.gd" id="1_script"]
-[ext_resource type="PackedScene" path="res://scenes/ItemPickup.tscn" id="2_pickup"]
+[ext_resource type="PackedScene" path="res://scenes/props/item_pickup.tscn" id="2_pickup"]
 [ext_resource type="Resource" path="res://resources/loot/dt_chest.tres" id="3_drops"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_chest"]

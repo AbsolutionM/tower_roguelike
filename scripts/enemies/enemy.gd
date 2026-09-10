@@ -6,7 +6,7 @@ class_name Enemy
 
 signal died(enemy: Enemy)
 
-const DEFAULT_PICKUP_SCENE := preload("res://scenes/ItemPickup.tscn")
+const DEFAULT_PICKUP_SCENE := preload("res://scenes/props/item_pickup.tscn")
 
 enum State { APPROACH, WINDUP, CHARGE }
 
@@ -82,8 +82,7 @@ func _ready() -> void:
 
 	strafe_sign = 1.0 if randf() < 0.5 else -1.0
 
-	if health_bar_fill:
-		bar_full_width = health_bar_fill.size.x
+	_fit_health_bar()
 	if health_bar_bg:
 		health_bar_bg.modulate.a = 0.0
 	if sprite:
@@ -496,6 +495,26 @@ func take_damage(amount: float, from_position: Vector2 = Vector2.ZERO, crit: boo
 
 	if current_health <= 0.0:
 		die()
+
+## Der Balken stand mit fester Breite in der Szene und war bei kleinen Gegnern
+## breiter als der Gegner selbst - er las sich dann wie ein Strich im Raum.
+## Jetzt richtet er sich nach der sichtbaren Größe.
+func _fit_health_bar() -> void:
+	if not health_bar_bg or not health_bar_fill:
+		return
+
+	var width: float = clampf(get_visual_radius() * 1.7, 22.0, 90.0)
+	var height: float = 5.0
+	var below: float = get_visual_radius() * 0.75 + 4.0
+
+	health_bar_bg.size = Vector2(width, height)
+	health_bar_bg.position = Vector2(-width * 0.5, below)
+	health_bar_bg.color = Color(Palette.INK, 0.85)
+
+	health_bar_fill.position = Vector2(1.0, 1.0)
+	health_bar_fill.size = Vector2(width - 2.0, height - 2.0)
+	health_bar_fill.color = Palette.BLOOD
+	bar_full_width = health_bar_fill.size.x
 
 func update_health_bar() -> void:
 	if not health_bar_fill or bar_full_width <= 0.0:

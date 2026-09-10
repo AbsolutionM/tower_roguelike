@@ -3,7 +3,6 @@
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/sprites/weapons/tome_flames.png" id="2_art"]
 [ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="3_proj"]
-[ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="4_tree"]
 [ext_resource type="Resource" path="res://resources/weapons/specials/cls_staff.tres" id="5_special"]
 
 [resource]
@@ -41,5 +40,4 @@ projectile_color = Color(0.545, 0.435, 0.831, 1)
 muzzle_flash_size = 30.0
 homing_strength = 5.0
 special = ExtResource("5_special")
-upgrade_tree = ExtResource("4_tree")
 shop_price = 1090

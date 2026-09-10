@@ -3,7 +3,6 @@
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/sprites/weapons/yoyo_disc.png" id="2_art"]
 [ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="3_proj"]
-[ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="4_tree"]
 [ext_resource type="Resource" path="res://resources/weapons/specials/cls_thrown.tres" id="5_special"]
 
 [resource]
@@ -41,5 +40,4 @@ projectile_color = Color(1, 0.851, 0.541, 1)
 muzzle_flash_size = 18.0
 return_distance = 170.0
 special = ExtResource("5_special")
-upgrade_tree = ExtResource("4_tree")
 shop_price = 280

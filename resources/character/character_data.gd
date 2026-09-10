@@ -37,7 +37,6 @@ class_name CharacterData
 @export_group("Ausrüstung")
 @export var starting_weapon: WeaponData
 @export var ability: AbilityData
-@export var upgrade_tree: UpgradeTree
 ## Boni für ganze Waffenklassen.
 @export var affinities: Array[WeaponAffinity] = []
 
@@ -46,10 +45,6 @@ class_name CharacterData
 @export var gadget: StarPowerData
 ## Freischaltung auf Kraftstufe 9.
 @export var star_power: StarPowerData
-
-## Trennt den Upgrade-Fortschritt pro Charakter im gemeinsamen Charakterbaum.
-func upgrade_prefix() -> String:
-	return character_id + ":"
 
 func get_affinity(category: WeaponData.Category) -> WeaponAffinity:
 	for affinity in affinities:

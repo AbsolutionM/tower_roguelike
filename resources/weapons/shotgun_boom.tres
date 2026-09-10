@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="2_proj"]
-[ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="3_tree"]
 [ext_resource type="Texture2D" path="res://assets/sprites/weapons/shotgun_boom.png" id="14_art"]
 [ext_resource type="Resource" path="res://resources/weapons/specials/cls_shotgun.tres" id="15_special"]
 
@@ -38,5 +37,4 @@ projectiles_per_shot = 7
 spread_degrees = 36.0
 projectile_color = Color(0.91, 0.4, 0.235, 1)
 muzzle_flash_size = 46.0
-upgrade_tree = ExtResource("3_tree")
 shop_price = 380

@@ -7,7 +7,7 @@
 [ext_resource type="SpriteFrames" uid="uid://b2ow7f8r1qyuc" path="res://resources/character/cowboy/frames.tres" id="8_o8jlk"]
 [ext_resource type="PackedScene" uid="uid://rv3d44ko4stl" path="res://scenes/enemies/slime.tscn" id="14_bxw2g"]
 [ext_resource type="Script" uid="uid://bqncykrd6ndst" path="res://scripts/rooms/room_controller.gd" id="15_x5rto"]
-[ext_resource type="PackedScene" uid="uid://bhhnrk2i5ajqx" path="res://scenes/UILayer.tscn" id="19_8fpdd"]
+[ext_resource type="PackedScene" uid="uid://bhhnrk2i5ajqx" path="res://scenes/ui/hud_layer.tscn" id="19_8fpdd"]
 [ext_resource type="Script" uid="uid://mtydripo7gbs" path="res://resources/rooms/room_data.gd" id="19_xor3i"]
 [ext_resource type="Script" uid="uid://degagr6otf1m3" path="res://resources/character/character_data.gd" id="24_p0fn2"]
 [ext_resource type="Script" uid="uid://d1oop0o8n7lws" path="res://resources/weapons/weapon_data.gd" id="27_1bovr"]
@@ -42,8 +42,6 @@ shader = ExtResource("7_dxicw")
 shader_parameter/outline_color = Color(0, 0, 0, 1)
 shader_parameter/outline_width = 1.0000000475
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_ebm66"]
-
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_mkoc8"]
 shader = ExtResource("7_dxicw")
 shader_parameter/outline_color = Color(0, 0, 0, 1)
@@ -52,7 +50,7 @@ shader_parameter/outline_width = 1.0
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_t1g43"]
 size = Vector2(29.779129, 140.55434)
 
-[node name="test_weapons" type="Node2D" unique_id=1396741292]
+[node name="Game" type="Node2D" unique_id=1396741292]
 y_sort_enabled = true
 
 [node name="Player" type="CharacterBody2D" parent="." unique_id=919370846]
@@ -77,17 +75,6 @@ scale = Vector2(3, 3)
 sprite_frames = ExtResource("8_o8jlk")
 animation = &"Walking_Front"
 frame_progress = 0.37244323
-
-[node name="projectile" type="Area2D" parent="Player" unique_id=1368020639]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Player/projectile" unique_id=683318792]
-visible = false
-shape = SubResource("CircleShape2D_ebm66")
-
-[node name="Sprite2D" type="Sprite2D" parent="Player/projectile" unique_id=1414206339]
-position = Vector2(93, -9)
-rotation = -4.712389
-scale = Vector2(6, 6)
 
 [node name="WeaponPivot" type="Node2D" parent="Player" unique_id=1923055262 node_paths=PackedStringArray("hand", "off_hand", "sword")]
 material = SubResource("ShaderMaterial_mkoc8")

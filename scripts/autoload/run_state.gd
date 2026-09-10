@@ -5,7 +5,6 @@ extends Node
 
 signal gold_changed(amount: int)
 signal essence_changed(essence_id: String, amount: int)
-signal upgrade_purchased(upgrade_id: String, level: int)
 signal weapon_reinforced(weapon_id: String, level: int)
 signal character_leveled(character_id: String, level: int)
 signal loadout_changed
@@ -22,7 +21,6 @@ const MAX_ACCESSORY_SLOTS := 2
 
 var gold: int = 0
 var essences: Dictionary = {}
-var upgrade_levels: Dictionary = {}
 ## weapon_id -> Schmiedestufe (0..Progression.MAX_REINFORCE)
 var weapon_levels: Dictionary = {}
 ## character_id -> Kraftstufe (1..Progression.MAX_POWER_LEVEL)
@@ -166,42 +164,6 @@ func end_run(died: bool) -> Dictionary:
 	last_run_summary = {"lost": lost, "kept": kept, "died": died}
 	save_game()
 	return last_run_summary
-
-# --- Upgrades --------------------------------------------------------------
-
-func get_upgrade_level(upgrade_id: String) -> int:
-	return int(upgrade_levels.get(upgrade_id, 0))
-
-## `prefix` trennt den Fortschritt bei geteilten Bäumen (z.B. pro Waffe).
-func can_purchase(upgrade: UpgradeData, prefix: String = "") -> bool:
-	if not upgrade:
-		return false
-	var level := get_upgrade_level(prefix + upgrade.upgrade_id)
-	if level >= upgrade.max_level:
-		return false
-	for required_id in upgrade.requires:
-		if get_upgrade_level(prefix + required_id) <= 0:
-			return false
-	if gold < upgrade.get_gold_cost(level):
-		return false
-	if not upgrade.essence_id.is_empty() and get_essence(upgrade.essence_id) < upgrade.get_essence_cost(level):
-		return false
-	return true
-
-func purchase(upgrade: UpgradeData, prefix: String = "") -> bool:
-	if not can_purchase(upgrade, prefix):
-		return false
-	var key := prefix + upgrade.upgrade_id
-	var level := get_upgrade_level(key)
-	gold -= upgrade.get_gold_cost(level)
-	if not upgrade.essence_id.is_empty():
-		essences[upgrade.essence_id] = get_essence(upgrade.essence_id) - upgrade.get_essence_cost(level)
-		essence_changed.emit(upgrade.essence_id, essences[upgrade.essence_id])
-	upgrade_levels[key] = level + 1
-	gold_changed.emit(gold)
-	upgrade_purchased.emit(key, level + 1)
-	save_game()
-	return true
 
 # --- Schmieden (Waffen) ----------------------------------------------------
 
@@ -496,7 +458,6 @@ func save_game() -> void:
 	var payload := {
 		"gold": gold,
 		"essences": essences,
-		"upgrade_levels": upgrade_levels,
 		"weapon_levels": weapon_levels,
 		"character_levels": character_levels,
 		"owned_weapon_ids": owned_weapon_ids,
@@ -527,7 +488,6 @@ func load_game() -> void:
 
 	gold = int(parsed.get("gold", 0))
 	essences = parsed.get("essences", {})
-	upgrade_levels = parsed.get("upgrade_levels", {})
 	weapon_levels = parsed.get("weapon_levels", {})
 	character_levels = parsed.get("character_levels", {})
 	equipped_weapon_ids = parsed.get("equipped_weapon_ids", {})

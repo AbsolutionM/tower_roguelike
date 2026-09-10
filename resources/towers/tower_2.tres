@@ -11,6 +11,7 @@
 [ext_resource type="Resource" path="res://resources/weather/weather_storm.tres" id="7_storm"]
 [ext_resource type="Resource" path="res://resources/weather/weather_rain.tres" id="8_rain"]
 [ext_resource type="Resource" path="res://resources/weather/weather_ash.tres" id="9_ash"]
+[ext_resource type="Resource" path="res://resources/weather/weather_snow.tres" id="12_snow"]
 
 [resource]
 script = ExtResource("1_script")
@@ -21,5 +22,5 @@ accent_color = Color(0.6, 0.75, 1, 1)
 ambient_color = Color(0.52, 0.55, 0.72, 1)
 floors = 7
 rooms = Array[RoomData]([ExtResource("2_room1"), ExtResource("3_room2"), ExtResource("4_room3"), ExtResource("5_room4"), ExtResource("10_crypt"), ExtResource("11_belfry"), ExtResource("6_boss")])
-weather_options = Array[WeatherData]([ExtResource("7_storm"), ExtResource("8_rain"), ExtResource("9_ash")])
+weather_options = Array[WeatherData]([ExtResource("7_storm"), ExtResource("8_rain"), ExtResource("9_ash"), ExtResource("12_snow")])
 unlocked = true

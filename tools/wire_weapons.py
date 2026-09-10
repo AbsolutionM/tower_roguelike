@@ -547,7 +547,6 @@ def build_new():
         add('[ext_resource type="Texture2D" path="res://%s/%s.png" id="2_art"]' % (SPRITES, sprite))
         if not melee:
             add('[ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="3_proj"]')
-        add('[ext_resource type="Resource" path="res://resources/upgrades/tree_weapon.tres" id="4_tree"]')
         add('[ext_resource type="Resource" path="%s" id="5_special"]' % special_path(wid, cat_name))
         add("")
         add("[resource]")
@@ -595,7 +594,6 @@ def build_new():
         if val("armor", 0.0):
             add("armor_bonus = %.1f" % val("armor", 0.0))
         add('special = ExtResource("5_special")')
-        add('upgrade_tree = ExtResource("4_tree")')
         add("shop_price = %d" % price)
 
         path = os.path.join(WEAPONS, wid + ".tres")

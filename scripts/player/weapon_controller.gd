@@ -173,6 +173,9 @@ func _update_marker() -> void:
 		return
 	_marker.target = current_target
 	_marker.attack_range = get_attack_range()
+	# Bei Fernkampf ist der Ring so groß wie der halbe Raum und damit nur
+	# Störung. Im Nahkampf zeigt er, wie weit man wirklich trifft.
+	_marker.show_range_ring = equipped_weapon.is_melee
 	_marker.accent = equipped_weapon.projectile_color if not equipped_weapon.is_melee else Palette.AMBER
 	_marker.cooldown_ratio = 1.0 - clampf(fire_timer / maxf(_last_cooldown, 0.001), 0.0, 1.0)
 
