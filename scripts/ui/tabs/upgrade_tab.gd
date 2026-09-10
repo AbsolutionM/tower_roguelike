@@ -63,7 +63,7 @@ func _build_weapons(content: VBoxContainer) -> void:
 	var weapons := RunState.get_owned_weapons()
 
 	content.add_child(UIKit.make_label(
-		"Werte gelten für %s. Ein anderer Held holt aus derselben Waffe andere Zahlen." % (
+		"Tippen öffnet eine Waffe. Die Werte gelten für %s - ein anderer Held holt aus derselben Waffe andere Zahlen." % (
 			character.character_name if character else "niemanden"
 		),
 		15, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_LEFT, true
@@ -127,7 +127,6 @@ func _make_weapon_card(weapon: WeaponData, character: CharacterData, is_equipped
 		))
 
 	if not expanded:
-		column.add_child(UIKit.make_label("Tippen für Werte und Schmieden", 13, UIKit.TEXT_DIM))
 		return panel
 
 	column.add_child(UIKit.make_section("Skalierung", accent))
@@ -247,7 +246,7 @@ func _make_forge_section(weapon: WeaponData, character: CharacterData, level: in
 
 func _build_characters(content: VBoxContainer) -> void:
 	content.add_child(UIKit.make_label(
-		"Jede Kraftstufe gibt +%d%% Leben und Schaden. Stufe %d bringt das Gadget, Stufe %d die Sternenkraft." % [
+		"Tippen öffnet einen Helden. Jede Kraftstufe gibt +%d%% Leben und Schaden, Stufe %d bringt das Gadget, Stufe %d die Sternenkraft." % [
 			int(Progression.POWER_LEVEL_BONUS * 100.0),
 			Progression.GADGET_LEVEL,
 			Progression.STAR_POWER_LEVEL
@@ -296,7 +295,6 @@ func _make_character_card(character: CharacterData, is_selected: bool) -> Contro
 	column.add_child(_make_level_pips(level - 1, Progression.MAX_POWER_LEVEL - 1, accent))
 
 	if not expanded:
-		column.add_child(UIKit.make_label("Tippen für Werte und Aufstieg", 13, UIKit.TEXT_DIM))
 		return panel
 
 	var factor := Progression.power_level_mult(level)
