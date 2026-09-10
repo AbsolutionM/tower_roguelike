@@ -101,11 +101,3 @@ func on_room_cleared() -> void:
 		current_floor += 1
 		run_deepest_floor = maxi(run_deepest_floor, current_floor)
 		floor_completed.emit(current_floor)
-
-func get_next_room_type() -> String:
-	if current_floor == TOTAL_FLOORS and rooms_cleared_this_floor == ROOMS_PER_FLOOR - 1:
-		return "final_boss"
-	elif rooms_cleared_this_floor == ROOMS_PER_FLOOR - 1:
-		return "mini_boss"
-	else:
-		return "normal"

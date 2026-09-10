@@ -64,9 +64,6 @@ func add_essence(essence_id: String, amount: int = 1) -> void:
 	essences[essence_id] = int(essences.get(essence_id, 0)) + amount
 	essence_changed.emit(essence_id, essences[essence_id])
 
-func get_essence(essence_id: String) -> int:
-	return int(essences.get(essence_id, 0))
-
 func get_total_essence() -> int:
 	var total: int = 0
 	for key in essences:
@@ -112,10 +109,6 @@ func add_run_item(item: ItemData, count: int = 1) -> bool:
 
 	run_inventory_changed.emit()
 	return true
-
-func clear_run_inventory() -> void:
-	run_slots.clear()
-	run_inventory_changed.emit()
 
 # --- Lager (Gesamt-Inventar) ----------------------------------------------
 

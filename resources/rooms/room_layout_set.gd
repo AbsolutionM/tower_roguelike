@@ -50,10 +50,6 @@ func _ensure_loaded() -> void:
 	if current.size() > 0:
 		_layouts.append(current)
 
-func get_count() -> int:
-	_ensure_loaded()
-	return _layouts.size()
-
 func get_random_layout() -> PackedStringArray:
 	_ensure_loaded()
 	if _layouts.is_empty():

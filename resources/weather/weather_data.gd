@@ -34,18 +34,3 @@ enum Kind { CLEAR, RAIN, SNOW, FOG, STORM, ASH }
 @export var player_regen_bonus: float = 0.0
 @export var pickup_radius_mult: float = 1.0
 @export var enemy_speed_mult: float = 1.0
-
-## Kurze Zusammenfassung der Auswirkungen für die Menüs.
-func describe_effects() -> String:
-	var parts: Array[String] = []
-	if not is_equal_approx(player_speed_mult, 1.0):
-		parts.append("%+d%% Tempo" % int(round((player_speed_mult - 1.0) * 100.0)))
-	if not is_equal_approx(player_damage_mult, 1.0):
-		parts.append("%+d%% Schaden" % int(round((player_damage_mult - 1.0) * 100.0)))
-	if not is_zero_approx(player_regen_bonus):
-		parts.append("%+.1f Regeneration" % player_regen_bonus)
-	if not is_equal_approx(pickup_radius_mult, 1.0):
-		parts.append("%+d%% Sammelradius" % int(round((pickup_radius_mult - 1.0) * 100.0)))
-	if not is_equal_approx(enemy_speed_mult, 1.0):
-		parts.append("%+d%% Gegnertempo" % int(round((enemy_speed_mult - 1.0) * 100.0)))
-	return ", ".join(parts)

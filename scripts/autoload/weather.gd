@@ -13,9 +13,6 @@ func set_weather(weather: WeatherData) -> void:
 func clear() -> void:
 	set_weather(null)
 
-func get_weather_name() -> String:
-	return current.weather_name if current else "Klar"
-
 func get_player_speed_mult() -> float:
 	return current.player_speed_mult if current else 1.0
 

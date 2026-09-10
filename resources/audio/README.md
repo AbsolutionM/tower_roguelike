@@ -45,3 +45,9 @@ kommen.
 
 Fehlt ein Eintrag oder ist er leer, bleibt es an der Stelle einfach still -
 das Spiel läuft auch mit halb gefüllter Bank.
+
+## Nachsehen, was noch fehlt
+
+`Audio.missing_ids()` liefert die IDs, deren Eintrag leer ist. Aus einem
+Debug-Skript heraus aufgerufen zeigt es also genau die Plätze, für die noch
+keine Datei hinterlegt ist.

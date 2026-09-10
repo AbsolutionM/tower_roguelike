@@ -22,7 +22,6 @@ const COLOR_DAMAGE := Palette.BONE
 const COLOR_CRIT := Palette.GOLD
 const COLOR_HURT := Palette.BLOOD
 const COLOR_HEAL := Palette.MOSS
-const COLOR_GOLD := Palette.GOLD
 
 func _host() -> Node:
 	if not is_inside_tree():

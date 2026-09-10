@@ -147,9 +147,6 @@ func holds_upright() -> bool:
 func get_category_name() -> String:
 	return CATEGORY_NAMES.get(category, "Waffe")
 
-func is_ranged() -> bool:
-	return not is_melee
-
 # --- Schmieden und Skalierung ----------------------------------------------
 
 ## Skalierungswert eines Attributs auf der aktuellen Schmiedestufe.

@@ -46,7 +46,3 @@ func get_rarity_name() -> String:
 
 func get_rarity_color() -> Color:
 	return RARITY_COLORS.get(rarity, Color.WHITE)
-
-## Landet das Item in einem Beutel-Slot oder direkt auf einem Zähler?
-func uses_inventory_slot() -> bool:
-	return item_type == ItemType.MATERIAL or item_type == ItemType.CONSUMABLE

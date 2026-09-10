@@ -82,11 +82,3 @@ func get_tower(tower_id: String) -> TowerData:
 		if tower and tower.tower_id == tower_id:
 			return tower
 	return null
-
-## Alle Waffen einer Klasse - für Filter im Inventar.
-func get_weapons_in_category(category: WeaponData.Category) -> Array[WeaponData]:
-	var result: Array[WeaponData] = []
-	for weapon in get_weapons():
-		if weapon and weapon.category == category:
-			result.append(weapon)
-	return result
