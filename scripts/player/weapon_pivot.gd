@@ -18,6 +18,10 @@ class_name WeaponPivot
 
 var current_target: Node2D = null
 
+## Ruhelage des Kreises. Der Spieler setzt sie auf den Körpermittelpunkt;
+## der Rückstoß kehrt hierher zurück statt auf den Szenenwert.
+var rest_position: Vector2 = Vector2.ZERO
+
 ## Richtung zum Ziel. Blickrichtung und Spiegelung hängen hieran, nicht an
 ## `rotation` - sonst kippt die Figur mitten im Schlag auf die andere Seite.
 var aim_rotation: float = 0.0

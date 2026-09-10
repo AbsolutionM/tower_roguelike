@@ -26,11 +26,9 @@ var fire_timer: float = 0.0
 var current_target: Node2D = null
 
 var _stats: PlayerStats
-var _pivot_base_position: Vector2 = Vector2.ZERO
 var _visualized_weapon: WeaponData
 var _hold_sprite_base_scale: Vector2 = Vector2.ONE
 var _hold_sprite_base_rotation: float = 0.0
-var _hold_sprite_base_position: Vector2 = Vector2.ZERO
 var _hold_placeholder: WeaponSymbol
 var _marker: TargetMarker
 var _last_cooldown: float = 1.0
@@ -41,14 +39,11 @@ func _ready() -> void:
 	var parent := get_parent()
 	if parent:
 		_stats = parent.get_node_or_null("PlayerStats")
-	if weapon_pivot:
-		_pivot_base_position = weapon_pivot.position
 
 	var hold_sprite := _get_hold_sprite()
 	if hold_sprite:
 		_hold_sprite_base_scale = hold_sprite.scale
 		_hold_sprite_base_rotation = hold_sprite.rotation
-		_hold_sprite_base_position = hold_sprite.position
 
 	if _stats:
 		_stats.hit_landed.connect(_on_hit_landed)
@@ -352,6 +347,6 @@ func fire_at(target: Node2D, damage: float, crit: bool) -> void:
 func _recoil(direction: Vector2) -> void:
 	if not weapon_pivot:
 		return
-	weapon_pivot.position = _pivot_base_position - direction * 5.0
+	weapon_pivot.position = weapon_pivot.rest_position - direction * 5.0
 	var tween := weapon_pivot.create_tween()
-	tween.tween_property(weapon_pivot, "position", _pivot_base_position, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(weapon_pivot, "position", weapon_pivot.rest_position, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)

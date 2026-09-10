@@ -126,6 +126,7 @@ func _apply_hands() -> void:
 	var pivot := get_node_or_null("WeaponPivot")
 	if pivot:
 		pivot.position.y = _body_center()
+		pivot.rest_position = pivot.position
 		pivot.pivot_radius = reach
 
 ## Mittelpunkt der gezeichneten Figur, in Spieler-Koordinaten.
