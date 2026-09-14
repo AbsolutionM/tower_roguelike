@@ -10,7 +10,6 @@ signal room_finished
 @export var enemy_scene: PackedScene
 @export var boss_scene: PackedScene
 @export var rooms: Array[RoomData] = []
-@export var time_label: Label
 @export var transition_delay: float = 0.55
 
 ## Nach so vielen geschafften Räumen kommt garantiert ein Bossraum (0 = aus).
@@ -53,11 +52,6 @@ func _ready() -> void:
 	start_room.call_deferred()
 
 func _process(_delta: float) -> void:
-	if time_label:
-		var room := get_current_room()
-		var room_name: String = room.room_name if room else ""
-		time_label.text = "%s  %.1f" % [room_name, GameManager.get_time_remaining()]
-
 	_clamp_player()
 
 	var empty: bool = get_tree().get_nodes_in_group("enemies").is_empty()

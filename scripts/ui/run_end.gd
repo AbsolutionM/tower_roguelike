@@ -33,8 +33,14 @@ func _build() -> void:
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	column.add_child(scroll)
 
+	# Mittig: bei einem kurzen Durchgang standen die zwei Karten oben und
+	# darunter ein halber leerer Bildschirm.
 	var content := UIKit.make_column(12)
+	content.alignment = BoxContainer.ALIGNMENT_CENTER
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# Ohne EXPAND lässt der ScrollContainer die Spalte auf Mindesthöhe -
+	# dann gibt es nichts, worin sie mittig sitzen könnte.
+	content.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.add_child(content)
 
 	# Zahlen des Durchgangs - ohne die stand hier ein halber leerer Bildschirm.

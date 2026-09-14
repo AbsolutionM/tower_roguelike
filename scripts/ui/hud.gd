@@ -6,6 +6,7 @@ class_name HUD
 
 @onready var health_bar: StatBar = get_node_or_null("TopBar/HealthBar")
 @onready var timer_bar: StatBar = get_node_or_null("TopBar/TimerBar")
+@onready var timer_label: Label = get_node_or_null("TopBar/TimerLabel")
 @onready var gold_label: Label = get_node_or_null("TopBar/GoldLabel")
 @onready var essence_label: Label = get_node_or_null("TopBar/EssenceLabel")
 @onready var room_label: Label = get_node_or_null("TopBar/RoomLabel")
@@ -161,10 +162,27 @@ func _process(_delta: float) -> void:
 	if floor_label:
 		floor_label.text = GameManager.get_progress_text()
 
-	if not timer_bar:
+	_update_timer()
+
+## Ein Balken allein sagt nicht, ob noch zwanzig Sekunden oder drei bleiben.
+func _update_timer() -> void:
+	var remaining: float = GameManager.get_time_remaining()
+	var urgent: bool = remaining < 5.0
+	var tint: Color = Palette.BLOOD if urgent else Palette.AZURE
+
+	if timer_bar:
+		timer_bar.set_value(remaining, maxf(GameManager.current_duration, 0.001))
+		timer_bar.fill_color = tint
+
+	if not timer_label:
 		return
-	timer_bar.set_value(GameManager.get_time_remaining(), maxf(GameManager.current_duration, 0.001))
-	timer_bar.fill_color = Palette.BLOOD if GameManager.get_time_remaining() < 3.0 else Palette.AZURE
+	# Räume ohne Uhr (Bossraum) stehen auf 99999 Sekunden - da gehört ein
+	# Strich hin, keine fünfstellige Zahl.
+	if GameManager.current_duration > 999.0:
+		timer_label.text = "--"
+	else:
+		timer_label.text = "%d" % int(ceil(remaining))
+	timer_label.add_theme_color_override("font_color", tint)
 
 func _update_bag_label() -> void:
 	if bag_label:

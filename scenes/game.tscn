@@ -147,17 +147,6 @@ script = ExtResource("70_ability")
 
 [node name="UiLayer" parent="." unique_id=251034318 instance=ExtResource("19_8fpdd")]
 
-[node name="RoomTimerLabel2" type="Label" parent="UiLayer" unique_id=1948404396]
-visible = false
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -20.0
-offset_top = 16.0
-offset_right = 20.0
-offset_bottom = 39.000004
-grow_horizontal = 2
-
 [node name="SpawnPoint1" type="Node2D" parent="." unique_id=2088915405]
 
 [node name="SpawnPoint2" type="Node2D" parent="." unique_id=330194568]
@@ -175,12 +164,11 @@ position = Vector2(-1973, -518)
 [node name="SpawnPoint6" type="Node2D" parent="." unique_id=2044846932]
 position = Vector2(905, -1285)
 
-[node name="RoomController" type="Node2D" parent="." unique_id=2016405523 node_paths=PackedStringArray("spawn_points", "time_label")]
+[node name="RoomController" type="Node2D" parent="." unique_id=2016405523 node_paths=PackedStringArray("spawn_points")]
 script = ExtResource("15_x5rto")
 enemy_scene = ExtResource("14_bxw2g")
 boss_scene = ExtResource("74_boss")
 spawn_points = [NodePath("../SpawnPoint1"), NodePath("../SpawnPoint2"), NodePath("../SpawnPoint3"), NodePath("../SpawnPoint4"), NodePath("../SpawnPoint5"), NodePath("../SpawnPoint6")]
-time_label = NodePath("../UiLayer/RoomTimerLabel2")
 rooms = Array[ExtResource("19_xor3i")]([ExtResource("64_room1"), ExtResource("65_room2"), ExtResource("66_room3"), ExtResource("71_room4"), ExtResource("72_room5")])
 
 [node name="TestHarness" type="Node" parent="." unique_id=314159265]
