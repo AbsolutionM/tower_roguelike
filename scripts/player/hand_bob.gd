@@ -6,10 +6,9 @@ class_name HandController
 ## Sie sitzt auf einem Kreis um den Körpermittelpunkt. Den Kreis dreht der
 ## WeaponPivot zum Ziel; beim Schlag dreht sich die Hand zusätzlich innerhalb
 ## des Kreises - dadurch führt sie den Bogen aus, während die freie Hand steht.
-
-@export var bob_speed: float = 4.0
-## Klein halten: eine angesetzte Hand wippt kaum, eine schwebende fällt auf.
-@export var bob_amount: float = 1.1
+##
+## Beim Laufen pumpt sie mit dem Schritt (siehe `gait`). Die Auslenkung kommt
+## vom Spieler, der die Schrittphase aus der Geh-Animation kennt.
 
 ## Abstand vom Körpermittelpunkt.
 var base_radius: float = 20.0
@@ -19,16 +18,15 @@ var base_radius: float = 20.0
 var center: Vector2 = Vector2.ZERO
 ## Auslenkung des Schlags. Trägt die Hand samt Waffe durch den Bogen.
 var swing_angle: float = 0.0
-
-var time_elapsed: float = 0.0
+## Schrittauslenkung in Pivot-Koordinaten. Liegt außerhalb der Schlagdrehung,
+## damit der Bogen nicht mit dem Schritt eiert.
+var gait: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	z_as_relative = false
 
-func _process(delta: float) -> void:
-	time_elapsed += delta
-	var bob := sin(time_elapsed * bob_speed) * bob_amount
-	position = Vector2(base_radius, bob).rotated(swing_angle) + center
+func _process(_delta: float) -> void:
+	position = Vector2(base_radius, 0.0).rotated(swing_angle) + gait + center
 	# Das Handgelenk dreht mit, damit die Waffe den Bogen mitnimmt und
 	# der Griff dabei in der Hand bleibt.
 	rotation = swing_angle

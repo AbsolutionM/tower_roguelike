@@ -21,6 +21,12 @@ const LIGHT_TEXTURE := preload("res://resources/materials/light_gradient.tres")
 @export var shadow_radius: float = 14.0
 @export var step_dust_interval: float = 0.3
 @export var bob_strength: float = 0.035
+## Wie weit die Arme beim Laufen pumpen, in Sprite-Pixeln.
+@export var gait_swing_texels: float = 3.0
+## Die Geh-Animation ist mit 5 Bildern pro Sekunde gezeichnet. Bei vollem
+## Lauftempo läuft sie so viel schneller - sonst gleitet die Figur, weil ein
+## Schritt zwei Körperlängen weit trägt.
+@export var walk_animation_scale: float = 1.8
 @export var light_energy: float = 1.4
 @export var light_scale: float = 2.3
 
@@ -229,6 +235,7 @@ func _physics_process(delta: float) -> void:
 
 	_update_animation()
 	_update_bob(delta)
+	_update_gait()
 
 func _tick_timers(delta: float) -> void:
 	if dash_timer > 0.0:
@@ -297,8 +304,60 @@ func _update_animation() -> void:
 	elif not animated_sprite.is_playing():
 		animated_sprite.play()
 
+	# Schritttempo folgt dem Lauftempo, damit die Füße nicht über den Boden
+	# rutschen. Im Stand normal.
+	animated_sprite.speed_scale = lerpf(1.0, walk_animation_scale, _speed_ratio()) if is_moving else 1.0
+
+func _speed_ratio() -> float:
+	return clampf(move_velocity.length() / maxf(get_move_speed(), 1.0), 0.0, 1.0)
+
+## Schrittphase 0..1 aus dem laufenden Bild der Geh-Animation, -1 im Stand.
+## Alles, was mit dem Schritt gehen soll, hängt an dieser einen Zahl - so
+## bleiben Beine, Arme und Stauchen im Takt, statt drei Sinuswellen
+## nebeneinander laufen zu lassen.
+func _walk_phase() -> float:
+	if not animated_sprite.is_playing() or not String(animated_sprite.animation).begins_with("Walking_"):
+		return -1.0
+	var count: int = animated_sprite.sprite_frames.get_frame_count(animated_sprite.animation)
+	if count <= 0:
+		return -1.0
+	return float(animated_sprite.frame) / float(count)
+
+## Arme pumpen gegenläufig in Laufrichtung. Die Auslenkung springt mit dem
+## Animationsbild in ganzen Sprite-Pixeln - eine Hand, die zwischen zwei
+## gezeichneten Bildern weich dahingleitet, wirkt schwammig.
+func _update_gait() -> void:
+	var pivot := get_node_or_null("WeaponPivot")
+	if not pivot:
+		return
+
+	var texel: float = animated_sprite.scale.x
+	var phase := _walk_phase()
+	var swinging: bool = pivot.has_method("is_swinging") and pivot.is_swinging()
+
+	if phase >= 0.0 and move_velocity.length() > 12.0:
+		var wave: float = sin(phase * TAU)
+		var swing: float = roundf(wave * gait_swing_texels) * texel
+		# Pendel statt Schlitten: an den Umkehrpunkten heben sich beide Hände
+		# einen Sprite-Pixel, in der Mitte hängen sie am tiefsten.
+		var lift := Vector2(0.0, -roundf(absf(wave)) * texel)
+		var forward: Vector2 = move_velocity.normalized() * swing
+		# Im Schlag führt die Waffenhand den Bogen, die freie Hand steht -
+		# da hat kein Schritt dazwischenzufunken.
+		if swinging:
+			pivot.set_gait(Vector2.ZERO, Vector2.ZERO)
+		else:
+			pivot.set_gait(forward + lift, -forward + lift)
+		return
+
+	# Im Stand: ein Atemzug von einem Sprite-Pixel, beide Hände gemeinsam.
+	var breath: float = roundf(sin(_anim_time * 2.4) * 0.6) * texel
+	pivot.set_gait(Vector2(0.0, breath), Vector2(0.0, breath))
+
+## Stauchen im Takt der Schritte - zwei Auftritte pro Animationsdurchlauf.
 func _update_bob(delta: float) -> void:
-	var speed_ratio: float = clampf(move_velocity.length() / maxf(get_move_speed(), 1.0), 0.0, 1.0)
-	var bob: float = sin(_anim_time * 15.0) * bob_strength * speed_ratio
+	var phase := _walk_phase()
+	var wave: float = sin(phase * TAU * 2.0) if phase >= 0.0 else sin(_anim_time * 15.0)
+	var bob: float = wave * bob_strength * _speed_ratio()
 	var target_scale := Vector2(_sprite_base_scale.x * (1.0 - bob), _sprite_base_scale.y * (1.0 + bob))
 	animated_sprite.scale = animated_sprite.scale.lerp(target_scale, clampf(delta * 14.0, 0.0, 1.0))

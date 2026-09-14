@@ -38,6 +38,15 @@ func _process(delta: float) -> void:
 func is_swinging() -> bool:
 	return sword != null and sword.is_swinging
 
+## Schrittauslenkung beider Hände, in Weltrichtung angegeben. Der Kreis dreht
+## und spiegelt sich zum Ziel - hier wird das herausgerechnet, damit die Arme
+## in Laufrichtung pumpen und nicht in Zielrichtung.
+func set_gait(hand_world: Vector2, off_hand_world: Vector2) -> void:
+	if hand:
+		hand.gait = global_transform.basis_xform_inv(hand_world)
+	if off_hand:
+		off_hand.gait = global_transform.basis_xform_inv(off_hand_world)
+
 func update_visuals() -> void:
 	var dir := Vector2.RIGHT.rotated(aim_rotation)
 	var facing_left := dir.x < 0
