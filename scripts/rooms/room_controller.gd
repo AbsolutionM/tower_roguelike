@@ -402,7 +402,7 @@ func _draw_placeholder_floor(half: Vector2, rect: Rect2) -> void:
 			y += grid_size
 		x += grid_size
 
-## Boden, Wandkante und Streudeko aus dem Kachelsatz.
+## Boden, Randkante, Lachen und Streudeko aus dem Kachelsatz.
 ## Der Zufall hängt am Raum-Index, damit ein Raum bei jedem Neuzeichnen
 ## gleich aussieht und trotzdem jeder Raum anders.
 func _draw_tiles(tileset: RoomTileset, half: Vector2, rect: Rect2) -> void:
@@ -417,6 +417,8 @@ func _draw_tiles(tileset: RoomTileset, half: Vector2, rect: Rect2) -> void:
 	draw_rect(rect, floor_color)
 
 	var has_walls := tileset.has_walls()
+	var pools := _plan_pools(tileset, columns, rows, rng)
+
 	for row in rows:
 		for column in columns:
 			var cell := Rect2(
@@ -429,7 +431,7 @@ func _draw_tiles(tileset: RoomTileset, half: Vector2, rect: Rect2) -> void:
 			var on_bottom: bool = row == rows - 1
 
 			if has_walls and (on_left or on_right or on_top or on_bottom):
-				var wall := tileset.pick_wall(on_left, on_right, on_top, on_bottom)
+				var wall := tileset.pick_wall(on_left, on_right, on_top, on_bottom, rng)
 				if wall:
 					draw_texture_rect(wall, cell, false)
 					continue
@@ -438,9 +440,70 @@ func _draw_tiles(tileset: RoomTileset, half: Vector2, rect: Rect2) -> void:
 			if floor_tile:
 				draw_texture_rect(floor_tile, cell, false)
 
+			var at := Vector2i(column, row)
+			if pools.has(at):
+				var pool := tileset.pick_pool(_pool_sides(pools, at), _pool_diagonals(pools, at), rng)
+				if pool:
+					draw_texture_rect(pool, cell, false)
+				continue
+
 			var decor := tileset.pick_decor(rng)
 			if decor:
 				draw_texture_rect(decor, cell, false)
+
+## Lachen als Vereinigung überlappender Rechtecke im Rauminneren.
+## Der Kachelsatz hat keine einzeiligen Streifen - Zellen, für die es kein
+## Stück gibt, fliegen raus, so lange bis die Form stabil ist.
+func _plan_pools(tileset: RoomTileset, columns: int, rows: int, rng: RandomNumberGenerator) -> Dictionary:
+	var cells := {}
+	if not tileset.has_pools() or columns < 8 or rows < 8:
+		return cells
+
+	for i in tileset.pool_count:
+		var width: int = rng.randi_range(2, 4)
+		var height: int = rng.randi_range(2, 4)
+		# Zwei Kacheln Abstand zum Rand: eine für die Wand, eine Boden dazwischen.
+		var x0: int = rng.randi_range(2, columns - 2 - width)
+		var y0: int = rng.randi_range(2, rows - 2 - height)
+		_fill_pool(cells, x0, y0, width, height)
+		# Ein zweites, versetztes Rechteck macht aus dem Kasten einen Fleck.
+		if rng.randf() < 0.7:
+			var w2: int = rng.randi_range(2, 3)
+			var h2: int = rng.randi_range(2, 3)
+			var x2: int = clampi(x0 + rng.randi_range(-1, width - 1), 2, columns - 2 - w2)
+			var y2: int = clampi(y0 + rng.randi_range(-1, height - 1), 2, rows - 2 - h2)
+			_fill_pool(cells, x2, y2, w2, h2)
+
+	for pass_index in 6:
+		var removed := false
+		for at in cells.keys():
+			if tileset.pick_pool(_pool_sides(cells, at), _pool_diagonals(cells, at), rng) == null:
+				cells.erase(at)
+				removed = true
+		if not removed:
+			break
+	return cells
+
+func _fill_pool(cells: Dictionary, x0: int, y0: int, width: int, height: int) -> void:
+	for y in range(y0, y0 + height):
+		for x in range(x0, x0 + width):
+			cells[Vector2i(x, y)] = true
+
+func _pool_sides(cells: Dictionary, at: Vector2i) -> Array[bool]:
+	return [
+		cells.has(at + Vector2i(0, -1)),
+		cells.has(at + Vector2i(0, 1)),
+		cells.has(at + Vector2i(-1, 0)),
+		cells.has(at + Vector2i(1, 0)),
+	]
+
+func _pool_diagonals(cells: Dictionary, at: Vector2i) -> Array[bool]:
+	return [
+		cells.has(at + Vector2i(-1, -1)),
+		cells.has(at + Vector2i(1, -1)),
+		cells.has(at + Vector2i(-1, 1)),
+		cells.has(at + Vector2i(1, 1)),
+	]
 
 func _draw() -> void:
 	if not draw_room:

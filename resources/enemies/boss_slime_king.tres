@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="EnemyData" format=3]
 
 [ext_resource type="Script" path="res://resources/enemies/enemy_data.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://iy3w1m7ghusg" path="res://resources/enemies/green_slime/greenslime.png" id="2_tex"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/giant_venom_slime.png" id="2_sprite"]
 [ext_resource type="Resource" path="res://resources/loot/dt_boss.tres" id="3_drops"]
 [ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="4_projectile"]
 [ext_resource type="Resource" path="res://resources/enemies/slime_small.tres" id="5_minion"]
@@ -11,9 +11,9 @@ script = ExtResource("1_script")
 enemy_name = "Schleimkönig"
 max_health = 2400.0
 move_speed = 44.0
-sprite_texture = ExtResource("2_tex")
-sprite_scale = 1.0
-tint = Color(0.91, 0.4, 0.235, 1)
+sprite_texture = ExtResource("2_sprite")
+sprite_scale = 1.70
+tint = Color(1, 1, 1, 1)
 behavior = 0
 contact_damage = 48.6
 contact_range = 52.8

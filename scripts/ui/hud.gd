@@ -19,6 +19,7 @@ class_name HUD
 @onready var boss_bar: StatBar = get_node_or_null("TopBar/BossBar")
 @onready var floor_label: Label = get_node_or_null("TopBar/FloorLabel")
 @onready var special_bar: StatBar = get_node_or_null("TopBar/SpecialBar")
+@onready var control_band: ColorRect = get_node_or_null("ControlBand")
 
 var _boss: Node = null
 var _pause_overlay: Control = null
@@ -39,6 +40,17 @@ func _ready() -> void:
 	_on_gold_changed(RunState.gold)
 	_update_essence_label()
 	_update_bag_label()
+	# Erst nach dem Layout, dann steht die Leistenhöhe fest.
+	_reserve_control_band.call_deferred()
+
+## Das Spielfeld endet an der Steuerleiste - die Daumen liegen dann auf
+## Stick und Knöpfen, nicht auf Gegnern.
+func _reserve_control_band() -> void:
+	if not control_band:
+		return
+	var camera := get_tree().get_first_node_in_group("camera")
+	if camera and camera.has_method("set_bottom_reserve"):
+		camera.set_bottom_reserve(control_band.size.y)
 
 	if fade_overlay:
 		fade_overlay.color.a = 0.0

@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://17ws7t6cm6ul"]
 
 [ext_resource type="Script" path="res://resources/enemies/enemy_data.gd" id="1_3a2jy"]
-[ext_resource type="Texture2D" uid="uid://iy3w1m7ghusg" path="res://resources/enemies/green_slime/greenslime.png" id="2_tgtpw"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/green_slime.png" id="2_sprite"]
 [ext_resource type="Resource" path="res://resources/loot/dt_slime.tres" id="3_drops"]
 
 [resource]
@@ -9,8 +9,8 @@ script = ExtResource("1_3a2jy")
 enemy_name = "Slime"
 max_health = 225.6
 move_speed = 55.0
-sprite_texture = ExtResource("2_tgtpw")
-sprite_scale = 1.0
+sprite_texture = ExtResource("2_sprite")
+sprite_scale = 1.25
 tint = Color(1, 1, 1, 1)
 behavior = 0
 movement = 1

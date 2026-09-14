@@ -148,11 +148,28 @@ script = ExtResource("2_bar")
 fill_color = Color(0.851, 0.31, 0.31, 1)
 ghost_color = Color(0.271, 0.247, 0.361, 1)
 
+[node name="ControlBand" type="ColorRect" parent="HUD"]
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -360.0
+mouse_filter = 2
+color = Color(0.078, 0.071, 0.122, 1)
+
+[node name="ControlBandEdge" type="ColorRect" parent="HUD"]
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -360.0
+offset_bottom = -356.0
+mouse_filter = 2
+color = Color(0.271, 0.247, 0.361, 1)
+
 [node name="Joystick" type="Control" parent="HUD"]
 offset_left = 20.0
-offset_top = 800.0
-offset_right = 420.0
-offset_bottom = 1200.0
+offset_top = 930.0
+offset_right = 400.0
+offset_bottom = 1270.0
 script = ExtResource("3_stick")
 
 [node name="AbilityButton" type="Control" parent="HUD"]
@@ -167,9 +184,9 @@ button_color = Color(0.247, 0.824, 0.78, 1)
 
 [node name="DashButton" type="Control" parent="HUD"]
 offset_left = 580.0
-offset_top = 1080.0
+offset_top = 1100.0
 offset_right = 680.0
-offset_bottom = 1180.0
+offset_bottom = 1200.0
 script = ExtResource("4_button")
 action = 1
 label_text = "»"

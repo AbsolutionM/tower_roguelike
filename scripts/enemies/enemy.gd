@@ -13,6 +13,10 @@ enum State { APPROACH, WINDUP, CHARGE }
 ## Global gebremste Zeit für Gegner (Zeitriss-Fähigkeit). 1.0 = normal.
 static var time_scale: float = 1.0
 
+## Halbe Höhe des Sprites, für das Position und Schatten in der Szene
+## eingerichtet sind.
+const SPRITE_LAYOUT_HALF_HEIGHT := 16.0
+
 @export var enemy_data: EnemyData
 @export var max_health: float = 30.0
 @export var move_speed: float = 40.0
@@ -130,6 +134,11 @@ func apply_enemy_data() -> void:
 		if enemy_data.sprite_texture:
 			sprite.texture = enemy_data.sprite_texture
 			sprite.visible = true
+			# Die Szene ist für 32 Pixel hohe Sprites gebaut. Andere Höhen
+			# werden an derselben Unterkante ausgerichtet, sonst schwebt ein
+			# flacher Schleim über seinem Schatten und ein hoher steckt darin.
+			var height: float = enemy_data.sprite_texture.get_size().y
+			sprite.offset = Vector2(0.0, SPRITE_LAYOUT_HALF_HEIGHT - height * 0.5)
 		else:
 			# Platzhalter-Symbol übernimmt die Darstellung.
 			sprite.visible = false

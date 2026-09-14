@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="EnemyData" format=3]
 
 [ext_resource type="Script" path="res://resources/enemies/enemy_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/giant_frost_slime.png" id="2_sprite"]
 [ext_resource type="Resource" path="res://resources/loot/dt_elite.tres" id="2_drops"]
 [ext_resource type="Resource" path="res://resources/enemies/crystal_shard_enemy.tres" id="3_shard"]
 
@@ -8,9 +9,10 @@
 script = ExtResource("1_script")
 enemy_name = "Kristallwächter"
 max_health = 714.6
+sprite_texture = ExtResource("2_sprite")
 move_speed = 34.0
-sprite_scale = 1.0
-tint = Color(0.29, 0.565, 0.851, 1)
+sprite_scale = 1.30
+tint = Color(1, 1, 1, 1)
 symbol = 5
 symbol_size = 26.4
 movement = 0

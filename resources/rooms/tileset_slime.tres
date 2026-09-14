@@ -1,34 +1,77 @@
 [gd_resource type="Resource" script_class="RoomTileset" format=3]
 
 [ext_resource type="Script" path="res://resources/rooms/room_tileset.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/tiles/boden_1.png" id="2_b1"]
-[ext_resource type="Texture2D" path="res://assets/sprites/tiles/boden_2.png" id="3_b2"]
-[ext_resource type="Texture2D" path="res://assets/sprites/tiles/boden_gitter.png" id="4_gitter"]
-[ext_resource type="Texture2D" path="res://assets/sprites/tiles/boden_riss.png" id="5_riss"]
-[ext_resource type="Texture2D" path="res://assets/sprites/tiles/schleim_lache.png" id="6_lache"]
-[ext_resource type="Texture2D" path="res://assets/sprites/tiles/schleim_blasen.png" id="7_blasen"]
-[ext_resource type="Texture2D" path="res://assets/sprites/tiles/wand_oben.png" id="8_wo"]
-[ext_resource type="Texture2D" path="res://assets/sprites/tiles/wand_unten.png" id="9_wu"]
-[ext_resource type="Texture2D" path="res://assets/sprites/tiles/wand_links.png" id="10_wl"]
-[ext_resource type="Texture2D" path="res://assets/sprites/tiles/wand_rechts.png" id="11_wr"]
-[ext_resource type="Texture2D" path="res://assets/sprites/tiles/wand_ecke_ol.png" id="12_ol"]
-[ext_resource type="Texture2D" path="res://assets/sprites/tiles/wand_ecke_or.png" id="13_or"]
-[ext_resource type="Texture2D" path="res://assets/sprites/tiles/wand_ecke_ul.png" id="14_ul"]
-[ext_resource type="Texture2D" path="res://assets/sprites/tiles/wand_ecke_ur.png" id="15_ur"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_c_1.png" id="c1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_c_2.png" id="c2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_c_3.png" id="c3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_c_4.png" id="c4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_c_5.png" id="c5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_t_1.png" id="t1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_t_2.png" id="t2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_t_3.png" id="t3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_t_4.png" id="t4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_t_5.png" id="t5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_b_1.png" id="b1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_b_2.png" id="b2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_b_3.png" id="b3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_b_4.png" id="b4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_b_5.png" id="b5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_l_1.png" id="l1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_l_2.png" id="l2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_l_3.png" id="l3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_l_4.png" id="l4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_r_1.png" id="r1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_r_2.png" id="r2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_r_3.png" id="r3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_r_4.png" id="r4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_tl.png" id="tl"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_tr.png" id="tr"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_bl.png" id="bl"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/floor_br.png" id="br"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/pool_c.png" id="pc"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/pool_c_2.png" id="pc2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/pool_t.png" id="pt"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/pool_b.png" id="pb"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/pool_l.png" id="pl"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/pool_r.png" id="pr"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/pool_tl.png" id="ptl"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/pool_tr.png" id="ptr"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/pool_bl.png" id="pbl"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/pool_br.png" id="pbr"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/pool_itl.png" id="pitl"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/pool_itr.png" id="pitr"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/pool_ibl.png" id="pibl"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/pool_ibr.png" id="pibr"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/slimetower/pool_single.png" id="ps"]
 
 [resource]
 script = ExtResource("1_script")
-floor_tiles = Array[Texture2D]([ExtResource("2_b1"), ExtResource("3_b2")])
-floor_accents = Array[Texture2D]([ExtResource("4_gitter"), ExtResource("5_riss")])
-accent_chance = 0.04
-decor_tiles = Array[Texture2D]([ExtResource("6_lache"), ExtResource("7_blasen")])
-decor_chance = 0.03
-wall_top = ExtResource("8_wo")
-wall_bottom = ExtResource("9_wu")
-wall_left = ExtResource("10_wl")
-wall_right = ExtResource("11_wr")
-corner_top_left = ExtResource("12_ol")
-corner_top_right = ExtResource("13_or")
-corner_bottom_left = ExtResource("14_ul")
-corner_bottom_right = ExtResource("15_ur")
-tile_size = 40.0
+floor_tiles = Array[Texture2D]([ExtResource("c1"), ExtResource("c2"), ExtResource("c3"), ExtResource("c4"), ExtResource("c5")])
+floor_accents = Array[Texture2D]([])
+accent_chance = 0.0
+decor_tiles = Array[Texture2D]([])
+decor_chance = 0.0
+wall_top = Array[Texture2D]([ExtResource("t1"), ExtResource("t2"), ExtResource("t3"), ExtResource("t4"), ExtResource("t5")])
+wall_bottom = Array[Texture2D]([ExtResource("b1"), ExtResource("b2"), ExtResource("b3"), ExtResource("b4"), ExtResource("b5")])
+wall_left = Array[Texture2D]([ExtResource("l1"), ExtResource("l2"), ExtResource("l3"), ExtResource("l4")])
+wall_right = Array[Texture2D]([ExtResource("r1"), ExtResource("r2"), ExtResource("r3"), ExtResource("r4")])
+corner_top_left = ExtResource("tl")
+corner_top_right = ExtResource("tr")
+corner_bottom_left = ExtResource("bl")
+corner_bottom_right = ExtResource("br")
+pool_center = Array[Texture2D]([ExtResource("pc"), ExtResource("pc2")])
+pool_top = ExtResource("pt")
+pool_bottom = ExtResource("pb")
+pool_left = ExtResource("pl")
+pool_right = ExtResource("pr")
+pool_corner_top_left = ExtResource("ptl")
+pool_corner_top_right = ExtResource("ptr")
+pool_corner_bottom_left = ExtResource("pbl")
+pool_corner_bottom_right = ExtResource("pbr")
+pool_inner_top_left = ExtResource("pitl")
+pool_inner_top_right = ExtResource("pitr")
+pool_inner_bottom_left = ExtResource("pibl")
+pool_inner_bottom_right = ExtResource("pibr")
+pool_single = ExtResource("ps")
+pool_count = 4
+tile_size = 64.0

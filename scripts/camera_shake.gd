@@ -18,6 +18,13 @@ var trauma: float = 0.0
 var fixed_position: Vector2 = Vector2.ZERO
 var target: Node2D
 
+## Höhe der Steuerleiste am unteren Rand. Das Spielfeld endet darüber:
+## der Held sitzt mittig im sichtbaren Teil, und die Raumgrenzen sind so
+## verschoben, dass die untere Wand oberhalb der Leiste liegt statt darunter.
+var _bottom_reserve: float = 0.0
+var _room_center: Vector2 = Vector2.ZERO
+var _room_size: Vector2 = Vector2.ZERO
+
 var _noise: FastNoiseLite
 var _noise_time: float = 0.0
 var _base_zoom: Vector2 = Vector2.ONE
@@ -56,8 +63,11 @@ func _update_position(delta: float) -> void:
 	global_position = global_position.lerp(goal, clampf(follow_speed * delta, 0.0, 1.0))
 
 func _update_shake(delta: float) -> void:
+	# Der Versatz nach unten bleibt auch ohne Wackeln: er schiebt den Helden
+	# aus dem Bereich hinter der Steuerleiste heraus.
+	var reserve := Vector2(0.0, _bottom_reserve * 0.5)
 	if trauma <= 0.0:
-		offset = Vector2.ZERO
+		offset = reserve
 		rotation = 0.0
 		return
 
@@ -65,7 +75,7 @@ func _update_shake(delta: float) -> void:
 	_noise_time += delta * 55.0
 
 	var strength: float = trauma * trauma
-	offset = Vector2(
+	offset = reserve + Vector2(
 		_noise.get_noise_2d(_noise_time, 0.0) * max_shake_offset.x,
 		_noise.get_noise_2d(0.0, _noise_time) * max_shake_offset.y
 	) * strength
@@ -94,21 +104,34 @@ func punch_zoom(amount: float = 0.06) -> void:
 func set_room(center: Vector2, use_fixed_camera: bool, room_size: Vector2 = Vector2.ZERO) -> void:
 	fixed_position = center
 	mode = Mode.FIXED if use_fixed_camera else Mode.FOLLOW
-	_apply_limits(center, room_size)
+	_room_center = center
+	_room_size = room_size
+	_apply_limits()
+
+## Vom HUD gesetzt: so hoch ist die Steuerleiste unten.
+func set_bottom_reserve(height: float) -> void:
+	_bottom_reserve = maxf(height, 0.0)
+	_apply_limits()
 
 ## Hält die folgende Kamera innerhalb der Raumwände. Ist der Raum kleiner als
-## der Bildschirm, bleiben die Grenzen aus - sonst zappelt die Kamera.
-func _apply_limits(center: Vector2, room_size: Vector2) -> void:
+## das Spielfeld, bleiben die Grenzen aus - sonst zappelt die Kamera.
+##
+## Der Kamera-Versatz (halbe Leistenhöhe) wird nach den Grenzen angewandt.
+## Damit die untere Wand an der Leiste endet und nicht dahinter, werden die
+## Grenzen oben und unten um genau diesen Versatz aufgeweitet.
+func _apply_limits() -> void:
 	var view: Vector2 = get_viewport_rect().size / maxf(_base_zoom.x, 0.01)
-	if room_size.x <= view.x or room_size.y <= view.y:
+	view.y -= _bottom_reserve
+	if _room_size.x <= view.x or _room_size.y <= view.y:
 		limit_left = -10000000
 		limit_right = 10000000
 		limit_top = -10000000
 		limit_bottom = 10000000
 		return
 
-	var half: Vector2 = room_size * 0.5
-	limit_left = int(center.x - half.x)
-	limit_right = int(center.x + half.x)
-	limit_top = int(center.y - half.y)
-	limit_bottom = int(center.y + half.y)
+	var half: Vector2 = _room_size * 0.5
+	var shift: float = _bottom_reserve * 0.5
+	limit_left = int(_room_center.x - half.x)
+	limit_right = int(_room_center.x + half.x)
+	limit_top = int(_room_center.y - half.y - shift)
+	limit_bottom = int(_room_center.y + half.y + shift)
