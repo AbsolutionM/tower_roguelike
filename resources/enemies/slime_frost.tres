@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://resources/enemies/enemy_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/sleepy_frost_slime.png" id="2_sprite"]
+[ext_resource type="Resource" path="res://resources/loot/dt_slime.tres" id="3_drops"]
+[ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="4_projectile"]
+
+[resource]
+script = ExtResource("1_script")
+enemy_name = "Frostschleim"
+max_health = 200.0
+move_speed = 54.0
+sprite_texture = ExtResource("2_sprite")
+sprite_scale = 1.20
+tint = Color(1, 1, 1, 1)
+behavior = 2
+movement = 0
+contact_damage = 12.0
+contact_range = 20.4
+attack_cooldown = 2.0
+keep_distance = 240.0
+shoot_range = 380.0
+projectile_scene = ExtResource("4_projectile")
+projectile_speed = 190.0
+projectile_damage = 26.0
+squash_amount = 0.12
+squash_speed = 5.0
+knockback_friction = 700.0
+shadow_radius = 9.0
+trail_colors = Array[Color]([Color(0.55, 0.85, 1, 0.45), Color(0.35, 0.6, 0.85, 0.4)])
+drop_table = ExtResource("3_drops")

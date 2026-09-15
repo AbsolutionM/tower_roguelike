@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://resources/rooms/room_data.gd" id="1_script"]
 [ext_resource type="Resource" path="res://resources/enemies/slime_shooter.tres" id="2_enemy"]
 [ext_resource type="Resource" path="res://resources/enemies/slime_normal.tres" id="3_enemy"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_frost.tres" id="4_enemy"]
 [ext_resource type="PackedScene" path="res://scenes/props/obstacle.tscn" id="90_rock"]
 [ext_resource type="PackedScene" path="res://scenes/props/chest.tscn" id="91_chest"]
 [ext_resource type="PackedScene" path="res://scenes/props/ore.tscn" id="92_ore"]
@@ -11,7 +12,7 @@
 [resource]
 script = ExtResource("1_script")
 room_name = "Spucker-Nest"
-enemy_pool = Array[EnemyData]([ExtResource("2_enemy"), ExtResource("3_enemy")])
+enemy_pool = Array[EnemyData]([ExtResource("2_enemy"), ExtResource("3_enemy"), ExtResource("4_enemy")])
 enemy_count = 7
 room_size = Vector2(1280, 1792)
 fixed_camera = false

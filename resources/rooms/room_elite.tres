@@ -4,6 +4,8 @@
 [ext_resource type="Resource" path="res://resources/enemies/slime_bomber.tres" id="2_enemy"]
 [ext_resource type="Resource" path="res://resources/enemies/slime_splitter.tres" id="3_enemy"]
 [ext_resource type="Resource" path="res://resources/enemies/slime_healer.tres" id="4_enemy"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_venom_sleeper.tres" id="5_enemy"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_ember_sleeper.tres" id="6_enemy"]
 [ext_resource type="PackedScene" path="res://scenes/props/obstacle.tscn" id="90_rock"]
 [ext_resource type="PackedScene" path="res://scenes/props/chest.tscn" id="91_chest"]
 [ext_resource type="PackedScene" path="res://scenes/props/ore.tscn" id="92_ore"]
@@ -12,7 +14,7 @@
 [resource]
 script = ExtResource("1_script")
 room_name = "Brutkammer"
-enemy_pool = Array[EnemyData]([ExtResource("2_enemy"), ExtResource("3_enemy"), ExtResource("4_enemy")])
+enemy_pool = Array[EnemyData]([ExtResource("2_enemy"), ExtResource("3_enemy"), ExtResource("4_enemy"), ExtResource("5_enemy"), ExtResource("6_enemy")])
 enemy_count = 6
 room_size = Vector2(1280, 1792)
 fixed_camera = false

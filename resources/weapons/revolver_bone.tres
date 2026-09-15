@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/weapons/specials/w_revolver_bone.tres" id="5_special"]
+[ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="3_proj"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_id = "revolver_bone"
+weapon_name = "Knochenrevolver"
+category = 3
+hold_scale = 0.68
+hold_rotation_degrees = -90.0
+description = "Trommel aus Wirbeln, Lauf aus Schienbein. Klappert, trifft aber."
+rarity = 2
+damage = 18.0
+cooldown = 0.7
+weapon_range = 380.0
+knockback = 220.0
+screen_shake = 4.5
+crit_bonus = 0.14
+crit_damage_bonus = 0.3
+scaling_power = 2
+scaling_agility = 3
+scaling_fortune = 4
+required_power = 4
+required_agility = 5
+weight = 3.6
+stagger = 24.0
+bleed_buildup = 0.0
+projectile_speed = 760.0
+pierce_count = 1
+projectiles_per_shot = 1
+spread_degrees = 2.0
+projectile_color = Color(0.9, 0.87, 0.78, 1)
+muzzle_flash_size = 34.0
+is_melee = false
+projectile_scene = ExtResource("3_proj")
+special = ExtResource("5_special")

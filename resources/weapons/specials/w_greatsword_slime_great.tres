@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="WeaponSpecial" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_special.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+special_id = "w_greatsword_slime_great"
+special_name = "Königsschleim"
+description = "Der Schlag saugt Leben aus dem Getroffenen und gibt es dem Träger."
+kind = 7
+hits_required = 6
+damage_mult = 2.60
+radius = 170.0
+knockback = 300.0
+count = 1
+duration = 0.0
+color = Color(0.435, 0.749, 0.353, 1)

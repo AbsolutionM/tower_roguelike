@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="CraftingRecipe" format=3]
+
+[ext_resource type="Script" path="res://resources/crafting/crafting_recipe.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/weapons/staff_slime.tres" id="2_weapon"]
+
+[resource]
+script = ExtResource("1_script")
+recipe_id = "craft_staff_slime"
+result_weapon = ExtResource("2_weapon")
+gold_cost = 780
+material_ids = Array[String](["slime_gel", "crystal_shard"])
+material_counts = Array[int]([20, 6])

@@ -5,6 +5,8 @@
 [ext_resource type="Resource" path="res://resources/enemies/spider_scuttle.tres" id="3_enemy"]
 [ext_resource type="Resource" path="res://resources/enemies/ghost_wisp.tres" id="4_enemy"]
 [ext_resource type="Resource" path="res://resources/enemies/crystal_golem.tres" id="5_enemy"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_frost.tres" id="6_enemy"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_iron_small.tres" id="7_enemy"]
 [ext_resource type="PackedScene" path="res://scenes/props/obstacle.tscn" id="90_rock"]
 [ext_resource type="PackedScene" path="res://scenes/props/chest.tscn" id="91_chest"]
 [ext_resource type="PackedScene" path="res://scenes/props/ore.tscn" id="92_ore"]
@@ -13,7 +15,7 @@
 [resource]
 script = ExtResource("1_script")
 room_name = "Gruft"
-enemy_pool = Array[EnemyData]([ExtResource("2_enemy"), ExtResource("3_enemy"), ExtResource("4_enemy"), ExtResource("5_enemy")])
+enemy_pool = Array[EnemyData]([ExtResource("2_enemy"), ExtResource("3_enemy"), ExtResource("4_enemy"), ExtResource("5_enemy"), ExtResource("6_enemy"), ExtResource("7_enemy")])
 enemy_count = 7
 room_size = Vector2(1280, 1792)
 fixed_camera = false

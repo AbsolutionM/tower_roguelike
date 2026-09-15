@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/slime_sword.png" id="2_art"]
+[ext_resource type="Resource" path="res://resources/weapons/specials/cls_shortsword.tres" id="5_special"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_id = "shortsword_slime"
+weapon_name = "Schleimklinge"
+category = 0
+icon = ExtResource("2_art")
+hold_texture = ExtResource("2_art")
+hold_scale = 0.72
+hold_rotation_degrees = -45.0
+description = "Gehärteter Schleim mit Kante. Bleibt in der Wunde hängen."
+rarity = 1
+damage = 7.0
+cooldown = 0.34
+weapon_range = 200.0
+knockback = 160.0
+screen_shake = 2.5
+crit_bonus = 0.04
+scaling_power = 1
+scaling_agility = 4
+scaling_fortune = 2
+required_power = 2
+required_agility = 4
+weight = 2.4
+stagger = 12.0
+bleed_buildup = 8.0
+lifesteal = 0.02
+attack_reach = 92.0
+swing_duration = 0.11
+swing_angle_degrees = 140.0
+is_melee = true
+special = ExtResource("5_special")
+shop_price = 180

@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/weapons/specials/w_staff_slime.tres" id="5_special"]
+[ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="3_proj"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_id = "staff_slime"
+weapon_name = "Schleimstab"
+category = 8
+hold_scale = 0.50
+hold_rotation_degrees = -45.0
+description = "Ein Ast, um den sich lebender Schleim windet. Die Kugeln suchen sich ihr Ziel."
+rarity = 2
+damage = 13.0
+cooldown = 0.62
+weapon_range = 350.0
+knockback = 100.0
+screen_shake = 2.0
+crit_bonus = 0.0
+scaling_power = 0
+scaling_agility = 3
+scaling_fortune = 5
+required_power = 3
+required_agility = 5
+weight = 3.4
+stagger = 14.0
+bleed_buildup = 6.0
+projectile_speed = 400.0
+pierce_count = 0
+projectiles_per_shot = 1
+spread_degrees = 4.0
+projectile_color = Color(0.435, 0.749, 0.353, 1)
+muzzle_flash_size = 30.0
+homing_strength = 6.0
+is_melee = false
+projectile_scene = ExtResource("3_proj")
+special = ExtResource("5_special")

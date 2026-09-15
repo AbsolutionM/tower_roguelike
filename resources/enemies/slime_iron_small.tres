@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://resources/enemies/enemy_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/small_iron_slime.png" id="2_sprite"]
+[ext_resource type="Resource" path="res://resources/loot/dt_slime.tres" id="3_drops"]
+
+[resource]
+script = ExtResource("1_script")
+enemy_name = "Eisenkern"
+max_health = 210.0
+move_speed = 42.0
+sprite_texture = ExtResource("2_sprite")
+sprite_scale = 1.20
+tint = Color(1, 1, 1, 1)
+behavior = 0
+movement = 1
+hop_interval = 1.1
+hop_height = 18.0
+hop_duration = 0.4
+hop_speed_mult = 2.8
+contact_damage = 14.0
+contact_range = 16.8
+attack_cooldown = 1.0
+squash_amount = 0.06
+squash_speed = 5.0
+knockback_friction = 1600.0
+shadow_radius = 5.8
+trail_colors = Array[Color]([Color(0.6, 0.6, 0.65, 0.45), Color(0.4, 0.4, 0.45, 0.4)])
+drop_table = ExtResource("3_drops")

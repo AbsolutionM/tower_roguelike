@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="WeaponSpecial" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_special.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+special_id = "w_bow_slime"
+special_name = "Klebersalve"
+description = "Ein Fächer klebriger Pfeile. Getroffene bluten und werden langsam."
+kind = 4
+hits_required = 7
+damage_mult = 1.40
+radius = 0.0
+knockback = 140.0
+count = 7
+duration = 0.0
+color = Color(0.435, 0.749, 0.353, 1)

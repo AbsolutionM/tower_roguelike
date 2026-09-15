@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://resources/enemies/enemy_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/sleepy_ember_slime.png" id="2_sprite"]
+[ext_resource type="Resource" path="res://resources/loot/dt_elite.tres" id="3_drops"]
+
+[resource]
+script = ExtResource("1_script")
+enemy_name = "Glutschläfer"
+max_health = 230.0
+move_speed = 50.0
+sprite_texture = ExtResource("2_sprite")
+sprite_scale = 1.25
+tint = Color(1, 1, 1, 1)
+behavior = 1
+movement = 0
+contact_damage = 34.0
+contact_range = 23.0
+attack_cooldown = 1.2
+charge_speed = 440.0
+charge_windup = 0.6
+charge_trigger_range = 280.0
+squash_amount = 0.2
+squash_speed = 7.0
+knockback_friction = 700.0
+shadow_radius = 9.6
+explode_on_death = true
+explosion_damage = 20.0
+explosion_radius = 140.0
+trail_colors = Array[Color]([Color(1, 0.45, 0.2, 0.5), Color(0.8, 0.3, 0.15, 0.4)])
+drop_table = ExtResource("3_drops")

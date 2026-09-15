@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="res://resources/rooms/room_data.gd" id="1_script"]
 [ext_resource type="Resource" path="res://resources/enemies/slime_charger.tres" id="2_enemy"]
 [ext_resource type="Resource" path="res://resources/enemies/slime_fast.tres" id="3_enemy"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_ember_sleeper.tres" id="4_enemy"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_giant.tres" id="5_enemy"]
 [ext_resource type="PackedScene" path="res://scenes/props/obstacle.tscn" id="90_rock"]
 [ext_resource type="PackedScene" path="res://scenes/props/chest.tscn" id="91_chest"]
 [ext_resource type="PackedScene" path="res://scenes/props/ore.tscn" id="92_ore"]
@@ -11,7 +13,7 @@
 [resource]
 script = ExtResource("1_script")
 room_name = "Große Halle"
-enemy_pool = Array[EnemyData]([ExtResource("2_enemy"), ExtResource("3_enemy")])
+enemy_pool = Array[EnemyData]([ExtResource("2_enemy"), ExtResource("3_enemy"), ExtResource("4_enemy"), ExtResource("5_enemy")])
 enemy_count = 9
 room_size = Vector2(1600, 2112)
 fixed_camera = false

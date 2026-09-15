@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://resources/enemies/enemy_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/sleepy_venom_slime.png" id="2_sprite"]
+[ext_resource type="Resource" path="res://resources/loot/dt_elite.tres" id="3_drops"]
+
+[resource]
+script = ExtResource("1_script")
+enemy_name = "Giftschläfer"
+max_health = 240.0
+move_speed = 70.0
+sprite_texture = ExtResource("2_sprite")
+sprite_scale = 1.20
+tint = Color(1, 1, 1, 1)
+behavior = 3
+movement = 1
+hop_interval = 0.7
+hop_height = 28.0
+hop_duration = 0.36
+hop_speed_mult = 3.0
+contact_damage = 15.0
+contact_range = 20.4
+attack_cooldown = 1.1
+keep_distance = 200.0
+squash_amount = 0.16
+squash_speed = 6.0
+knockback_friction = 600.0
+shadow_radius = 9.0
+explode_on_death = true
+explosion_damage = 16.0
+explosion_radius = 165.0
+trail_colors = Array[Color]([Color(0.75, 0.4, 0.85, 0.45), Color(0.5, 0.25, 0.6, 0.4)])
+drop_table = ExtResource("3_drops")

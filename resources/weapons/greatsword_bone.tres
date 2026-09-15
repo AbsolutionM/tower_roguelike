@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/giant_bone_sword.png" id="2_art"]
+[ext_resource type="Resource" path="res://resources/weapons/specials/w_greatsword_bone.tres" id="5_special"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_id = "greatsword_bone"
+weapon_name = "Riesenknochen"
+category = 1
+icon = ExtResource("2_art")
+hold_texture = ExtResource("2_art")
+hold_scale = 0.86
+hold_rotation_degrees = -45.0
+description = "Ein Oberschenkel von etwas, das man lieber nicht getroffen hätte. Trifft wie ein Balken."
+rarity = 2
+damage = 30.0
+cooldown = 1.15
+weapon_range = 240.0
+knockback = 520.0
+screen_shake = 8.0
+crit_bonus = 0.0
+scaling_power = 5
+scaling_agility = 0
+scaling_fortune = 0
+required_power = 7
+required_agility = 2
+weight = 9.0
+stagger = 62.0
+bleed_buildup = 0.0
+attack_reach = 130.0
+swing_duration = 0.19
+swing_angle_degrees = 170.0
+is_melee = true
+special = ExtResource("5_special")
