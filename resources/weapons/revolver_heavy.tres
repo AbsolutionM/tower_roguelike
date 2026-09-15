@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="2_proj"]
-[ext_resource type="Texture2D" path="res://assets/sprites/weapons/revolver_heavy.png" id="14_art"]
 [ext_resource type="Resource" path="res://resources/weapons/specials/cls_revolver.tres" id="15_special"]
 
 [resource]
@@ -10,8 +9,6 @@ script = ExtResource("1_script")
 weapon_id = "revolver_heavy"
 weapon_name = "Schwerer Revolver"
 category = 3
-icon = ExtResource("14_art")
-hold_texture = ExtResource("14_art")
 hold_scale = 0.60
 hold_rotation_degrees = -90.0
 description = "Langsam, laut, durchschlagend. Ein Schuss muss sitzen."

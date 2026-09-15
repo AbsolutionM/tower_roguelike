@@ -2,12 +2,12 @@
 
 [ext_resource type="Script" path="res://resources/character/character_data.gd" id="1_script"]
 [ext_resource type="Script" path="res://resources/character/weapon_affinity.gd" id="2_affinity"]
-[ext_resource type="SpriteFrames" path="res://resources/character/first/first_frames.tres" id="3_frames"]
+[ext_resource type="SpriteFrames" path="res://resources/character/cowboy/frames.tres" id="3_frames"]
 [ext_resource type="Resource" path="res://resources/character/ability_blink.tres" id="4_ability"]
 [ext_resource type="Resource" path="res://resources/weapons/sword_melee.tres" id="6_weapon"]
 [ext_resource type="Resource" path="res://resources/character/first/first_leichtfuss.tres" id="7_gadget"]
 [ext_resource type="Resource" path="res://resources/character/first/first_spuersinn.tres" id="8_star"]
-[ext_resource type="Texture2D" path="res://assets/sprites/first/hand.png" id="9_hand"]
+[ext_resource type="Texture2D" path="res://assets/sprites/cowboy/hand.png" id="9_hand"]
 
 [sub_resource type="Resource" id="aff_shortsword"]
 script = ExtResource("2_affinity")

@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="3_proj"]
-[ext_resource type="Texture2D" path="res://assets/sprites/weapons/revolver.png" id="15_art"]
 [ext_resource type="Resource" path="res://resources/weapons/specials/cls_revolver.tres" id="16_special"]
 
 [resource]
@@ -10,8 +9,6 @@ script = ExtResource("1_script")
 weapon_id = "revolver_ordinary"
 weapon_name = "Revolver"
 category = 3
-icon = ExtResource("15_art")
-hold_texture = ExtResource("15_art")
 hold_scale = 0.68
 hold_rotation_degrees = -90.0
 description = "Harte Einzelschüsse mit hoher kritischer Chance."

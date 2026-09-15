@@ -1,7 +1,6 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/weapons/shield_tower.png" id="2_art"]
 [ext_resource type="Resource" path="res://resources/weapons/specials/cls_shield.tres" id="5_special"]
 
 [resource]
@@ -9,8 +8,6 @@ script = ExtResource("1_script")
 weapon_id = "shield_tower"
 weapon_name = "Turmschild"
 category = 11
-icon = ExtResource("2_art")
-hold_texture = ExtResource("2_art")
 hold_scale = 0.55
 hold_rotation_degrees = -45.0
 description = "Kaum Schaden, dafür Rüstung und ein Rempler, der alles umwirft."

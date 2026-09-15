@@ -142,6 +142,32 @@ static func make_icon(texture: Texture2D, icon_size: float, fallback_color: Colo
 	)
 	return placeholder
 
+## Icon einer Waffe. Ohne Textur zeichnet der Kampf-Platzhalter die Klasse -
+## dieselbe Form, die auch in der Hand der Figur liegt.
+static func make_weapon_icon(weapon: WeaponData, icon_size: float, accent: Color) -> Control:
+	if not weapon:
+		return make_spacer(icon_size)
+	if weapon.icon:
+		return make_icon(weapon.icon, icon_size, accent)
+
+	var host := Panel.new()
+	host.custom_minimum_size = Vector2(icon_size, icon_size)
+	host.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	host.add_theme_stylebox_override("panel", panel_style(Color(accent, 0.12), 0, Color(accent, 0.4)))
+
+	var symbol := WeaponSymbol.new()
+	symbol.category = weapon.category
+	symbol.tint = Palette.BONE if weapon.is_melee else weapon.projectile_color
+	# Der Platzhalter reicht von -5 bis etwa 17 Pixel; das soll knapp in die Kachel passen.
+	symbol.scale = Vector2.ONE * (icon_size * 0.7 / 22.0)
+	symbol.position = Vector2(icon_size * 0.5 - 6.0 * symbol.scale.x, icon_size * 0.5)
+	# Klingen stehen schräg wie in der Faust, alles andere zeigt nach rechts.
+	if weapon.holds_upright() and weapon.category != WeaponData.Category.SHIELD:
+		symbol.rotation = -PI * 0.25
+		symbol.position = Vector2(icon_size * 0.5 - 4.0 * symbol.scale.x, icon_size * 0.5 + 4.0 * symbol.scale.x)
+	host.add_child(symbol)
+	return host
+
 ## Icon eines Items. Ohne Textur wird die Form gezeichnet, statt ein
 ## farbiges Quadrat zu zeigen.
 static func make_item_icon(item: ItemData, icon_size: float) -> Control:

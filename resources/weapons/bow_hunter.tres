@@ -1,7 +1,6 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/weapons/bow_hunter.png" id="2_art"]
 [ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="3_proj"]
 [ext_resource type="Resource" path="res://resources/weapons/specials/cls_bow.tres" id="5_special"]
 
@@ -10,8 +9,6 @@ script = ExtResource("1_script")
 weapon_id = "bow_hunter"
 weapon_name = "Jagdbogen"
 category = 7
-icon = ExtResource("2_art")
-hold_texture = ExtResource("2_art")
 hold_scale = 0.54
 hold_rotation_degrees = -45.0
 description = "Weit, leise und durchschlagend. Braucht eine ruhige Hand."

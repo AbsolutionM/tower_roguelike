@@ -28,6 +28,16 @@ func _draw() -> void:
 			_gun(12.0, 1.5, 4.0)
 		WeaponData.Category.SHOTGUN:
 			_gun(16.0, 2.5, 4.5)
+		WeaponData.Category.BOW:
+			_bow(13.0)
+		WeaponData.Category.STAFF:
+			_staff(17.0)
+		WeaponData.Category.WHIP:
+			_whip(16.0)
+		WeaponData.Category.THROWN:
+			_disc(7.0)
+		WeaponData.Category.SHIELD:
+			_shield(7.0)
 
 ## Griff, Parierstange, Klinge - alles in ganzen Pixelblöcken.
 func _blade(length: float, half_width: float) -> void:
@@ -50,6 +60,53 @@ func _gun(barrel: float, barrel_half: float, body_half: float) -> void:
 	# Laufkante und Mündung in der Waffenfarbe - daran erkennt man den Typ.
 	draw_rect(Rect2(2.0, -barrel_half, barrel, 0.7), tint)
 	draw_rect(Rect2(barrel + 1.0, -barrel_half - 0.4, 1.2, barrel_half * 2.0 + 0.8), tint)
+
+## Bogen als Halbkreis quer zur Schussrichtung, Sehne als gerade Linie.
+func _bow(radius: float) -> void:
+	var edge: Color = Palette.edge(tint)
+	draw_arc(Vector2(2.0, 0.0), radius, -PI * 0.5, PI * 0.5, 14, edge, 3.0)
+	draw_arc(Vector2(2.0, 0.0), radius, -PI * 0.5, PI * 0.5, 14, tint, 1.6)
+	draw_line(Vector2(2.0, -radius), Vector2(2.0, radius), Palette.BONE, 0.8)
+	_block(Rect2(0.0, -1.5, 4.0, 3.0), Palette.STONE, edge)
+
+## Langer dünner Schaft mit Knauf an der Spitze.
+func _staff(length: float) -> void:
+	var edge: Color = Palette.edge(Palette.STONE)
+	_block(Rect2(-5.0, -0.8, length, 1.6), Palette.STONE, edge)
+	draw_circle(Vector2(length - 5.0, 0.0), 3.2, Palette.edge(tint))
+	draw_circle(Vector2(length - 5.0, 0.0), 2.4, tint)
+	draw_circle(Vector2(length - 5.8, -0.8), 0.9, Palette.highlight(tint))
+
+## Griff plus eine Schnur, die nach vorn hin dünner wird und leicht wellt.
+func _whip(length: float) -> void:
+	var edge: Color = Palette.edge(tint)
+	_block(Rect2(-4.0, -1.2, 5.0, 2.4), Palette.STONE, Palette.INK)
+	var points := PackedVector2Array()
+	for i in 9:
+		var t: float = float(i) / 8.0
+		points.append(Vector2(1.0 + t * length, sin(t * PI * 2.0) * 1.8 * (1.0 - t * 0.5)))
+	draw_polyline(points, edge, 2.6)
+	draw_polyline(points, tint, 1.2)
+
+## Wurfscheibe: Raute mit hellem Kern.
+func _disc(radius: float) -> void:
+	var edge: Color = Palette.edge(tint)
+	var shape := PackedVector2Array([
+		Vector2(radius, 0.0), Vector2(0.0, radius), Vector2(-radius, 0.0), Vector2(0.0, -radius)
+	])
+	draw_colored_polygon(shape, edge)
+	var inner := PackedVector2Array()
+	for point in shape:
+		inner.append(point * 0.75)
+	draw_colored_polygon(inner, tint)
+	draw_circle(Vector2.ZERO, radius * 0.25, Palette.highlight(tint))
+
+## Schild: Tafel mit Rand und Buckel.
+func _shield(half: float) -> void:
+	var edge: Color = Palette.edge(tint)
+	_block(Rect2(-half * 0.6, -half, half * 1.2, half * 2.0), tint, edge)
+	draw_rect(Rect2(-half * 0.6, -half, half * 1.2, 1.0), Palette.highlight(tint))
+	draw_circle(Vector2.ZERO, half * 0.3, edge)
 
 func _block(rect: Rect2, fill: Color, edge: Color) -> void:
 	draw_rect(rect.grow(0.5), edge)

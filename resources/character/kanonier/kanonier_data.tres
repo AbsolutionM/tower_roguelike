@@ -7,7 +7,7 @@
 [ext_resource type="Resource" path="res://resources/weapons/shotgun_scatter.tres" id="6_weapon"]
 [ext_resource type="Resource" path="res://resources/character/kanonier/kanonier_nachbrenner.tres" id="7_gadget"]
 [ext_resource type="Resource" path="res://resources/character/kanonier/kanonier_sprengkopf.tres" id="8_star"]
-[ext_resource type="Texture2D" path="res://assets/sprites/first/hand.png" id="9_hand"]
+[ext_resource type="Texture2D" path="res://assets/sprites/cowboy/hand.png" id="9_hand"]
 
 [sub_resource type="Resource" id="aff_shotgun"]
 script = ExtResource("2_affinity")

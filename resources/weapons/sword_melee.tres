@@ -1,7 +1,6 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3 uid="uid://d3ta8e0k5pots"]
 
 [ext_resource type="Script" uid="uid://d1oop0o8n7lws" path="res://resources/weapons/weapon_data.gd" id="1_gcb7v"]
-[ext_resource type="Texture2D" path="res://assets/sprites/weapons/shortsword_iron.png" id="14_art"]
 [ext_resource type="Resource" path="res://resources/weapons/specials/cls_shortsword.tres" id="15_special"]
 
 [resource]
@@ -9,8 +8,6 @@ script = ExtResource("1_gcb7v")
 weapon_id = "shortsword_iron"
 weapon_name = "Eisen-Kurzschwert"
 category = 0
-icon = ExtResource("14_art")
-hold_texture = ExtResource("14_art")
 hold_scale = 0.91
 hold_rotation_degrees = -45.0
 description = "Schnelle, kurze Hiebe. Verzeiht Fehler."

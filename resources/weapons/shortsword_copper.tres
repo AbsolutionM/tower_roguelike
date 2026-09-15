@@ -1,7 +1,6 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/weapons/shortsword_copper.png" id="2_art"]
 [ext_resource type="Resource" path="res://resources/weapons/specials/cls_shortsword.tres" id="5_special"]
 
 [resource]
@@ -9,8 +8,6 @@ script = ExtResource("1_script")
 weapon_id = "shortsword_copper"
 weapon_name = "Kupfer-Kurzschwert"
 category = 0
-icon = ExtResource("2_art")
-hold_texture = ExtResource("2_art")
 hold_scale = 0.91
 hold_rotation_degrees = -45.0
 description = "Weiches Kupfer, aber sehr schnell in der Hand."

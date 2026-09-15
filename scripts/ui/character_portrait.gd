@@ -22,7 +22,7 @@ var _root: Node2D
 var _body: Node2D
 var _left_hand: Sprite2D
 var _right_hand: Sprite2D
-var _weapon_sprite: Sprite2D
+var _weapon_sprite: Node2D
 
 var _time: float = 0.0
 var _body_size: Vector2 = Vector2(32.0, 32.0)
@@ -113,9 +113,16 @@ func _make_hand(mirrored: bool) -> Sprite2D:
 ## Versatz und Ruhedrehung kommen aus denselben Regeln wie im Kampf
 ## (WeaponController._hold_offset und _rest_rotation), damit eine Waffe im
 ## Heldenbild so in der Faust liegt wie nachher im Turm.
-func _make_weapon() -> Sprite2D:
-	if not weapon or not weapon.hold_texture:
+func _make_weapon() -> Node2D:
+	if not weapon:
 		return null
+	if not weapon.hold_texture:
+		# Ohne Haltesprite dieselbe gezeichnete Form wie im Kampf.
+		var symbol := WeaponSymbol.new()
+		symbol.category = weapon.category
+		symbol.tint = Palette.BONE if weapon.is_melee else weapon.projectile_color
+		symbol.scale = Vector2.ONE * (_body_size.y * 0.55 / 22.0)
+		return symbol
 
 	var sprite := Sprite2D.new()
 	sprite.texture = weapon.hold_texture
@@ -179,7 +186,11 @@ func _process(delta: float) -> void:
 
 	if _weapon_sprite:
 		_weapon_sprite.position = right_point
-		_weapon_sprite.rotation = right_tilt + deg_to_rad(weapon.hold_rotation_degrees)
+		if _weapon_sprite is Sprite2D:
+			_weapon_sprite.rotation = right_tilt + deg_to_rad(weapon.hold_rotation_degrees)
+		else:
+			# Der Platzhalter zeigt nach +X: Klingen schräg nach oben, Läufe nach vorn.
+			_weapon_sprite.rotation = right_tilt + (-PI * 0.25 if weapon.holds_upright() else 0.0)
 
 	queue_redraw()
 

@@ -198,7 +198,7 @@ func _make_weapon_card(character: CharacterData, weapon: WeaponData, is_equipped
 
 	var row := UIKit.make_row(8)
 	panel.content.add_child(row)
-	row.add_child(UIKit.make_icon(weapon.icon, 44.0, accent))
+	row.add_child(UIKit.make_weapon_icon(weapon, 44.0, accent))
 
 	var card := UIKit.make_column(3)
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL

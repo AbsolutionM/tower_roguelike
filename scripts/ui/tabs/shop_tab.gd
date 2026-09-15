@@ -45,14 +45,14 @@ func _build_weapon_sections(content: VBoxContainer) -> void:
 		for weapon in weapons:
 			content.add_child(_make_weapon_row(weapon))
 
-func _make_row(title: String, subtitle: String, detail: String, accent: Color, price: int, owned: bool, on_buy: Callable, icon: Texture2D = null) -> Control:
+func _make_row(title: String, subtitle: String, detail: String, accent: Color, price: int, owned: bool, on_buy: Callable, icon: Control) -> Control:
 	var affordable: bool = RunState.gold >= price
 	var panel := UICard.new(accent if (affordable and not owned) else Palette.MIST)
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	var row := UIKit.make_row(12)
 	panel.content.add_child(row)
-	row.add_child(UIKit.make_icon(icon, 52.0, accent))
+	row.add_child(icon)
 
 	var info := UIKit.make_column(2)
 	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -90,7 +90,7 @@ func _make_weapon_row(weapon: WeaponData) -> Control:
 		weapon.shop_price,
 		RunState.is_weapon_owned(weapon.weapon_id),
 		func() -> bool: return RunState.buy_weapon(weapon),
-		weapon.icon
+		UIKit.make_weapon_icon(weapon, 52.0, UIKit.ACCENT)
 	)
 
 func _make_accessory_row(accessory: AccessoryData) -> Control:
@@ -102,5 +102,5 @@ func _make_accessory_row(accessory: AccessoryData) -> Control:
 		accessory.shop_price,
 		RunState.is_accessory_owned(accessory.accessory_id),
 		func() -> bool: return RunState.buy_accessory(accessory),
-		accessory.icon
+		UIKit.make_icon(accessory.icon, 52.0, accessory.get_rarity_color())
 	)

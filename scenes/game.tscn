@@ -11,8 +11,7 @@
 [ext_resource type="Script" uid="uid://mtydripo7gbs" path="res://resources/rooms/room_data.gd" id="19_xor3i"]
 [ext_resource type="Script" uid="uid://degagr6otf1m3" path="res://resources/character/character_data.gd" id="24_p0fn2"]
 [ext_resource type="Script" uid="uid://d1oop0o8n7lws" path="res://resources/weapons/weapon_data.gd" id="27_1bovr"]
-[ext_resource type="Texture2D" uid="uid://che6op3ephafy" path="res://assets/sprites/first/hand.png" id="45_awo1y"]
-[ext_resource type="Texture2D" uid="uid://fb22nb73w7sg" path="res://assets/sprites/weapons/GoldenSword.png" id="46_ah16c"]
+[ext_resource type="Texture2D" path="res://assets/sprites/cowboy/hand.png" id="45_awo1y"]
 [ext_resource type="Script" uid="uid://sdwaqp2fhabl" path="res://scripts/player/weapon_pivot.gd" id="46_rpqcm"]
 [ext_resource type="Script" uid="uid://uykq45hwuk7t" path="res://resources/weapons/sword.gd" id="46_vtoad"]
 [ext_resource type="Script" uid="uid://ymr2i70fshd5" path="res://scripts/player/hand_bob.gd" id="47_s2ufw"]
@@ -124,7 +123,6 @@ material = SubResource("ShaderMaterial_bqye8")
 position = Vector2(65.649994, -2.4999998)
 rotation = 1.5707964
 scale = Vector2(3, 3)
-texture = ExtResource("46_ah16c")
 
 [node name="HitSound" type="AudioStreamPlayer" parent="Player/WeaponPivot/FirstHand/Sword" unique_id=462831525]
 stream = ExtResource("52_whnll")
