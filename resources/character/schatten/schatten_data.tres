@@ -2,12 +2,12 @@
 
 [ext_resource type="Script" path="res://resources/character/character_data.gd" id="1_script"]
 [ext_resource type="Script" path="res://resources/character/weapon_affinity.gd" id="2_affinity"]
-[ext_resource type="SpriteFrames" path="res://resources/character/first/first_frames.tres" id="3_frames"]
+[ext_resource type="SpriteFrames" path="res://resources/character/mage/frames.tres" id="3_frames"]
 [ext_resource type="Resource" path="res://resources/character/ability_time_slow.tres" id="4_ability"]
 [ext_resource type="Resource" path="res://resources/weapons/katana_storm.tres" id="6_weapon"]
 [ext_resource type="Resource" path="res://resources/character/schatten/schatten_rauchtritt.tres" id="7_gadget"]
 [ext_resource type="Resource" path="res://resources/character/schatten/schatten_meuchler.tres" id="8_star"]
-[ext_resource type="Texture2D" path="res://assets/sprites/first/hand.png" id="9_hand"]
+[ext_resource type="Texture2D" path="res://assets/sprites/mage/hand.png" id="9_hand"]
 
 [sub_resource type="Resource" id="aff_katana"]
 script = ExtResource("2_affinity")
@@ -30,7 +30,7 @@ character_name = "Schatten"
 description = "Glaskanone. Trifft extrem oft kritisch und hält dafür fast nichts aus."
 sprite_frames = ExtResource("3_frames")
 hand_texture = ExtResource("9_hand")
-sprite_modulate = Color(0.8, 0.74, 0.92, 1)
+sprite_modulate = Color(1, 1, 1, 1)
 accent_color = Color(0.545, 0.435, 0.831, 1)
 power = 7
 agility = 9

@@ -23,10 +23,10 @@ const LIGHT_TEXTURE := preload("res://resources/materials/light_gradient.tres")
 @export var bob_strength: float = 0.035
 ## Wie weit die Arme beim Laufen pumpen, in Sprite-Pixeln.
 @export var gait_swing_texels: float = 3.0
-## Die Geh-Animation ist mit 5 Bildern pro Sekunde gezeichnet. Bei vollem
-## Lauftempo läuft sie so viel schneller - sonst gleitet die Figur, weil ein
-## Schritt zwei Körperlängen weit trägt.
-@export var walk_animation_scale: float = 1.8
+## Die Geh-Animation läuft gezeichnet mit 10 Bildern pro Sekunde. Bei vollem
+## Lauftempo so viel schneller, damit ein Schritt etwa eine halbe
+## Körperlänge trägt statt einer ganzen - die Füße rutschen sonst.
+@export var walk_animation_scale: float = 1.3
 @export var light_energy: float = 1.4
 @export var light_scale: float = 2.3
 

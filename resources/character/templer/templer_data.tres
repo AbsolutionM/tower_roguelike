@@ -2,12 +2,12 @@
 
 [ext_resource type="Script" path="res://resources/character/character_data.gd" id="1_script"]
 [ext_resource type="Script" path="res://resources/character/weapon_affinity.gd" id="2_affinity"]
-[ext_resource type="SpriteFrames" path="res://resources/character/cowboy/frames.tres" id="3_frames"]
+[ext_resource type="SpriteFrames" path="res://resources/character/knight/frames.tres" id="3_frames"]
 [ext_resource type="Resource" path="res://resources/character/ability_shield.tres" id="4_ability"]
 [ext_resource type="Resource" path="res://resources/weapons/broadsword_titan.tres" id="6_weapon"]
 [ext_resource type="Resource" path="res://resources/character/templer/templer_gebet.tres" id="7_gadget"]
 [ext_resource type="Resource" path="res://resources/character/templer/templer_geweihte_ruestung.tres" id="8_star"]
-[ext_resource type="Texture2D" path="res://assets/sprites/first/hand.png" id="9_hand"]
+[ext_resource type="Texture2D" path="res://assets/sprites/knight/hand.png" id="9_hand"]
 
 [sub_resource type="Resource" id="aff_broadsword"]
 script = ExtResource("2_affinity")
@@ -30,7 +30,7 @@ character_name = "Templer"
 description = "Panzer mit schwerer Klinge. Kommt langsam an, geht dafür kaum wieder weg."
 sprite_frames = ExtResource("3_frames")
 hand_texture = ExtResource("9_hand")
-sprite_modulate = Color(0.68, 0.8, 0.93, 1)
+sprite_modulate = Color(1, 1, 1, 1)
 accent_color = Color(0.29, 0.565, 0.851, 1)
 power = 7
 agility = 4
