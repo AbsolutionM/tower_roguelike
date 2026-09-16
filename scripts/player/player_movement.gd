@@ -131,20 +131,22 @@ func _apply_hands() -> void:
 
 	var pivot := get_node_or_null("Rig/WeaponPivot")
 	if pivot:
-		pivot.position.y = _body_center()
+		pivot.position.y = _hand_height()
 		pivot.rest_position = pivot.position
 		pivot.pivot_radius = reach
 
-## Mittelpunkt der gezeichneten Figur, in Spieler-Koordinaten.
+## Höhe der Fäuste in Spieler-Koordinaten: von der Unterkante der gemalten
+## Figur aus nach oben gemessen (CharacterData.hand_height_from_feet).
 ##
 ## Der Knotenursprung liegt in der Texturmitte, die bemalte Figur reicht aber
-## weiter nach unten. Ohne diesen Ausgleich kreisen die Hände um den Kopf
-## statt um den Körper.
-func _body_center() -> float:
+## weiter nach unten - deshalb wird von der gemalten Unterkante gerechnet,
+## nicht vom Ursprung.
+func _hand_height() -> float:
 	var frame := _idle_frame()
 	if not frame:
 		return 0.0
-	return -PixelDraw.center_offset(frame).y * animated_sprite.scale.y
+	var painted_bottom: float = -PixelDraw.center_offset(frame).y + PixelDraw.used_size(frame).y * 0.5
+	return (painted_bottom - float(character_data.hand_height_from_feet)) * animated_sprite.scale.y
 
 ## Das Bild, an dem gemessen wird.
 func _idle_frame() -> Texture2D:

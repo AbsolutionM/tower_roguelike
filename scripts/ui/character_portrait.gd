@@ -164,9 +164,10 @@ func _layout() -> void:
 	_root.position = Vector2(view.x * 0.5, view.y * 0.52 - (top + bottom) * 0.5 * scale_factor)
 
 	_body_base_y = 0.0
-	# Hände sitzen auf Schulterhöhe, knapp außerhalb der Silhouette.
-	# Wie im Spiel: die Hand überlappt die Silhouette, statt daneben zu schweben.
-	_hand_anchor = Vector2(_body_size.x * 0.31, _body_size.y * 0.12)
+	# Wie im Spiel: Fäuste knapp außerhalb der Silhouette, in der Höhe von
+	# der Unterkante der Figur aus gemessen (ein Pixel über dem Gürtel).
+	var hand_height: float = float(character.hand_height_from_feet) if character else 7.0
+	_hand_anchor = Vector2(_body_size.x * 0.31, _body_size.y * 0.5 - hand_height)
 	queue_redraw()
 
 func _process(delta: float) -> void:

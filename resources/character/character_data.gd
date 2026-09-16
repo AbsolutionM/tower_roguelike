@@ -8,6 +8,10 @@ class_name CharacterData
 @export var sprite_frames: SpriteFrames
 ## Die Sprites haben keine Hände - diese Textur wird separat animiert.
 @export var hand_texture: Texture2D
+## Mittelpunkt der Fäuste, in Sprite-Pixeln über der Unterkante der Figur.
+## Beim Cowboy sitzt die Faust damit mit ihrer Unterkante ein Pixel über
+## dem Gürtel (Füße 4 Pixel, ein Pixel Luft, halbe Faust 2).
+@export_range(0, 16) var hand_height_from_feet: int = 7
 @export var sprite_modulate: Color = Color(1.0, 1.0, 1.0)
 @export var accent_color: Color = Color(1.0, 1.0, 1.0)
 
