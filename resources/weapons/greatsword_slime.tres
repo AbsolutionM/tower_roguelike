@@ -27,6 +27,7 @@ scaling_fortune = 3
 required_power = 6
 required_agility = 3
 weight = 8.5
+two_handed = true
 stagger = 54.0
 bleed_buildup = 16.0
 lifesteal = 0.03

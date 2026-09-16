@@ -177,8 +177,16 @@ func _process(delta: float) -> void:
 	var right_tilt: float = sin(_time * sway_speed) * 0.14
 
 	if _left_hand:
-		_left_hand.position = left_point + Vector2(-_hand_center.x, _hand_center.y)
-		_left_hand.rotation = sin(_time * sway_speed + 1.7) * 0.10
+		if weapon and weapon.two_handed and _weapon_sprite:
+			# Beide Hände am Griff: die linke ein Stück unter der rechten, und
+			# gespiegelt, damit sie auf dieser Seite nicht falsch herum liegt.
+			_left_hand.flip_h = false
+			_left_hand.position = right_point + Vector2(-2.0, 3.0) + _hand_center
+			_left_hand.rotation = right_tilt
+		else:
+			_left_hand.flip_h = true
+			_left_hand.position = left_point + Vector2(-_hand_center.x, _hand_center.y)
+			_left_hand.rotation = sin(_time * sway_speed + 1.7) * 0.10
 
 	if _right_hand:
 		_right_hand.position = right_point + _hand_center

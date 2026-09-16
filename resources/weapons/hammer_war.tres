@@ -24,6 +24,7 @@ scaling_fortune = 0
 required_power = 6
 required_agility = 2
 weight = 7.8
+two_handed = true
 stagger = 63.0
 bleed_buildup = 0.0
 is_melee = true

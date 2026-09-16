@@ -18,6 +18,9 @@ class_name WeaponPivot
 
 var current_target: Node2D = null
 
+## Beidhändige Waffe: die freie Hand greift mit an den Griff.
+var two_handed: bool = false
+
 ## Ruhelage des Kreises. Der Spieler setzt sie auf den Körpermittelpunkt;
 ## der Rückstoß kehrt hierher zurück statt auf den Szenenwert.
 var rest_position: Vector2 = Vector2.ZERO
@@ -60,8 +63,13 @@ func update_visuals() -> void:
 		hand.z_index = -2 if facing_up else 2
 	if off_hand:
 		off_hand.set_radius(pivot_radius)
+		off_hand.grip = hand if two_handed else null
 		# Die freie Hand liegt gegenüber - beim Zielen nach oben also vorn.
-		off_hand.z_index = 2 if facing_up else -2
+		# Am Griff liegt sie auf derselben Seite wie die Waffenhand.
+		if two_handed and hand:
+			off_hand.z_index = hand.z_index
+		else:
+			off_hand.z_index = 2 if facing_up else -2
 
 	# Die Waffe liegt vor der Hand, sonst verdeckt die Faust den Griff.
 	if sword:

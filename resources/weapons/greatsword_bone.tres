@@ -27,6 +27,7 @@ scaling_fortune = 0
 required_power = 7
 required_agility = 2
 weight = 9.0
+two_handed = true
 stagger = 62.0
 bleed_buildup = 0.0
 attack_reach = 130.0

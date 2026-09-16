@@ -96,6 +96,9 @@ const CATEGORY_NAMES := {
 @export_range(0, 10) var required_agility: int = 0
 
 @export_group("Handhabung")
+## Beide Hände am Griff. Die freie Hand sitzt dann neben der Waffenhand und
+## schwingt mit, statt gegenüber am Kreis zu stehen.
+@export var two_handed: bool = false
 ## Gewicht bremst den Träger - schwere Waffen kosten Tempo.
 @export var weight: float = 3.0
 ## Standfestigkeitsschaden: wie sehr ein Treffer den Gegner aus dem Takt bringt.
@@ -221,6 +224,7 @@ func describe_sheet(character: CharacterData, level: int) -> Array:
 		{"name": "Geschosse", "value": "%d" % maxi(projectiles_per_shot, 1)},
 		{"name": "Reichweite", "value": "%.0f" % weapon_range},
 		{"name": "Gewicht", "value": "%.1f" % weight},
+		{"name": "Führung", "value": "beidhändig" if two_handed else "einhändig"},
 		{"name": "Standfestigkeit", "value": "%.0f" % (stagger * Progression.reinforce_stagger_mult(level))},
 		{"name": "Rückstoß", "value": "%.0f" % knockback},
 		{"name": "Krit-Chance", "value": "%.0f%%" % (crit_bonus * 100.0)},

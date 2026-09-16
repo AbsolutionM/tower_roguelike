@@ -199,6 +199,9 @@ func _apply_weapon_visuals() -> void:
 	_special_hits = 0
 	special_charge_changed.emit(0.0)
 
+	if weapon_pivot:
+		weapon_pivot.two_handed = equipped_weapon.two_handed
+
 	var hold_sprite := _get_hold_sprite()
 	if not hold_sprite:
 		return

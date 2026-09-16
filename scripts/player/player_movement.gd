@@ -346,6 +346,9 @@ func _update_gait() -> void:
 		# da hat kein Schritt dazwischenzufunken.
 		if swinging:
 			pivot.set_gait(Vector2.ZERO, Vector2.ZERO)
+		elif pivot.two_handed:
+			# Beide Fäuste am Griff bewegen sich als eine.
+			pivot.set_gait(forward + lift, forward + lift)
 		else:
 			pivot.set_gait(forward + lift, -forward + lift)
 		return
