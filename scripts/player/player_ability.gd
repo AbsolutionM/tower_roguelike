@@ -173,7 +173,7 @@ func _blink() -> void:
 	var start: Vector2 = _body.global_position
 	var target: Vector2 = start + direction.normalized() * ability.blink_distance
 
-	var sprite := _body.get_node_or_null("FirstBody")
+	var sprite := _body.get_node_or_null("Rig/FirstBody")
 	if sprite:
 		for i in 5:
 			FX.afterimage(sprite, 0.4, Color(ability.color, 0.45))
@@ -193,7 +193,7 @@ func _dash_strike() -> void:
 	var start: Vector2 = _body.global_position
 	var target: Vector2 = start + direction * ability.dash_distance
 
-	var sprite := _body.get_node_or_null("FirstBody")
+	var sprite := _body.get_node_or_null("Rig/FirstBody")
 	if sprite:
 		for i in 6:
 			FX.afterimage(sprite, 0.45, Color(ability.color, 0.5))

@@ -23,7 +23,7 @@ var _blink_timer: float = 0.0
 func _ready() -> void:
 	_body = get_parent() as Node2D
 	if _body:
-		_sprite = _body.get_node_or_null("FirstBody")
+		_sprite = _body.get_node_or_null("Rig/FirstBody")
 
 func setup(maximum: float) -> void:
 	max_health = maxf(maximum, 1.0)

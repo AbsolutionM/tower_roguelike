@@ -15,6 +15,8 @@ class_name WeaponPivot
 @export var hand: HandController
 @export var off_hand: OffHandController
 @export var sword: SwordWeapon
+## Der Körper, vor oder hinter den Hände und Waffe sortiert werden.
+@export var body: Node2D
 
 var current_target: Node2D = null
 
@@ -60,17 +62,25 @@ func update_visuals() -> void:
 
 	if hand:
 		hand.set_radius(pivot_radius)
-		hand.z_index = -2 if facing_up else 2
 	if off_hand:
 		off_hand.set_radius(pivot_radius)
 		off_hand.grip = hand if two_handed else null
-		# Die freie Hand liegt gegenüber - beim Zielen nach oben also vorn.
-		# Am Griff liegt sie auf derselben Seite wie die Waffenhand.
-		if two_handed and hand:
-			off_hand.z_index = hand.z_index
-		else:
-			off_hand.z_index = 2 if facing_up else -2
+	_order_rig(facing_up)
 
-	# Die Waffe liegt vor der Hand, sonst verdeckt die Faust den Griff.
-	if sword:
-		sword.z_index = -3 if facing_up else 3
+## Alles im Rig teilt sich einen z-Index, damit der Umriss um die gemeinsame
+## Silhouette läuft. Vorn und hinten entscheidet deshalb die Reihenfolge der
+## Kinder: der Pivot (Waffenhand samt Klinge) liegt beim Zielen nach oben
+## hinter dem Körper, sonst davor. Die freie Hand liegt gegenüber - oder,
+## beidhändig, direkt unter der Waffenhand auf derselben Seite.
+func _order_rig(facing_up: bool) -> void:
+	var rig := get_parent()
+	if not rig or not body or not off_hand or body.get_parent() != rig or off_hand.get_parent() != rig:
+		return
+	var order: Array
+	if two_handed:
+		order = [off_hand, self, body] if facing_up else [body, off_hand, self]
+	else:
+		order = [self, body, off_hand] if facing_up else [off_hand, body, self]
+	for index in order.size():
+		if rig.get_child(index) != order[index]:
+			rig.move_child(order[index], index)

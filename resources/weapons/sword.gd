@@ -27,7 +27,6 @@ var trail_count: int = 0
 func _ready() -> void:
 	monitoring = false
 	rotation = 0.0
-	z_as_relative = false
 	if arc:
 		build_arc()
 		arc.modulate.a = 0.0

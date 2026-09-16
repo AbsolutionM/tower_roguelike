@@ -22,9 +22,6 @@ var swing_angle: float = 0.0
 ## damit der Bogen nicht mit dem Schritt eiert.
 var gait: Vector2 = Vector2.ZERO
 
-func _ready() -> void:
-	z_as_relative = false
-
 func _process(_delta: float) -> void:
 	position = Vector2(base_radius, 0.0).rotated(swing_angle) + gait + center
 	# Das Handgelenk dreht mit, damit die Waffe den Bogen mitnimmt und
