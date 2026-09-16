@@ -4,8 +4,13 @@ class_name SwordWeapon
 @export var swing_duration: float = 0.15
 @export var swing_angle_degrees: float = 90.0
 @export var return_duration: float = 0.1
+## Die Hand, die die Klinge führt - sie lebt in der RigView, diese Trefferbox
+## in der Welt. Die Box folgt der Hand jeden Frame.
+@export var hand: HandController
 @export var sprite: Sprite2D
 @export var arc: Polygon2D
+## Versatz der Klinge in der Faust, in Hand-Koordinaten.
+@export var grip_offset: Vector2 = Vector2(1.365, 0.0)
 @export var arc_inner_radius: float = 8.0
 @export var arc_outer_radius: float = 34.0
 @export var trail_interval: float = 0.015
@@ -26,10 +31,16 @@ var trail_count: int = 0
 
 func _ready() -> void:
 	monitoring = false
-	rotation = 0.0
 	if arc:
 		build_arc()
 		arc.modulate.a = 0.0
+	_follow_hand()
+
+## Die Faust liegt in der RigView im Spielerursprung, diese Box ist ein Kind
+## des Spielers - die Koordinaten passen also direkt zusammen.
+func _follow_hand() -> void:
+	if hand:
+		transform = hand.global_transform * Transform2D(0.0, grip_offset)
 
 ## Wird vom WeaponController gesetzt, damit Waffenklassen sich unterschiedlich anfühlen.
 func configure(duration: float, angle_degrees: float, knockback: float, reach: float = 0.0) -> void:
@@ -83,6 +94,7 @@ func build_arc() -> void:
 	arc.vertex_colors = colors
 
 func _process(delta: float) -> void:
+	_follow_hand()
 	if is_swinging:
 		check_hits()
 
@@ -136,7 +148,9 @@ func spawn_trail() -> void:
 	ghost.texture = sprite.texture
 	ghost.flip_h = sprite.flip_h
 	ghost.flip_v = sprite.flip_v
-	ghost.global_transform = sprite.get_global_transform()
+	# Das Sprite lebt in der RigView - in die Welt umrechnen.
+	var view := sprite.get_viewport() as RigView
+	ghost.global_transform = view.to_world(sprite.get_global_transform()) if view else sprite.get_global_transform()
 	ghost.modulate = Color(1, 1, 1, clamp(trail_count * trail_alpha_step, 0.0, 1.0))
 	ghost.z_index = z_index
 	get_tree().current_scene.add_child(ghost)
@@ -163,9 +177,6 @@ func perform_swing(dmg: float, crit: bool = false) -> void:
 	# Den Bogen fährt die Hand. Die Klinge selbst dreht sich nicht mehr um
 	# ihren eigenen Punkt - nur so bleibt der Griff in der Faust.
 	var half_angle := deg_to_rad(swing_angle_degrees / 2)
-	var hand := get_parent() as HandController
-	rotation = 0.0
-
 	if not hand:
 		return
 

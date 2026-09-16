@@ -17,6 +17,9 @@ class_name WeaponPivot
 @export var sword: SwordWeapon
 ## Der Körper, vor oder hinter den Hände und Waffe sortiert werden.
 @export var body: Node2D
+## Der Spieler in der Welt. Das Rig lebt in der RigView in seinem Ursprung;
+## zum Zielen braucht der Kreis seine Weltposition.
+@export var anchor: Node2D
 
 var current_target: Node2D = null
 
@@ -33,7 +36,8 @@ var aim_rotation: float = 0.0
 
 func _process(delta: float) -> void:
 	if not is_swinging() and current_target and is_instance_valid(current_target):
-		var raw_angle := global_position.direction_to(current_target.global_position).angle()
+		var world_origin: Vector2 = anchor.to_global(global_position) if anchor else global_position
+		var raw_angle := world_origin.direction_to(current_target.global_position).angle()
 		aim_rotation = lerp_angle(aim_rotation, raw_angle, rotation_speed * delta)
 
 	rotation = aim_rotation

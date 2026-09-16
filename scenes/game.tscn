@@ -3,7 +3,8 @@
 [ext_resource type="Script" uid="uid://v36wgyahpb1v" path="res://scripts/player/player_movement.gd" id="1_xwjxa"]
 [ext_resource type="Script" uid="uid://cj31wy01da24y" path="res://scripts/player/weapon_controller.gd" id="2_xwjxa"]
 [ext_resource type="Resource" uid="uid://d3ta8e0k5pots" path="res://resources/weapons/sword_melee.tres" id="4_ah16c"]
-[ext_resource type="Shader" path="res://resources/materials/outline_group.gdshader" id="7_group"]
+[ext_resource type="Shader" path="res://resources/materials/outiline.gdshader" id="7_dxicw"]
+[ext_resource type="Script" path="res://scripts/player/rig_view.gd" id="48_rigview"]
 [ext_resource type="SpriteFrames" uid="uid://b2ow7f8r1qyuc" path="res://resources/character/cowboy/frames.tres" id="8_o8jlk"]
 [ext_resource type="PackedScene" uid="uid://rv3d44ko4stl" path="res://scenes/enemies/slime.tscn" id="14_bxw2g"]
 [ext_resource type="Script" uid="uid://bqncykrd6ndst" path="res://scripts/rooms/room_controller.gd" id="15_x5rto"]
@@ -37,9 +38,9 @@
 size = Vector2(10, 18)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_rig"]
-shader = ExtResource("7_group")
+shader = ExtResource("7_dxicw")
 shader_parameter/outline_color = Color(0, 0, 0, 1)
-shader_parameter/outline_width = 3.0
+shader_parameter/outline_width = 1.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_t1g43"]
 size = Vector2(6.0, 28.0)
@@ -55,69 +56,76 @@ test_loadout = ExtResource("73_loadout")
 [node name="WeaponController" type="Node2D" parent="Player" unique_id=180760715 node_paths=PackedStringArray("sword", "weapon_pivot")]
 script = ExtResource("2_xwjxa")
 equipped_weapon = ExtResource("4_ah16c")
-sword = NodePath("../Rig/WeaponPivot/FirstHand/Sword")
-weapon_pivot = NodePath("../Rig/WeaponPivot")
+sword = NodePath("../Sword")
+weapon_pivot = NodePath("../RigView/Rig/WeaponPivot")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=754192640]
 visible = false
 position = Vector2(0, 4)
 shape = SubResource("RectangleShape2D_fp34w")
 
-[node name="Rig" type="CanvasGroup" parent="Player" unique_id=1923055300]
-fit_margin = 12.0
-clear_margin = 12.0
-material = SubResource("ShaderMaterial_rig")
+[node name="RigView" type="SubViewport" parent="Player" unique_id=1923055300 node_paths=PackedStringArray("display")]
+script = ExtResource("48_rigview")
+display = NodePath("../RigDisplay")
 
-[node name="SecondHand" type="Sprite2D" parent="Player/Rig" unique_id=84706149 node_paths=PackedStringArray("pivot")]
+[node name="Rig" type="Node2D" parent="Player/RigView" unique_id=1923055301]
+
+[node name="SecondHand" type="Sprite2D" parent="Player/RigView/Rig" unique_id=84706149 node_paths=PackedStringArray("pivot")]
 scale = Vector2(3, 3)
 texture = ExtResource("45_awo1y")
 script = ExtResource("47_offhand")
 pivot = NodePath("../WeaponPivot")
 
-[node name="FirstBody" type="AnimatedSprite2D" parent="Player/Rig" unique_id=216130267]
+[node name="FirstBody" type="AnimatedSprite2D" parent="Player/RigView/Rig" unique_id=216130267]
 scale = Vector2(3, 3)
 sprite_frames = ExtResource("8_o8jlk")
 animation = &"Walking_Front"
 frame_progress = 0.37244323
 
-[node name="WeaponPivot" type="Node2D" parent="Player/Rig" unique_id=1923055262 node_paths=PackedStringArray("hand", "off_hand", "sword", "body")]
+[node name="WeaponPivot" type="Node2D" parent="Player/RigView/Rig" unique_id=1923055262 node_paths=PackedStringArray("hand", "off_hand", "sword", "body", "anchor")]
 script = ExtResource("46_rpqcm")
 hand = NodePath("FirstHand")
 off_hand = NodePath("../SecondHand")
-sword = NodePath("FirstHand/Sword")
+sword = NodePath("../../../Sword")
 body = NodePath("../FirstBody")
+anchor = NodePath("../../..")
 
-[node name="FirstHand" type="Sprite2D" parent="Player/Rig/WeaponPivot" unique_id=84706148]
+[node name="FirstHand" type="Sprite2D" parent="Player/RigView/Rig/WeaponPivot" unique_id=84706148]
 scale = Vector2(3, 3)
 texture = ExtResource("45_awo1y")
 script = ExtResource("47_s2ufw")
 
-[node name="Sword" type="Area2D" parent="Player/Rig/WeaponPivot/FirstHand" unique_id=1411597105 node_paths=PackedStringArray("sprite", "arc", "hit_sound")]
-position = Vector2(1.365, 0)
+[node name="WeaponSprite" type="Sprite2D" parent="Player/RigView/Rig/WeaponPivot/FirstHand" unique_id=2081959995]
+position = Vector2(13.1, -0.5)
+rotation = 1.5707964
+
+[node name="SwingArc" type="Polygon2D" parent="Player/RigView/Rig/WeaponPivot/FirstHand" unique_id=1764091607]
+color = Color(1, 1, 1, 0.5411765)
+
+[node name="RigDisplay" type="Sprite2D" parent="Player" unique_id=1923055302]
+texture_filter = 1
+material = SubResource("ShaderMaterial_rig")
+scale = Vector2(3, 3)
+
+[node name="Sword" type="Area2D" parent="Player" unique_id=1411597105 node_paths=PackedStringArray("hand", "sprite", "arc", "hit_sound")]
 script = ExtResource("46_vtoad")
 swing_duration = 0.1
 swing_angle_degrees = 180.0
-sprite = NodePath("Sprite2D")
-arc = NodePath("../SwingArc")
+hand = NodePath("../RigView/Rig/WeaponPivot/FirstHand")
+sprite = NodePath("../RigView/Rig/WeaponPivot/FirstHand/WeaponSprite")
+arc = NodePath("../RigView/Rig/WeaponPivot/FirstHand/SwingArc")
 hit_sound = NodePath("HitSound")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Player/Rig/WeaponPivot/FirstHand/Sword" unique_id=1088408854]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player/Sword" unique_id=1088408854]
 visible = false
 position = Vector2(14.3, -1.4)
 rotation = 0.75049156
 shape = SubResource("RectangleShape2D_t1g43")
 debug_color = Color(0.9647059, 0, 0.49019608, 0.13333334)
 
-[node name="Sprite2D" type="Sprite2D" parent="Player/Rig/WeaponPivot/FirstHand/Sword" unique_id=2081959995]
-position = Vector2(13.1, -0.5)
-rotation = 1.5707964
-
-[node name="HitSound" type="AudioStreamPlayer" parent="Player/Rig/WeaponPivot/FirstHand/Sword" unique_id=462831525]
+[node name="HitSound" type="AudioStreamPlayer" parent="Player/Sword" unique_id=462831525]
 stream = ExtResource("52_whnll")
 volume_db = -13.539
-
-[node name="SwingArc" type="Polygon2D" parent="Player/Rig/WeaponPivot/FirstHand" unique_id=1764091607]
-color = Color(1, 1, 1, 0.5411765)
 
 [node name="Camera2D" type="Camera2D" parent="Player" unique_id=1620779176]
 script = ExtResource("51_fmgkh")

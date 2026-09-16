@@ -34,11 +34,11 @@ const LIGHT_TEXTURE := preload("res://resources/materials/light_gradient.tres")
 @export var character_data: CharacterData
 @export var test_loadout: TestLoadout
 
-@onready var animated_sprite: AnimatedSprite2D = $Rig/FirstBody
+@onready var animated_sprite: AnimatedSprite2D = $RigView/Rig/FirstBody
 @onready var weapon_controller: WeaponController = $WeaponController
 ## Beide Hände - die Sprites haben keine, sie kommen aus den Charakterdaten.
-@onready var weapon_hand: Sprite2D = get_node_or_null("Rig/WeaponPivot/FirstHand")
-@onready var off_hand: Sprite2D = get_node_or_null("Rig/SecondHand")
+@onready var weapon_hand: Sprite2D = get_node_or_null("RigView/Rig/WeaponPivot/FirstHand")
+@onready var off_hand: Sprite2D = get_node_or_null("RigView/Rig/SecondHand")
 
 var stats: PlayerStats
 var health: PlayerHealth
@@ -129,7 +129,7 @@ func _apply_hands() -> void:
 	if reach <= 0.0:
 		return
 
-	var pivot := get_node_or_null("Rig/WeaponPivot")
+	var pivot := get_node_or_null("RigView/Rig/WeaponPivot")
 	if pivot:
 		pivot.position.y = _hand_height()
 		pivot.rest_position = pivot.position
@@ -329,7 +329,7 @@ func _walk_phase() -> float:
 ## Animationsbild in ganzen Sprite-Pixeln - eine Hand, die zwischen zwei
 ## gezeichneten Bildern weich dahingleitet, wirkt schwammig.
 func _update_gait() -> void:
-	var pivot := get_node_or_null("Rig/WeaponPivot")
+	var pivot := get_node_or_null("RigView/Rig/WeaponPivot")
 	if not pivot:
 		return
 

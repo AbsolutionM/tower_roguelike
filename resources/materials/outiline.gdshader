@@ -8,15 +8,17 @@ void fragment() {
 	vec4 col = texture(TEXTURE, UV);
 
 	if (col.a < 0.5) {
+		// Nur deckende Nachbarn zaehlen - Halbdurchsichtiges wie der
+		// Schwungbogen bekommt keinen Rand.
 		float alpha = 0.0;
-		alpha += texture(TEXTURE, UV + vec2(size.x, 0.0)).a;
-		alpha += texture(TEXTURE, UV + vec2(-size.x, 0.0)).a;
-		alpha += texture(TEXTURE, UV + vec2(0.0, size.y)).a;
-		alpha += texture(TEXTURE, UV + vec2(0.0, -size.y)).a;
-		alpha += texture(TEXTURE, UV + vec2(size.x, size.y)).a;
-		alpha += texture(TEXTURE, UV + vec2(-size.x, -size.y)).a;
-		alpha += texture(TEXTURE, UV + vec2(size.x, -size.y)).a;
-		alpha += texture(TEXTURE, UV + vec2(-size.x, size.y)).a;
+		alpha += step(0.5, texture(TEXTURE, UV + vec2(size.x, 0.0)).a);
+		alpha += step(0.5, texture(TEXTURE, UV + vec2(-size.x, 0.0)).a);
+		alpha += step(0.5, texture(TEXTURE, UV + vec2(0.0, size.y)).a);
+		alpha += step(0.5, texture(TEXTURE, UV + vec2(0.0, -size.y)).a);
+		alpha += step(0.5, texture(TEXTURE, UV + vec2(size.x, size.y)).a);
+		alpha += step(0.5, texture(TEXTURE, UV + vec2(-size.x, -size.y)).a);
+		alpha += step(0.5, texture(TEXTURE, UV + vec2(size.x, -size.y)).a);
+		alpha += step(0.5, texture(TEXTURE, UV + vec2(-size.x, size.y)).a);
 
 		if (alpha > 0.0) {
 			col = vec4(outline_color.rgb, 1.0);

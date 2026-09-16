@@ -216,7 +216,10 @@ func afterimage(source: Node2D, lifetime: float = 0.35, tint: Color = Color(1.0,
 	ghost.z_index = source.z_index - 1
 	ghost.z_as_relative = false
 	host.add_child(ghost)
-	ghost.global_transform = source.get_global_transform()
+	# Sprites aus der RigView des Spielers liegen in dessen Ursprung - für
+	# ein Nachbild in der Welt in Weltkoordinaten umrechnen.
+	var view := source.get_viewport() as RigView
+	ghost.global_transform = view.to_world(source.get_global_transform()) if view else source.get_global_transform()
 
 	var tween := ghost.create_tween()
 	tween.set_parallel(true)

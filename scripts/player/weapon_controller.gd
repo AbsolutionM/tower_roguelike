@@ -191,7 +191,7 @@ func _get_attack_speed() -> float:
 func _get_hold_sprite() -> Sprite2D:
 	if not sword:
 		return null
-	return sword.get_node_or_null("Sprite2D") as Sprite2D
+	return sword.sprite
 
 ## Setzt das Waffen-Sprite in der Hand aus der WeaponData-Resource.
 func _apply_weapon_visuals() -> void:
@@ -275,9 +275,14 @@ func _update_hold_orientation() -> void:
 		hold_sprite.rotation = _rest_rotation()
 		return
 
-	# Bei gespiegeltem Arm dreht sich alles andersherum.
-	var flip: float = -1.0 if weapon_pivot.scale.y < 0.0 else 1.0
-	hold_sprite.rotation = flip * (UPRIGHT_ROTATION - weapon_pivot.rotation)
+	# Bei gespiegeltem Arm (Zielen nach links) laufen lokale Winkel
+	# andersherum: die Klinge zeigt in der Welt nach θ - (Klinge + φ) statt
+	# θ + (Klinge + φ). Das Vorzeichen allein reicht nicht - es fehlt eine
+	# Vierteldrehung, sonst liegt das Schwert beim Zielen nach oben quer.
+	if weapon_pivot.scale.y < 0.0:
+		hold_sprite.rotation = -(UPRIGHT_ROTATION - weapon_pivot.rotation) + PI * 0.5
+	else:
+		hold_sprite.rotation = UPRIGHT_ROTATION - weapon_pivot.rotation
 
 func _ensure_placeholder(hold_sprite: Sprite2D) -> WeaponSymbol:
 	if is_instance_valid(_hold_placeholder):
