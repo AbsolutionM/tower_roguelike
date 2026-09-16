@@ -10,6 +10,9 @@ class_name TargetMarker
 var target: Node2D
 var accent: Color = Palette.GOLD
 var attack_range: float = 200.0
+## Mitte und halbe Öffnung des Angriffskegels, in Weltwinkeln.
+var cone_direction: float = 0.0
+var cone_half_angle: float = PI
 ## 1.0 = Angriff ist bereit, 0.0 = gerade erst zugeschlagen.
 var cooldown_ratio: float = 1.0
 
@@ -52,11 +55,24 @@ func _target_radius() -> float:
 		return target.get_visual_radius()
 	return 26.0
 
+## Die Reichweite als Kegel in Angriffsrichtung: Bogen vorn, zwei Kanten
+## zum Helden. Ein voller Ring versprach Treffer, die es seitlich nicht gibt.
+func _draw_cone(pixel: float) -> void:
+	var tint := Color(accent, 0.18)
+	var from_angle: float = cone_direction - cone_half_angle
+	var to_angle: float = cone_direction + cone_half_angle
+	PixelDraw.arc(self, Vector2.ZERO, attack_range, from_angle, to_angle, pixel, tint, 1)
+	# Die Kanten beginnen ein Stück vor dem Helden, sonst kreuzen sie die Figur.
+	var inner: float = minf(28.0, attack_range * 0.4)
+	for angle in [from_angle, to_angle]:
+		var direction := Vector2(cos(angle), sin(angle))
+		PixelDraw.line(self, direction * inner, direction * attack_range, pixel, tint)
+
 func _draw() -> void:
 	var pixel: float = FX.pixel_size()
 
 	if show_range_ring and attack_range > 0.0:
-		PixelDraw.ring(self, Vector2.ZERO, attack_range, pixel, Color(accent, 0.14), 1)
+		_draw_cone(pixel)
 
 	if _strength <= 0.01 or not target or not is_instance_valid(target):
 		return

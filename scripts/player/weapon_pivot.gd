@@ -24,7 +24,9 @@ class_name WeaponPivot
 ## Sprite davor oder dahinter, je nach Blickrichtung.
 @export var display: Node2D
 
-var current_target: Node2D = null
+## Richtung, in die der Kreis zeigt - die Laufrichtung des Helden. Der
+## WeaponController setzt sie jeden Frame; gezielt wird nicht auf Gegner.
+var aim_direction: Vector2 = Vector2.DOWN
 
 ## Beidhändige Waffe: die freie Hand greift mit an den Griff.
 var two_handed: bool = false
@@ -38,10 +40,8 @@ var rest_position: Vector2 = Vector2.ZERO
 var aim_rotation: float = 0.0
 
 func _process(delta: float) -> void:
-	if not is_swinging() and current_target and is_instance_valid(current_target):
-		var world_origin: Vector2 = anchor.to_global(global_position) if anchor else global_position
-		var raw_angle := world_origin.direction_to(current_target.global_position).angle()
-		aim_rotation = lerp_angle(aim_rotation, raw_angle, rotation_speed * delta)
+	if not is_swinging() and aim_direction.length_squared() > 0.001:
+		aim_rotation = lerp_angle(aim_rotation, aim_direction.angle(), rotation_speed * delta)
 
 	rotation = aim_rotation
 	update_visuals()

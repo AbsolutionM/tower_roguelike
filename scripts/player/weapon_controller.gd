@@ -27,6 +27,20 @@ const UPRIGHT_ROTATION := -PI * 0.25
 var fire_timer: float = 0.0
 var current_target: Node2D = null
 
+## Halber Öffnungswinkel des Angriffskegels. Angegriffen wird nur, wer vor
+## dem Helden steht - in der Richtung, in die er läuft; der Schwung deckt
+## mit seinen 55 Grad je Seite den Kegel gerade ab.
+const CONE_HALF_ANGLE := deg_to_rad(50.0)
+
+## Laufrichtung des Trägers, vom Spieler gelesen.
+func _facing() -> Vector2:
+	var player := get_parent()
+	if player and "facing" in player:
+		var facing: Vector2 = player.facing
+		if facing.length_squared() > 0.001:
+			return facing.normalized()
+	return Vector2.DOWN
+
 var _stats: PlayerStats
 var _visualized_weapon: WeaponData
 var _hold_sprite_base_scale: Vector2 = Vector2.ONE
@@ -62,8 +76,8 @@ func _process(delta: float) -> void:
 	# is_instance_valid prüfen, sonst bleibt eine tote Referenz stehen.
 	if not is_instance_valid(current_target):
 		current_target = null
-		if weapon_pivot:
-			weapon_pivot.current_target = null
+	if weapon_pivot:
+		weapon_pivot.aim_direction = _facing()
 
 	if not equipped_weapon:
 		_set_target(null)
@@ -139,18 +153,25 @@ func get_attack_range() -> float:
 		return weapon_pivot.pivot_radius + _melee_reach
 	return equipped_weapon.weapon_range
 
+## Der nächste Gegner im Kegel vor dem Helden. Wer seitlich oder hinter
+## ihm steht, wird nicht angegriffen - man muss sich ihm zuwenden.
 func find_target_in_range() -> Node2D:
 	var max_range := get_attack_range()
+	var facing := _facing()
 	var nearest: Node2D = null
 	var nearest_distance: float = max_range
 
 	for enemy in get_tree().get_nodes_in_group("enemies"):
 		if not is_instance_valid(enemy):
 			continue
-		var distance := global_position.distance_to(enemy.global_position)
-		if distance < nearest_distance:
-			nearest_distance = distance
-			nearest = enemy
+		var offset: Vector2 = enemy.global_position - global_position
+		var distance := offset.length()
+		if distance >= nearest_distance:
+			continue
+		if distance > 0.001 and absf(facing.angle_to(offset)) > CONE_HALF_ANGLE:
+			continue
+		nearest_distance = distance
+		nearest = enemy
 
 	return nearest
 
@@ -167,8 +188,6 @@ func _set_target(new_target: Node2D) -> void:
 
 	if current_target and current_target.has_method("set_targeted"):
 		current_target.set_targeted(true)
-	if weapon_pivot:
-		weapon_pivot.current_target = current_target
 
 	target_changed.emit(current_target)
 
@@ -177,6 +196,10 @@ func _update_marker() -> void:
 		return
 	_marker.target = current_target
 	_marker.attack_range = get_attack_range()
+	# Der Kegel folgt dem Kreis, nicht der rohen Laufrichtung - so dreht er
+	# sich weich mit, statt bei jedem Richtungswechsel zu springen.
+	_marker.cone_direction = weapon_pivot.aim_rotation if weapon_pivot else _facing().angle()
+	_marker.cone_half_angle = CONE_HALF_ANGLE
 	# Bei Fernkampf ist der Ring so groß wie der halbe Raum und damit nur
 	# Störung. Im Nahkampf zeigt er, wie weit man wirklich trifft.
 	_marker.show_range_ring = equipped_weapon.is_melee
