@@ -13,7 +13,7 @@ class_name SwordWeapon
 @export var grip_offset: Vector2 = Vector2(1.365, 0.0)
 @export var arc_inner_radius: float = 8.0
 @export var arc_outer_radius: float = 34.0
-@export var trail_interval: float = 0.015
+@export var trail_interval: float = 0.028
 @export var trail_alpha_step: float = 0.1
 @export var hit_sound: AudioStreamPlayer
 @export var hitstop_duration: float = 0.06
@@ -21,6 +21,17 @@ class_name SwordWeapon
 
 ## Richtung der Trefferbox, einmal aus der Szene übernommen.
 var _hitbox_direction: Vector2 = Vector2.ZERO
+
+## Weitester Ausschlag der Hand zu jeder Seite. Ein Bogen über den halben
+## Körper herum sah mit langen Klingen wie ein Windrad aus.
+const MAX_SWEEP := deg_to_rad(55.0)
+## Wie weit die Klinge am Ende des Schlags dem Arm vorausläuft.
+const LEAD := 1.15
+
+## Neigung der Klinge gegenüber der Ruhehaltung, vom Schwung getrieben.
+var swing_lean: float = 0.0
+## Nur während des eigentlichen Schlags: Treffer und Klingenspur.
+var _striking: bool = false
 
 var damage: float = 0.0
 var is_crit: bool = false
@@ -95,7 +106,7 @@ func build_arc() -> void:
 
 func _process(delta: float) -> void:
 	_follow_hand()
-	if is_swinging:
+	if _striking:
 		check_hits()
 
 		trail_timer -= delta
@@ -151,7 +162,7 @@ func spawn_trail() -> void:
 	# Das Sprite lebt in der RigView - in die Welt umrechnen.
 	var view := sprite.get_viewport() as RigView
 	ghost.global_transform = view.to_world(sprite.get_global_transform()) if view else sprite.get_global_transform()
-	ghost.modulate = Color(1, 1, 1, clamp(trail_count * trail_alpha_step, 0.0, 1.0))
+	ghost.modulate = Color(1, 1, 1, clamp(trail_count * trail_alpha_step, 0.0, 0.45))
 	ghost.z_index = z_index
 	get_tree().current_scene.add_child(ghost)
 
@@ -159,35 +170,51 @@ func spawn_trail() -> void:
 	t.tween_property(ghost, "modulate:a", 0.0, 0.25)
 	t.tween_callback(ghost.queue_free)
 
+## Ausholen, Schlag, Rückkehr. Die Hand fährt den Bogen, die Klinge kippt
+## dabei voraus (`swing_lean`, siehe WeaponController._update_hold_orientation)
+## - so liest sich der Hieb als Schnitt statt als starre Drehung.
 func perform_swing(dmg: float, crit: bool = false) -> void:
 	Audio.play(Audio.ID_SWING)
 	damage = dmg
 	is_crit = crit
 	hit_enemies.clear()
-	monitoring = true
 	is_swinging = true
 	trail_timer = 0.0
 	trail_count = 0
 
-	if arc:
-		arc.modulate.a = 0.6
-		var arc_tween := create_tween()
-		arc_tween.tween_property(arc, "modulate:a", 0.0, swing_duration)
-
-	# Den Bogen fährt die Hand. Die Klinge selbst dreht sich nicht mehr um
-	# ihren eigenen Punkt - nur so bleibt der Griff in der Faust.
-	var half_angle := deg_to_rad(swing_angle_degrees / 2)
 	if not hand:
 		return
 
-	hand.swing_angle = -half_angle
+	var sweep: float = minf(deg_to_rad(swing_angle_degrees * 0.5), MAX_SWEEP)
+	var windup: float = swing_duration * 0.6
+
+	if arc:
+		arc.modulate.a = 0.0
+		var arc_tween := create_tween()
+		arc_tween.tween_interval(windup)
+		arc_tween.tween_property(arc, "modulate:a", 0.5, swing_duration * 0.3)
+		arc_tween.tween_property(arc, "modulate:a", 0.0, swing_duration * 0.7)
+
 	var tween := create_tween()
-	tween.tween_property(hand, "swing_angle", half_angle, swing_duration)
+	# Ausholen: die Hand ein Stück zurück, die Klinge kippt leicht nach hinten.
+	tween.tween_property(hand, "swing_angle", -sweep * 0.55, windup).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(self, "swing_lean", -0.3, windup).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	# Schlag: schnell nach vorn, die Klinge läuft dem Arm voraus. Erst hier trifft sie.
+	tween.tween_callback(_begin_strike)
+	tween.tween_property(hand, "swing_angle", sweep, swing_duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(self, "swing_lean", LEAD, swing_duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween.tween_callback(end_swing)
-	tween.tween_property(hand, "swing_angle", 0.0, return_duration)
+	# Zurück in die Ruhelage.
+	tween.tween_property(hand, "swing_angle", 0.0, return_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tween.parallel().tween_property(self, "swing_lean", 0.0, return_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+func _begin_strike() -> void:
+	monitoring = true
+	_striking = true
 
 func end_swing() -> void:
 	monitoring = false
+	_striking = false
 	is_swinging = false
 
 func _on_area_entered(area: Area2D) -> void:

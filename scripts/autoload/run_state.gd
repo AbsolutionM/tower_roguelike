@@ -209,6 +209,59 @@ func reinforce_weapon(weapon: WeaponData) -> bool:
 	save_game()
 	return true
 
+# --- Waffenstufen (Linie aufwerten) ---------------------------------------
+
+## Was der Schritt zur nächsten Stufe kostet, oder leer am Ende der Linie.
+## { "gold": int, "materials": [{ "item", "item_id", "need", "have" }] }
+func get_tier_cost(weapon: WeaponData) -> Dictionary:
+	if not weapon or not weapon.next_tier:
+		return {}
+	var materials: Array = []
+	for entry in weapon.get_tier_materials():
+		var item_id := str(entry["item_id"])
+		materials.append({
+			"item": Database.get_item(item_id), "item_id": item_id,
+			"need": int(entry["count"]), "have": get_stash_count(item_id)
+		})
+	return {"gold": weapon.tier_gold, "materials": materials}
+
+func can_advance_tier(weapon: WeaponData) -> bool:
+	if not weapon or not weapon.next_tier or not is_weapon_owned(weapon.weapon_id):
+		return false
+	var cost := get_tier_cost(weapon)
+	if gold < int(cost["gold"]):
+		return false
+	for material in cost["materials"]:
+		if int(material["have"]) < int(material["need"]):
+			return false
+	return true
+
+## Tauscht die Waffe gegen ihre nächste Stufe. Die Schmiedestufe wandert mit,
+## und wer die alte trug, trägt danach die neue.
+func advance_weapon_tier(weapon: WeaponData) -> bool:
+	if not can_advance_tier(weapon):
+		return false
+	var cost := get_tier_cost(weapon)
+	gold -= int(cost["gold"])
+	for material in cost["materials"]:
+		remove_from_stash(str(material["item_id"]), int(material["need"]))
+
+	var next: WeaponData = weapon.next_tier
+	owned_weapon_ids.erase(weapon.weapon_id)
+	if not owned_weapon_ids.has(next.weapon_id):
+		owned_weapon_ids.append(next.weapon_id)
+	weapon_levels[next.weapon_id] = get_weapon_level(weapon.weapon_id)
+	weapon_levels.erase(weapon.weapon_id)
+	for character_id in equipped_weapon_ids.keys():
+		if str(equipped_weapon_ids[character_id]) == weapon.weapon_id:
+			equipped_weapon_ids[character_id] = next.weapon_id
+
+	gold_changed.emit(gold)
+	Audio.play(Audio.ID_FORGE)
+	loadout_changed.emit()
+	save_game()
+	return true
+
 # --- Kraftstufen (Helden) --------------------------------------------------
 
 func get_character_level(character_id: String) -> int:

@@ -152,7 +152,53 @@ func _make_weapon_card(weapon: WeaponData, character: CharacterData, is_equipped
 		column.add_child(UIKit.make_label(weapon.description, 14, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_LEFT, true))
 
 	column.add_child(_make_forge_section(weapon, character, level, is_max, can_forge))
+	if weapon.next_tier:
+		column.add_child(_make_tier_section(weapon, character, level))
 	return panel
+
+## Die nächste Stufe der Linie: ein anderes Schwert, gleiche Schmiedestufe.
+func _make_tier_section(weapon: WeaponData, character: CharacterData, level: int) -> Control:
+	var column := UIKit.make_column(6)
+	var next: WeaponData = weapon.next_tier
+	var can_advance := RunState.can_advance_tier(weapon)
+	column.add_child(UIKit.make_section("Aufwerten zu %s" % next.weapon_name, Palette.GOLD))
+
+	var row := UIKit.make_row(10)
+	row.add_child(UIKit.make_weapon_icon(next, 44.0, Palette.GOLD))
+	var info := UIKit.make_column(2)
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(info)
+	info.add_child(UIKit.make_label(next.describe_line(character, level), 14, UIKit.TEXT_DIM))
+	var gain := next.get_effective_damage(character, level) - weapon.get_effective_damage(character, level)
+	info.add_child(UIKit.make_label("%+.0f Schaden  ·  Führung %s" % [gain, "beidhändig" if next.two_handed else "einhändig"], 14, UIKit.GOOD))
+	column.add_child(row)
+
+	var cost := RunState.get_tier_cost(weapon)
+	var need_gold: int = int(cost["gold"])
+	column.add_child(UIKit.make_label(
+		"Gold  %d / %d" % [RunState.gold, need_gold],
+		15, UIKit.ACCENT if RunState.gold >= need_gold else UIKit.TEXT_DIM
+	))
+	for material in cost["materials"]:
+		var item: ItemData = material["item"]
+		var material_row := UIKit.make_row(6)
+		material_row.add_child(UIKit.make_item_icon(item, 24.0))
+		material_row.add_child(UIKit.make_label(
+			"%s  %d / %d" % [item.item_name if item else str(material["item_id"]), int(material["have"]), int(material["need"])],
+			15, UIKit.GOOD if int(material["have"]) >= int(material["need"]) else UIKit.TEXT_DIM
+		))
+		column.add_child(material_row)
+
+	var button := UIKit.make_primary_button("Aufwerten", 20, Palette.GOLD)
+	button.custom_minimum_size = Vector2(0.0, 50.0)
+	button.disabled = not can_advance
+	button.pressed.connect(func() -> void:
+		if RunState.advance_weapon_tier(weapon):
+			_expanded_id = next.weapon_id
+			refresh()
+	)
+	column.add_child(button)
+	return column
 
 ## Skalierungsnoten nebeneinander - der Kern des Elden-Ring-Gefühls.
 func _make_scaling_row(weapon: WeaponData, level: int, character: CharacterData) -> Control:

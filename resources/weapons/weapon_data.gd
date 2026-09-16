@@ -136,6 +136,19 @@ const CATEGORY_NAMES := {
 @export var armor_bonus: float = 0.0
 
 @export_group("Fortschritt")
+## Nächste Stufe dieser Waffenlinie. Aufwerten tauscht die Waffe gegen sie
+## und nimmt die Schmiedestufe mit. Leer = Ende der Linie.
+@export var next_tier: WeaponData
+@export var tier_gold: int = 0
+@export var tier_material_ids: Array[String] = []
+@export var tier_material_counts: Array[int] = []
+
+func get_tier_materials() -> Array:
+	var required: Array = []
+	for i in tier_material_ids.size():
+		var count: int = tier_material_counts[i] if i < tier_material_counts.size() else 1
+		required.append({"item_id": tier_material_ids[i], "count": count})
+	return required
 ## 0 = nicht im Shop erhältlich (z.B. nur über Crafting).
 @export var shop_price: int = 0
 
@@ -218,13 +231,32 @@ func describe_damage(character: CharacterData = null, level: int = 0) -> String:
 func describe_line(character: CharacterData = null, level: int = 0) -> String:
 	return "%s · %s · %.2fs" % [get_category_name(), describe_damage(character, level), cooldown]
 
+## Bildschirmpixel je Texturpixel der Figur - Waffen liegen im selben Maßstab.
+const PIXEL_SCALE := 3.0
+## Anteil der Texturgröße, um den der Griff in die Faust rückt (Diagonale).
+const GRIP_FRACTION := 0.34
+
+## Reichweite der Klinge in Weltpixeln: vom Griff in der Faust bis zur Spitze,
+## gemessen am gemalten Haltesprite. Klingen sind diagonal nach oben rechts
+## gemalt, die Spitze ist also die obere rechte Ecke der bemalten Fläche.
+## Ohne Sprite gilt attack_reach aus den Daten.
+func get_blade_reach() -> float:
+	if not hold_texture or not holds_upright():
+		return attack_reach
+	var full: Vector2 = hold_texture.get_size()
+	var used: Vector2 = PixelDraw.used_size(hold_texture)
+	var painted_centre: Vector2 = full * 0.5 - PixelDraw.center_offset(hold_texture)
+	var tip := Vector2(painted_centre.x + used.x * 0.5, painted_centre.y - used.y * 0.5)
+	var grip := Vector2(full.x * 0.5 - full.x * GRIP_FRACTION, full.y * 0.5 + full.y * GRIP_FRACTION)
+	return tip.distance_to(grip) * hold_scale * PIXEL_SCALE
+
 ## Werteblatt für die Menüs: [{ "name": String, "value": String }, ...]
 func describe_sheet(character: CharacterData, level: int) -> Array:
 	return [
 		{"name": "Angriff", "value": "%.0f" % get_effective_damage(character, level)},
 		{"name": "Angriffe/s", "value": "%.2f" % (attack_speed_mult / maxf(cooldown, 0.01))},
 		{"name": "Geschosse", "value": "%d" % maxi(projectiles_per_shot, 1)},
-		{"name": "Reichweite", "value": "%.0f" % weapon_range},
+		{"name": "Reichweite", "value": "%.0f" % (get_blade_reach() if is_melee else weapon_range)},
 		{"name": "Gewicht", "value": "%.1f" % weight},
 		{"name": "Führung", "value": "beidhändig" if two_handed else "einhändig"},
 		{"name": "Standfestigkeit", "value": "%.0f" % (stagger * Progression.reinforce_stagger_mult(level))},

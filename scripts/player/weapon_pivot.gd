@@ -20,6 +20,9 @@ class_name WeaponPivot
 ## Der Spieler in der Welt. Das Rig lebt in der RigView in seinem Ursprung;
 ## zum Zielen braucht der Kreis seine Weltposition.
 @export var anchor: Node2D
+## Das Sprite, das die Ansicht in der Welt zeigt. Die Klinge liegt als echtes
+## Sprite davor oder dahinter, je nach Blickrichtung.
+@export var display: Node2D
 
 var current_target: Node2D = null
 
@@ -88,3 +91,11 @@ func _order_rig(facing_up: bool) -> void:
 	for index in order.size():
 		if rig.get_child(index) != order[index]:
 			rig.move_child(order[index], index)
+
+	# Die Klinge ist ein echtes Sprite in der Welt (Kind der Trefferbox), kein
+	# Teil der Ansicht: beim Zielen nach oben hinter das Figurbild, sonst davor.
+	if sword and display and sword.get_parent() == display.get_parent():
+		var carrier := display.get_parent()
+		var want: int = display.get_index() if facing_up else display.get_index() + 1
+		if sword.get_index() != want:
+			carrier.move_child(sword, want)

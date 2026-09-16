@@ -1,13 +1,14 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/weapons/broadsword_bone.tres" id="7_next"]
 [ext_resource type="Texture2D" path="res://assets/sprites/weapons/bone_sword.png" id="14_art"]
 [ext_resource type="Resource" path="res://resources/weapons/specials/cls_shortsword.tres" id="15_special"]
 
 [resource]
 script = ExtResource("1_script")
 weapon_id = "shortsword_bone"
-weapon_name = "Knochendolch"
+weapon_name = "Knochenschwert"
 category = 0
 icon = ExtResource("14_art")
 hold_texture = ExtResource("14_art")
@@ -33,4 +34,8 @@ is_melee = true
 attack_reach = 87.0
 swing_duration = 0.11
 swing_angle_degrees = 135.0
+next_tier = ExtResource("7_next")
+tier_gold = 250
+tier_material_ids = Array[String](["iron_scrap"])
+tier_material_counts = Array[int]([6])
 shop_price = 140

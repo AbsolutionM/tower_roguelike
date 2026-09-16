@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://v36wgyahpb1v" path="res://scripts/player/player_movement.gd" id="1_xwjxa"]
 [ext_resource type="Script" uid="uid://cj31wy01da24y" path="res://scripts/player/weapon_controller.gd" id="2_xwjxa"]
-[ext_resource type="Resource" uid="uid://d3ta8e0k5pots" path="res://resources/weapons/sword_melee.tres" id="4_ah16c"]
+[ext_resource type="Resource" path="res://resources/weapons/shortsword_bone.tres" id="4_ah16c"]
 [ext_resource type="Shader" path="res://resources/materials/outiline.gdshader" id="7_dxicw"]
 [ext_resource type="Script" path="res://scripts/player/rig_view.gd" id="48_rigview"]
 [ext_resource type="SpriteFrames" uid="uid://b2ow7f8r1qyuc" path="res://resources/character/cowboy/frames.tres" id="8_o8jlk"]
@@ -21,7 +21,7 @@
 [ext_resource type="AudioStream" uid="uid://27ujbniku80j" path="res://assets/audio/slime_hit/floraphonic-slime-splatter-1-220262.mp3" id="52_whnll"]
 [ext_resource type="Resource" path="res://resources/character/cowboy/cowboy_data.tres" id="60_cowboy"]
 [ext_resource type="Resource" path="res://resources/character/first/first_data.tres" id="61_first"]
-[ext_resource type="Resource" path="res://resources/weapons/revolver.tres" id="63_revolver"]
+[ext_resource type="Resource" path="res://resources/weapons/shortsword_slime.tres" id="63_revolver"]
 [ext_resource type="Resource" path="res://resources/rooms/room_easy.tres" id="64_room1"]
 [ext_resource type="Resource" path="res://resources/rooms/room_swarm.tres" id="65_room2"]
 [ext_resource type="Resource" path="res://resources/rooms/room_mixed.tres" id="66_room3"]
@@ -82,22 +82,19 @@ sprite_frames = ExtResource("8_o8jlk")
 animation = &"Walking_Front"
 frame_progress = 0.37244323
 
-[node name="WeaponPivot" type="Node2D" parent="Player/RigView/Rig" unique_id=1923055262 node_paths=PackedStringArray("hand", "off_hand", "sword", "body", "anchor")]
+[node name="WeaponPivot" type="Node2D" parent="Player/RigView/Rig" unique_id=1923055262 node_paths=PackedStringArray("hand", "off_hand", "sword", "body", "anchor", "display")]
 script = ExtResource("46_rpqcm")
 hand = NodePath("FirstHand")
 off_hand = NodePath("../SecondHand")
 sword = NodePath("../../../Sword")
 body = NodePath("../FirstBody")
 anchor = NodePath("../../..")
+display = NodePath("../../../RigDisplay")
 
 [node name="FirstHand" type="Sprite2D" parent="Player/RigView/Rig/WeaponPivot" unique_id=84706148]
 scale = Vector2(3, 3)
 texture = ExtResource("45_awo1y")
 script = ExtResource("47_s2ufw")
-
-[node name="WeaponSprite" type="Sprite2D" parent="Player/RigView/Rig/WeaponPivot/FirstHand" unique_id=2081959995]
-position = Vector2(13.1, -0.5)
-rotation = 1.5707964
 
 [node name="SwingArc" type="Polygon2D" parent="Player/RigView/Rig/WeaponPivot/FirstHand" unique_id=1764091607]
 color = Color(1, 1, 1, 0.5411765)
@@ -112,9 +109,14 @@ script = ExtResource("46_vtoad")
 swing_duration = 0.1
 swing_angle_degrees = 180.0
 hand = NodePath("../RigView/Rig/WeaponPivot/FirstHand")
-sprite = NodePath("../RigView/Rig/WeaponPivot/FirstHand/WeaponSprite")
+sprite = NodePath("WeaponSprite")
 arc = NodePath("../RigView/Rig/WeaponPivot/FirstHand/SwingArc")
 hit_sound = NodePath("HitSound")
+
+[node name="WeaponSprite" type="Sprite2D" parent="Player/Sword" unique_id=2081959995]
+texture_filter = 1
+material = SubResource("ShaderMaterial_rig")
+rotation = 1.5707964
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Player/Sword" unique_id=1088408854]
 visible = false

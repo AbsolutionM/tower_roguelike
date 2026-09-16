@@ -30,6 +30,8 @@ var current_target: Node2D = null
 var _stats: PlayerStats
 var _visualized_weapon: WeaponData
 var _hold_sprite_base_scale: Vector2 = Vector2.ONE
+## Reichweite der Klinge in Weltpixeln, aus dem Sprite gemessen.
+var _melee_reach: float = 0.0
 var _hold_sprite_base_rotation: float = 0.0
 var _hold_placeholder: WeaponSymbol
 var _marker: TargetMarker
@@ -134,7 +136,7 @@ func get_attack_range() -> float:
 	if not equipped_weapon:
 		return 0.0
 	if equipped_weapon.is_melee and weapon_pivot:
-		return weapon_pivot.pivot_radius + equipped_weapon.attack_reach
+		return weapon_pivot.pivot_radius + _melee_reach
 	return equipped_weapon.weapon_range
 
 func find_target_in_range() -> Node2D:
@@ -238,12 +240,17 @@ func _configure_swing() -> void:
 		return
 	# Geschmiedete Waffen stoßen Gegner spürbar weiter zurück.
 	var stagger_mult := Progression.reinforce_stagger_mult(RunState.get_weapon_level(equipped_weapon.weapon_id))
+	_melee_reach = _blade_reach()
 	sword.configure(
 		equipped_weapon.swing_duration,
 		equipped_weapon.swing_angle_degrees,
 		equipped_weapon.knockback * stagger_mult,
-		equipped_weapon.attack_reach
+		_melee_reach
 	)
+
+## Die Reichweite ist die Klinge - gemessen am Sprite, siehe WeaponData.
+func _blade_reach() -> float:
+	return equipped_weapon.get_blade_reach()
 
 ## Versatz der Textur gegenueber der Faust.
 ## Schusswaffen liegen mittig in der Hand. Klingen sind im Sprite diagonal
@@ -253,7 +260,7 @@ func _hold_offset(sprite: Sprite2D) -> Vector2:
 	if not sprite.texture or not equipped_weapon.holds_upright():
 		return Vector2.ZERO
 	var size: Vector2 = sprite.texture.get_size()
-	return Vector2(size.x, -size.y) * 0.34
+	return Vector2(size.x, -size.y) * WeaponData.GRIP_FRACTION
 
 ## Ruhehaltung des Sprites, wie sie in den Waffendaten steht.
 func _rest_rotation() -> float:
@@ -269,20 +276,18 @@ func _update_hold_orientation() -> void:
 	if not hold_sprite:
 		return
 
-	# Während des Schlags führt der Schwung die Klinge. Hier gegenzuhalten
-	# würde den Bogen aufheben - die Klinge stünde starr im Raum.
-	if sword and "is_swinging" in sword and sword.is_swinging:
-		hold_sprite.rotation = _rest_rotation()
-		return
+	# Die Neigung aus dem Schwung kommt obendrauf: die Klinge kippt beim
+	# Ausholen zurück und läuft im Schlag dem Arm voraus.
+	var lean: float = sword.swing_lean if sword and "swing_lean" in sword else 0.0
 
 	# Bei gespiegeltem Arm (Zielen nach links) laufen lokale Winkel
 	# andersherum: die Klinge zeigt in der Welt nach θ - (Klinge + φ) statt
 	# θ + (Klinge + φ). Das Vorzeichen allein reicht nicht - es fehlt eine
 	# Vierteldrehung, sonst liegt das Schwert beim Zielen nach oben quer.
 	if weapon_pivot.scale.y < 0.0:
-		hold_sprite.rotation = -(UPRIGHT_ROTATION - weapon_pivot.rotation) + PI * 0.5
+		hold_sprite.rotation = -(UPRIGHT_ROTATION - weapon_pivot.rotation) + PI * 0.5 + lean
 	else:
-		hold_sprite.rotation = UPRIGHT_ROTATION - weapon_pivot.rotation
+		hold_sprite.rotation = UPRIGHT_ROTATION - weapon_pivot.rotation + lean
 
 func _ensure_placeholder(hold_sprite: Sprite2D) -> WeaponSymbol:
 	if is_instance_valid(_hold_placeholder):

@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/weapons/greatsword_bone.tres" id="7_next"]
 [ext_resource type="Texture2D" path="res://assets/sprites/weapons/bone_broadsword.png" id="2_art"]
 [ext_resource type="Resource" path="res://resources/weapons/specials/cls_broadsword.tres" id="5_special"]
 
@@ -34,4 +35,7 @@ attack_reach = 105.0
 swing_duration = 0.16
 swing_angle_degrees = 160.0
 special = ExtResource("5_special")
-shop_price = 260
+next_tier = ExtResource("7_next")
+tier_gold = 600
+tier_material_ids = Array[String](["iron_scrap", "ore_chunk"])
+tier_material_counts = Array[int]([10, 6])

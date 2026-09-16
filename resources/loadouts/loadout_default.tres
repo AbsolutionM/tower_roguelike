@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://resources/loadouts/test_loadout.gd" id="1_script"]
 [ext_resource type="Resource" path="res://resources/character/cowboy/cowboy_data.tres" id="2_char"]
-[ext_resource type="Resource" path="res://resources/weapons/sword_melee.tres" id="3_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/shortsword_bone.tres" id="3_weapon"]
 
 [resource]
 script = ExtResource("1_script")

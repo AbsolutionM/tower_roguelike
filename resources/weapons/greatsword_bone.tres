@@ -1,13 +1,14 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/weapons/greatsword_bone_great.tres" id="7_next"]
 [ext_resource type="Texture2D" path="res://assets/sprites/weapons/giant_bone_sword.png" id="2_art"]
 [ext_resource type="Resource" path="res://resources/weapons/specials/w_greatsword_bone.tres" id="5_special"]
 
 [resource]
 script = ExtResource("1_script")
 weapon_id = "greatsword_bone"
-weapon_name = "Riesenknochen"
+weapon_name = "Riesen-Knochenschwert"
 category = 1
 icon = ExtResource("2_art")
 hold_texture = ExtResource("2_art")
@@ -35,3 +36,7 @@ swing_duration = 0.19
 swing_angle_degrees = 170.0
 is_melee = true
 special = ExtResource("5_special")
+next_tier = ExtResource("7_next")
+tier_gold = 1200
+tier_material_ids = Array[String](["iron_scrap", "ore_chunk", "boss_core"])
+tier_material_counts = Array[int]([14, 10, 1])

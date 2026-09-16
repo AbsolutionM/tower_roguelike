@@ -1,13 +1,14 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://resources/weapons/weapon_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/weapons/broadsword_slime.tres" id="7_next"]
 [ext_resource type="Texture2D" path="res://assets/sprites/weapons/slime_sword.png" id="2_art"]
 [ext_resource type="Resource" path="res://resources/weapons/specials/cls_shortsword.tres" id="5_special"]
 
 [resource]
 script = ExtResource("1_script")
 weapon_id = "shortsword_slime"
-weapon_name = "Schleimklinge"
+weapon_name = "Schleimschwert"
 category = 0
 icon = ExtResource("2_art")
 hold_texture = ExtResource("2_art")
@@ -35,4 +36,8 @@ swing_duration = 0.11
 swing_angle_degrees = 140.0
 is_melee = true
 special = ExtResource("5_special")
+next_tier = ExtResource("7_next")
+tier_gold = 250
+tier_material_ids = Array[String](["slime_gel"])
+tier_material_counts = Array[int]([10])
 shop_price = 180

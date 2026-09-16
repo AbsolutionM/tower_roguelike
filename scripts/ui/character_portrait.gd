@@ -138,7 +138,7 @@ func _make_weapon() -> Node2D:
 	# Klingen sind diagonal gezeichnet: der Versatz entlang dieser Diagonalen
 	# setzt den Griff in die Faust. Schusswaffen liegen mittig darin.
 	if weapon.holds_upright():
-		sprite.offset = Vector2(texture_size.x, -texture_size.y) * 0.34
+		sprite.offset = Vector2(texture_size.x, -texture_size.y) * WeaponData.GRIP_FRACTION
 	return sprite
 
 ## Skaliert die Figur auf die aktuelle Panelgröße und setzt die Handpunkte.
