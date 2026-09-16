@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="EnemyData" format=3]
 
 [ext_resource type="Script" path="res://resources/enemies/enemy_data.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/enemies/small_venom_slime.png" id="2_sprite"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/frost_slime.png" id="2_sprite"]
 [ext_resource type="Resource" path="res://resources/loot/dt_slime.tres" id="3_drops"]
 
 [resource]
@@ -10,7 +10,7 @@ enemy_name = "Flitzer"
 max_health = 120.4
 move_speed = 105.0
 sprite_texture = ExtResource("2_sprite")
-sprite_scale = 1.25
+sprite_scale = 1.10
 tint = Color(1, 1, 1, 1)
 behavior = 0
 movement = 1

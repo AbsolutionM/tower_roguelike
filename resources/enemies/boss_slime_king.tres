@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/enemies/giant_venom_slime.png" id="2_sprite"]
 [ext_resource type="Resource" path="res://resources/loot/dt_boss.tres" id="3_drops"]
 [ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="4_projectile"]
-[ext_resource type="Resource" path="res://resources/enemies/slime_small.tres" id="5_minion"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_normal.tres" id="5_minion"]
 
 [resource]
 script = ExtResource("1_script")
