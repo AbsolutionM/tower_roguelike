@@ -47,7 +47,7 @@ shader_parameter/outline_color = Color(0, 0, 0, 1)
 shader_parameter/outline_width = 1.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_t1g43"]
-size = Vector2(29.779129, 140.55434)
+size = Vector2(6.0, 28.0)
 
 [node name="Game" type="Node2D" unique_id=1396741292]
 y_sort_enabled = true
@@ -101,7 +101,6 @@ script = ExtResource("47_s2ufw")
 [node name="Sword" type="Area2D" parent="Player/WeaponPivot/FirstHand" unique_id=1411597105 node_paths=PackedStringArray("sprite", "arc", "hit_sound")]
 z_index = -6
 position = Vector2(1.365, 0)
-scale = Vector2(0.19999999, 0.19999999)
 script = ExtResource("46_vtoad")
 swing_duration = 0.1
 swing_angle_degrees = 180.0
@@ -112,7 +111,7 @@ hit_sound = NodePath("HitSound")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Player/WeaponPivot/FirstHand/Sword" unique_id=1088408854]
 visible = false
 z_index = 8
-position = Vector2(71.51458, -7.0121155)
+position = Vector2(14.3, -1.4)
 rotation = 0.75049156
 shape = SubResource("RectangleShape2D_t1g43")
 debug_color = Color(0.9647059, 0, 0.49019608, 0.13333334)
@@ -120,9 +119,8 @@ debug_color = Color(0.9647059, 0, 0.49019608, 0.13333334)
 [node name="Sprite2D" type="Sprite2D" parent="Player/WeaponPivot/FirstHand/Sword" unique_id=2081959995]
 z_index = 0
 material = SubResource("ShaderMaterial_bqye8")
-position = Vector2(65.649994, -2.4999998)
+position = Vector2(13.1, -0.5)
 rotation = 1.5707964
-scale = Vector2(3, 3)
 
 [node name="HitSound" type="AudioStreamPlayer" parent="Player/WeaponPivot/FirstHand/Sword" unique_id=462831525]
 stream = ExtResource("52_whnll")

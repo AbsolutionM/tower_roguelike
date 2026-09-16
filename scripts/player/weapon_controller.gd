@@ -11,7 +11,9 @@ signal special_charge_changed(ratio: float)
 
 ## Der gezeichnete Platzhalter rechnet in ganzen Pixeln - dieser Faktor bringt
 ## ihn auf dieselbe Größe wie ein echtes Haltesprite.
-const PLACEHOLDER_SCALE := 0.55
+## Der gezeichnete Platzhalter ist keine Pixelkunst und bleibt in seiner
+## alten Groesse, obwohl die Klinge jetzt ohne Zwischenskalierung haengt.
+const PLACEHOLDER_SCALE := 0.33
 
 ## Weltdrehung des Haltesprites im Ruhezustand. Die Klingen sind im Sprite
 ## diagonal nach oben rechts gezeichnet; -45 Grad stellt sie senkrecht.

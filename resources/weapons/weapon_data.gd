@@ -57,6 +57,8 @@ const CATEGORY_NAMES := {
 @export var icon: Texture2D
 ## Sprite, das der Charakter in der Hand hält. Leer = gezeichneter Platzhalter.
 @export var hold_texture: Texture2D
+## 1.0 = ein Texturpixel ist so gross wie ein Pixel der Figur. Nur fuer
+## Waffen ohne eigenes Bild abweichen, dort skaliert es den Platzhalter.
 @export var hold_scale: float = 1.0
 ## Dreht das Haltesprite gegenüber der Szenen-Grundhaltung (die auf Klingen
 ## ausgelegt ist). Waffen, die nach rechts zeigen, brauchen -90.

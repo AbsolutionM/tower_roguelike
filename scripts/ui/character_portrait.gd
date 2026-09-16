@@ -26,6 +26,8 @@ var _weapon_sprite: Node2D
 
 var _time: float = 0.0
 var _body_size: Vector2 = Vector2(32.0, 32.0)
+## Bemalte Groesse des Haltesprites, in Texturpixeln. Null ohne Bild.
+var _weapon_size: Vector2 = Vector2.ZERO
 var _body_base_y: float = 0.0
 var _hand_anchor: Vector2 = Vector2(24.0, 6.0)
 ## Ausgleich für nicht mittig gezeichnete Handtexturen.
@@ -128,10 +130,10 @@ func _make_weapon() -> Node2D:
 	sprite.texture = weapon.hold_texture
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
-	# Auf Körpergröße normieren, damit kein Sprite die Figur erschlägt.
+	# Ein Texturpixel ist ein Figurpixel - ein grosses Schwert ist gross.
+	# Der Rahmen skaliert die ganze Figur so, dass beides hineinpasst.
 	var texture_size: Vector2 = weapon.hold_texture.get_size()
-	var factor: float = _body_size.y * 0.7 / maxf(texture_size.length(), 1.0)
-	sprite.scale = Vector2.ONE * factor
+	_weapon_size = PixelDraw.used_size(weapon.hold_texture)
 
 	# Klingen sind diagonal gezeichnet: der Versatz entlang dieser Diagonalen
 	# setzt den Griff in die Faust. Schusswaffen liegen mittig darin.
@@ -146,9 +148,20 @@ func _layout() -> void:
 
 	var view := size
 	var target_height: float = maxf(view.y * fill_ratio, 1.0)
-	var scale_factor: float = maxf(floorf(target_height / maxf(_body_size.y, 1.0)), 1.0)
+
+	# Die Klinge ragt von der Hand (knapp unter der Koerpermitte) nach oben.
+	# Der Rahmen fasst Koerper und Klinge zusammen, sonst schneidet er ein
+	# grosses Schwert oben ab.
+	var top: float = -_body_size.y * 0.5
+	var bottom: float = _body_size.y * 0.5
+	if _weapon_size.y > 0.0:
+		top = minf(top, _body_size.y * 0.12 - _weapon_size.y * 0.85)
+	var figure_height: float = maxf(bottom - top, 1.0)
+
+	var scale_factor: float = maxf(floorf(target_height / figure_height), 1.0)
 	_root.scale = Vector2.ONE * scale_factor
-	_root.position = Vector2(view.x * 0.5, view.y * 0.52)
+	# Mitte der ganzen Figur (Koerper plus Klinge) in die Panelmitte.
+	_root.position = Vector2(view.x * 0.5, view.y * 0.52 - (top + bottom) * 0.5 * scale_factor)
 
 	_body_base_y = 0.0
 	# Hände sitzen auf Schulterhöhe, knapp außerhalb der Silhouette.
