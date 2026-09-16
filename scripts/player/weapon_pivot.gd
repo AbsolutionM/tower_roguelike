@@ -94,8 +94,11 @@ func _order_rig(facing_up: bool) -> void:
 
 	# Die Klinge ist ein echtes Sprite in der Welt (Kind der Trefferbox), kein
 	# Teil der Ansicht: beim Zielen nach oben hinter das Figurbild, sonst davor.
+	# move_child zieht den Knoten erst heraus, dann rueckt der Rest nach -
+	# darum in beiden Faellen der Index des Figurbilds als Ziel: von hinten
+	# davor gesetzt landet die Klinge davor, von vorn dahinter gesetzt dahinter.
 	if sword and display and sword.get_parent() == display.get_parent():
 		var carrier := display.get_parent()
-		var want: int = display.get_index() if facing_up else display.get_index() + 1
-		if sword.get_index() != want:
-			carrier.move_child(sword, want)
+		var behind: bool = sword.get_index() < display.get_index()
+		if facing_up != behind:
+			carrier.move_child(sword, display.get_index())

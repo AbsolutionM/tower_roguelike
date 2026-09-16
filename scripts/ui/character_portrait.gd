@@ -199,7 +199,8 @@ func _process(delta: float) -> void:
 			_left_hand.rotation = right_tilt
 		else:
 			_left_hand.flip_h = true
-			_left_hand.position = left_point + Vector2(-_hand_center.x, _hand_center.y)
+			# Die freie Hand hängt vier Pixel höher als die Waffenhand.
+			_left_hand.position = left_point + Vector2(-_hand_center.x, _hand_center.y - 4.0)
 			_left_hand.rotation = sin(_time * sway_speed + 1.7) * 0.10
 
 	if _right_hand:

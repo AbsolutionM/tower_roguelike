@@ -32,6 +32,9 @@ var grip: HandController = null
 ## Versatz der zweiten Faust am Griff, in Pivot-Pixeln: etwas näher am
 ## Körper und ein Stück tiefer, damit beide Fäuste als zwei lesbar bleiben.
 const GRIP_OFFSET := Vector2(-6.0, 5.0)
+## Die freie Hand hängt nicht auf Gürtelhöhe wie die Waffenhand, sondern
+## vier Figurpixel höher - in Weltrichtung, unabhängig vom Zielen.
+const RAISE := 12.0
 
 func _process(_delta: float) -> void:
 	if not pivot:
@@ -54,7 +57,7 @@ func _process(_delta: float) -> void:
 	# Der Pivot spiegelt sich beim Zielen nach links (scale.y = -1). Als Kind
 	# hätte die Hand das geerbt; als Geschwister muss sie es nachstellen.
 	var mirrored: bool = pivot.scale.y < 0.0
-	global_position = pivot.to_global(local_position)
+	global_position = pivot.to_global(local_position) + (Vector2.ZERO if grip else Vector2(0.0, -RAISE))
 	global_rotation = pivot.global_rotation + (-local_rotation if mirrored else local_rotation)
 	flip_v = mirrored
 

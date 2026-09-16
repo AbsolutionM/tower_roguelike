@@ -19,8 +19,10 @@ class_name SwordWeapon
 @export var hitstop_duration: float = 0.06
 @export var hitstop_scale: float = 0.05
 
-## Richtung der Trefferbox, einmal aus der Szene übernommen.
-var _hitbox_direction: Vector2 = Vector2.ZERO
+## Länge der Trefferbox in Klingen-Einheiten, aus der Reichweite gerechnet.
+var _hitbox_length: float = 0.0
+## Richtung der gemalten Klinge im Sprite: diagonal nach oben rechts.
+const BLADE_TEXTURE_ANGLE := -PI * 0.25
 
 ## Weitester Ausschlag der Hand zu jeder Seite. Ein Bogen über den halben
 ## Körper herum sah mit langen Klingen wie ein Windrad aus.
@@ -52,6 +54,20 @@ func _ready() -> void:
 func _follow_hand() -> void:
 	if hand:
 		transform = hand.global_transform * Transform2D(0.0, grip_offset)
+	_align_hitbox()
+
+## Die Trefferbox liegt immer auf der sichtbaren Klinge - vom Griff zur
+## Spitze, in der Richtung, in der das Sprite gerade zeigt. So trifft die
+## Waffe in jeder Zielrichtung gleich weit, und beim Schlag genau dort, wo
+## die Klinge ist.
+func _align_hitbox() -> void:
+	var collision := get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if not collision or not sprite or _hitbox_length <= 0.0:
+		return
+	var blade: float = sprite.rotation + BLADE_TEXTURE_ANGLE
+	# Das Rechteck ist entlang seiner lokalen Y-Achse lang.
+	collision.rotation = blade - PI * 0.5
+	collision.position = Vector2.RIGHT.rotated(blade) * _hitbox_length * 0.5
 
 ## Wird vom WeaponController gesetzt, damit Waffenklassen sich unterschiedlich anfühlen.
 func configure(duration: float, angle_degrees: float, knockback: float, reach: float = 0.0) -> void:
@@ -75,15 +91,10 @@ func _resize_hitbox(reach: float) -> void:
 	if factor <= 0.001:
 		return
 
-	if not _hitbox_direction:
-		_hitbox_direction = collision.position.normalized()
-		if _hitbox_direction == Vector2.ZERO:
-			_hitbox_direction = Vector2.RIGHT
-
-	var length: float = reach / factor
+	_hitbox_length = reach / factor
 	var rect: RectangleShape2D = collision.shape
-	rect.size.y = length
-	collision.position = _hitbox_direction * length * 0.5
+	rect.size.y = _hitbox_length
+	_align_hitbox()
 
 func build_arc() -> void:
 	var half_angle := deg_to_rad(swing_angle_degrees / 2)
