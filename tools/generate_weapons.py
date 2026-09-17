@@ -31,35 +31,64 @@ from pathlib import Path
 
 from PIL import Image, ImageOps
 
+from pixelregeln import BAYER, bericht as flaechen_bericht, entflechten
+
 MARGIN = 1  # bleibt frei, damit der spaetere schwarze Rand hineinpasst
 GROESSE = 32  # Richtwert - jede Waffe bringt ihre eigene Leinwand mit
 
-# --- Palette: Resurrect 64 -------------------------------------------------
+# --- Palette: AAP-64 (lospec.com/palette-list/aap-64) -----------------------
+# Die eigenen Sprites im Projekt liegen auf AAP-64, nicht auf Resurrect 64.
+# Die alten Namen bleiben stehen und zeigen jetzt auf den jeweils naechsten
+# AAP-Ton - so funktionieren alle Akzentaufrufe im Bestand weiter. Die
+# Rampen darunter sind dagegen von Hand gesetzt: eine automatisch
+# zugeordnete Rampe verliert Stufen, und Stufen sind das, was die
+# Schattierung traegt.
 
 RES64 = {
-    'ink': '2e222f', 'plum': '3e3546', 'mauve': '625565', 'dust': '966c6c',
-    'tan': 'ab947a', 'wine': '694f62', 'lilac': '7f708a', 'steel': '9babb2',
-    'mint': 'c7dcd0', 'white': 'ffffff',
-    'blood_dk': '6e2727', 'blood': 'b33831', 'ember': 'ea4f36', 'flame': 'f57d4a',
-    'crimson_dk': 'ae2334', 'crimson': 'e83b3b', 'orange': 'fb6b1d',
-    'amber': 'f79617', 'gold': 'f9c22b',
-    'maroon': '7a3045', 'rust_dk': '9e4539', 'rust': 'cd683d', 'copper': 'e6904e',
-    'sand': 'fbb954',
-    'olive_dk': '4c3e24', 'olive': '676633', 'moss': 'a2a947', 'lime': 'd5e04b',
-    'pale_yellow': 'fbff86',
-    'green_dk': '165a4c', 'green': '239063', 'green_br': '1ebc73',
-    'green_lt': '91db69', 'green_pl': 'cddf6c',
-    'slate_dk': '313638', 'slate': '374e4a', 'slate_gr': '547e64',
-    'sage': '92a984', 'sage_lt': 'b2ba90',
-    'teal_dk': '0b5e65', 'teal': '0b8a8f', 'teal_br': '0eaf9b',
-    'aqua': '30e1b9', 'aqua_lt': '8ff8e2',
-    'navy': '323353', 'indigo': '484a77', 'blue': '4d65b4', 'blue_br': '4d9be6',
-    'sky': '8fd3ff',
-    'purple_dk': '45293f', 'purple': '6b3e75', 'violet': '905ea9',
-    'lavender': 'a884f3', 'pink_pl': 'eaaded',
-    'rose_dk': '753c54', 'rose': 'a24b6f', 'pink': 'cf657f', 'pink_lt': 'ed8099',
-    'magenta_dk': '831c5d', 'magenta': 'c32454', 'pink_hot': 'f04f78',
-    'salmon': 'f68181', 'peach': 'fca790', 'cream': 'fdcbb0',
+    'ink': '242234', 'plum': '333941', 'mauve': '4a5462',
+    'dust': 'a08662', 'tan': 'a08662', 'wine': '4a5462',
+    'lilac': '6d758d', 'steel': '8b93af', 'mint': 'dae0ea',
+    'white': 'ffffff', 'blood_dk': '73172d', 'blood': 'b4202a',
+    'ember': 'df3e23', 'flame': 'e86a73', 'crimson_dk': 'b4202a',
+    'crimson': 'df3e23', 'orange': 'fa6a0a', 'amber': 'f9a31b',
+    'gold': 'ffd541', 'maroon': '71413b', 'rust_dk': '8e5252',
+    'rust': 'bb7547', 'copper': 'dba463', 'sand': 'ffd541',
+    'olive_dk': '423934', 'olive': '5a4e44', 'moss': 'a08662',
+    'lime': 'd6f264', 'pale_yellow': 'f4d29c', 'green_dk': '23674e',
+    'green': '328464', 'green_br': '328464', 'green_lt': '9cdb43',
+    'green_pl': 'd6f264', 'slate_dk': '333941', 'slate': '333941',
+    'slate_gr': '328464', 'sage': '8b93af', 'sage_lt': 'c7b08b',
+    'teal_dk': '23674e', 'teal': '328464', 'teal_br': '20d6c7',
+    'aqua': '20d6c7', 'aqua_lt': 'a6fcdb', 'navy': '403353',
+    'indigo': '4a5462', 'blue': '285cc4', 'blue_br': '249fde',
+    'sky': 'b9bffb', 'purple_dk': '422433', 'purple': '793a80',
+    'violet': 'bc4a9b', 'lavender': '849be4', 'pink_pl': 'dae0ea',
+    'rose_dk': '71413b', 'rose': '8e5252', 'pink': 'e86a73',
+    'pink_lt': 'f5a097', 'magenta_dk': '793a80', 'magenta': 'b4202a',
+    'pink_hot': 'e86a73', 'salmon': 'e86a73', 'peach': 'f5a097',
+    'cream': 'fad6b8',
+
+    # AAP-Toene fuer die handgesetzten Rampen
+    'a_weiss': 'ffffff', 'a_creme': 'fef3c0', 'a_sand': 'f4d29c',
+    'a_gold': 'ffd541', 'a_gold_hell': 'fffc40', 'a_amber': 'f9a31b',
+    'a_orange': 'fa6a0a', 'a_zinnober': 'df3e23', 'a_rot': 'b4202a',
+    'a_rot_dk': '73172d', 'a_wein': '3b1725', 'a_lachs': 'f5a097',
+    'a_rosa': 'e86a73', 'a_rost': '8e5252', 'a_rost_dk': '5b3138',
+    'a_leder_h': 'dba463', 'a_leder': 'bb7547', 'a_leder_dk': '71413b',
+    'a_knochen_h': 'e4d2aa', 'a_knochen': 'c7b08b', 'a_knochen_m': 'a08662',
+    'a_knochen_d': '796755', 'a_knochen_t': '5a4e44', 'a_knochen_k': '423934',
+    'a_stahl_h': 'dae0ea', 'a_stahl_l': 'b3b9d1', 'a_stahl': '8b93af',
+    'a_stahl_f': '6d758d', 'a_stahl_d': '4a5462', 'a_stahl_t': '333941',
+    'a_stahl_k': '242234', 'a_himmel': 'e3e6ff', 'a_blau_h': 'b9bffb',
+    'a_blau': '849be4', 'a_blau_m': '588dbe', 'a_blau_s': '249fde',
+    'a_blau_d': '285cc4', 'a_blau_t': '143464', 'a_mint': 'cdf7e2',
+    'a_aqua_h': 'a6fcdb', 'a_aqua': '20d6c7', 'a_tuerkis': '5daf8d',
+    'a_tuerkis_d': '328464', 'a_tuerkis_t': '23674e', 'a_petrol': '477d85',
+    'a_lind': 'd6f264', 'a_gruen_h': '9cdb43', 'a_gruen': '59c135',
+    'a_gruen_d': '14a02e', 'a_gruen_t': '1a7a3e', 'a_gruen_s': '24523b',
+    'a_flieder': 'e9b5a3', 'a_altrosa': 'ba756a', 'a_magenta': 'bc4a9b',
+    'a_violett': '793a80', 'a_indigo': '403353', 'a_nacht': '221c1a',
+    'a_schwarz': '060608',
 }
 
 
@@ -109,31 +138,43 @@ def rampe(glanz, kante, hell, mitte, dunkel, tief):
     return dict(zip(STUFEN, (glanz, kante, hell, mitte, dunkel, tief)))
 
 
-# Klingenrampen
-STAHL = rampe('white', 'lilac', 'mint', 'steel', 'mauve', 'plum')
-EISEN = rampe('mint', 'mauve', 'steel', 'lilac', 'plum', 'ink')
-KNOCHEN = rampe('white', 'wine', 'cream', 'tan', 'dust', 'purple_dk')
-MOND = rampe('aqua_lt', 'blue', 'sky', 'blue_br', 'indigo', 'navy')
-STURM = rampe('pale_yellow', 'teal', 'aqua_lt', 'aqua', 'teal_br', 'teal_dk')
-FLAMME = rampe('pale_yellow', 'copper', 'sand', 'amber', 'rust', 'maroon')
-FANG = rampe('cream', 'rust_dk', 'sand', 'copper', 'rust', 'maroon')
-BLUT = rampe('peach', 'crimson_dk', 'salmon', 'crimson', 'blood', 'blood_dk')
+# Klingenrampen, von Hand in AAP-64 gesetzt. Reihenfolge:
+# rampe(glanz, kante, hell, mitte, dunkel, tief)
+STAHL = rampe('a_weiss', 'a_stahl_f', 'a_stahl_h', 'a_stahl', 'a_stahl_d', 'a_stahl_t')
+EISEN = rampe('a_stahl_l', 'a_stahl_d', 'a_stahl', 'a_stahl_f', 'a_stahl_t', 'a_stahl_k')
+KNOCHEN = rampe('a_weiss', 'a_knochen_d', 'a_creme', 'a_knochen', 'a_knochen_m',
+                'a_knochen_t')
+MOND = rampe('a_himmel', 'a_blau_m', 'a_blau_h', 'a_blau', 'a_blau_d', 'a_blau_t')
+STURM = rampe('a_mint', 'a_tuerkis_d', 'a_aqua_h', 'a_aqua', 'a_tuerkis',
+              'a_tuerkis_t')
+FLAMME = rampe('a_gold_hell', 'a_orange', 'a_gold', 'a_amber', 'a_zinnober',
+               'a_rot_dk')
+FANG = rampe('a_creme', 'a_leder_dk', 'a_sand', 'a_leder_h', 'a_leder', 'a_rost_dk')
+BLUT = rampe('a_lachs', 'a_rot_dk', 'a_rosa', 'a_rot', 'a_rot_dk', 'a_wein')
 
 # Stufenrampen nach Calamity-Vorbild: dieselbe Form, hoehere Stufe, andere
 # Farbwelt. Pre-Hardmode bleibt erdig, Hardmode wird kuehl und metallisch,
 # Post-Moon-Lord leuchtet.
-KUPFER = rampe('pale_yellow', 'rust_dk', 'sand', 'copper', 'rust', 'maroon')
-KOBALT = rampe('aqua_lt', 'indigo', 'sky', 'blue_br', 'blue', 'navy')
-ASTRAL = rampe('white', 'violet', 'aqua_lt', 'lavender', 'violet', 'purple_dk')
-LEERE = rampe('pink_pl', 'purple_dk', 'lavender', 'violet', 'purple', 'magenta_dk')
-ABGRUND = rampe('aqua_lt', 'navy', 'teal_br', 'teal', 'teal_dk', 'ink')
+KUPFER = rampe('a_gold_hell', 'a_zinnober', 'a_sand', 'a_leder_h', 'a_leder',
+               'a_rost_dk')
+KOBALT = rampe('a_himmel', 'a_blau_d', 'a_blau_h', 'a_blau_s', 'a_blau_d',
+               'a_blau_t')
+ASTRAL = rampe('a_weiss', 'a_violett', 'a_mint', 'a_blau_h', 'a_magenta',
+               'a_indigo')
+LEERE = rampe('a_flieder', 'a_indigo', 'a_altrosa', 'a_magenta', 'a_violett',
+              'a_nacht')
+ABGRUND = rampe('a_aqua_h', 'a_tuerkis_t', 'a_aqua', 'a_tuerkis', 'a_tuerkis_d',
+                'a_petrol')
 
 # Heft- und Beschlagrampen
-GOLD = rampe('pale_yellow', 'amber', 'sand', 'gold', 'copper', 'rust_dk')
-SILBER = rampe('white', 'mauve', 'mint', 'steel', 'lilac', 'plum')
-LEDER = rampe('cream', 'wine', 'tan', 'dust', 'wine', 'purple_dk')
-DUNKELLEDER = rampe('tan', 'purple_dk', 'dust', 'wine', 'purple_dk', 'ink')
-HOLZ = rampe('sand', 'rust_dk', 'copper', 'rust', 'rust_dk', 'maroon')
+GOLD = rampe('a_gold_hell', 'a_orange', 'a_gold', 'a_amber', 'a_zinnober',
+             'a_rost_dk')
+SILBER = rampe('a_weiss', 'a_stahl_d', 'a_stahl_h', 'a_stahl_l', 'a_stahl',
+               'a_stahl_t')
+LEDER = rampe('a_sand', 'a_leder_dk', 'a_leder_h', 'a_leder', 'a_rost', 'a_rost_dk')
+DUNKELLEDER = rampe('a_leder_h', 'a_rost_dk', 'a_leder', 'a_leder_dk', 'a_rost_dk',
+                    'a_nacht')
+HOLZ = rampe('a_sand', 'a_leder_dk', 'a_leder_h', 'a_leder', 'a_rost', 'a_rost_dk')
 
 
 # --- Klinge ----------------------------------------------------------------
@@ -175,7 +216,7 @@ def flanke(t):
 
 
 def blade(img, ox, oy, length, half, r, curve_amp=0.0, tip=3.0, serr=None,
-          fuller=False, profil='gerade'):
+          fuller=False, profil='gerade', r2=None, misch=0.45):
     """Klinge mit Grat, Breitenprofil und gedithertem Uebergang.
 
     half 0.75 -> 3 px pro Zeile, 1.0 -> 5 px (wie gras_sword), 1.5 -> 7 px.
@@ -183,7 +224,13 @@ def blade(img, ox, oy, length, half, r, curve_amp=0.0, tip=3.0, serr=None,
     Uebergaenge sind im Schachbrett gedithert wie in der Vorlage.
     """
     hell_parity = (ox + oy + 1) % 2
-    leiter = [C(r['glanz']), C(r['hell']), C(r['mitte']), C(r['dunkel']), C(r['tief'])]
+
+    def leiter_von(ramp):
+        return [C(ramp['glanz']), C(ramp['hell']), C(ramp['mitte']),
+                C(ramp['dunkel']), C(ramp['tief'])]
+
+    leiter_a = leiter_von(r)
+    leiter_b = leiter_von(r2) if r2 else leiter_a
     body = max(0.001, length - tip)
 
     formen = PROFIL[profil] if isinstance(profil, str) else profil
@@ -212,21 +259,49 @@ def blade(img, ox, oy, length, half, r, curve_amp=0.0, tip=3.0, serr=None,
             an_spitze = u > length - 2.0
 
             t = (vv + w) / max(0.02, 2.0 * w)   # 0 = Schneide, 1 = Ruecken
-            if u > length - 1.2:
-                col = C(r['tief'])        # Spitze bricht das Licht
-            elif vv >= w - 0.25 and w >= 0.9:
-                col = C(r['tief'])        # Ruecken liegt im Schatten
-            elif fuller and w >= 1.4 and 0.44 < t < 0.56 and 2.0 < u < body - 1.0:
-                col = C(r['dunkel'])      # Hohlkehle laeuft im Grat
+            # Zweite Rampe blendet ueber die Laenge ein. Der Uebergang
+            # ist gedithert, sonst gaebe es eine harte Farbkante quer
+            # ueber die Klinge.
+            leiter = leiter_a
+            if r2:
+                f = (u / length - misch) / 0.22
+                if (x + y) % 2 != hell_parity:
+                    f += 0.45
+                leiter = leiter_b if f > 0.0 else leiter_a
+            # Querschnitt aus giant_bone_sword.png: die Kanten sind harte
+            # Ein-Pixel-Baender, das Innere ein stufenloser Verlauf. Der wird
+            # ueber eine Bayer-Matrix zwischen zwei Rampenstufen aufgeloest.
+            # So traegt jeder gesetzte Pixel eine Aussage - er sagt, wie weit
+            # die Stelle zwischen hell und dunkel liegt. Erst eine Flaeche zu
+            # malen und sie danach aufzubrechen ergibt ein Schachbrett, das
+            # nur die Regel erfuellt und sonst nichts.
+            vorn = (vv + w) * 2.0
+            hinten = (w - vv) * 2.0
+            aus_mitte = abs(vv) * 2.0
+            breite = 4.0 * w
+            hat_rinne = fuller and w > 1.1 and 2.0 < u < length * 0.74
+
+            if u > length - 1.2 or vorn < 1.0 or hinten < 1.0:
+                col = C(r['kante'])       # Materialkante, kein Schwarz
+            elif am_heft:
+                col = leiter[2] if vorn < 2.6 else leiter[3]   # Ricasso
+            elif vorn < 2.0:
+                col = leiter[0]           # weisse Schneidenfase
+            elif hinten < 2.0:
+                col = leiter[4]           # Ruecken im Schatten
             else:
-                stufe = flanke(t)
-                if stufe == 2 and 0.66 < t < 0.80 and (x + y) % 2 != hell_parity:
-                    stufe += 1            # nur die Flanken dithern,
-                if am_heft:               # Grat und Fase bleiben klare Linien
-                    stufe += 1            # Schatten des Hefts
-                elif an_spitze:
-                    stufe += 1
-                col = leiter[min(stufe, 4)]
+                von, bis = 2.0, max(2.6, breite - 2.0)
+                t = min(1.0, max(0.0, (vorn - von) / max(0.6, bis - von)))
+                wert = 0.9 + 1.7 * t                  # hell -> dunkel
+                if hat_rinne:                          # Hohlkehle zieht nach
+                    wert += 0.9 * max(0.0, 1.0 - aus_mitte / 2.4)
+                if an_spitze:
+                    wert += 0.4
+                wert = min(4.0, wert)
+                stufe = int(wert)
+                rest = wert - stufe
+                schwelle = (BAYER[y % 4][x % 4] + 0.5) / 16.0
+                col = leiter[min(stufe + 1, 4)] if rest > schwelle else leiter[stufe]
             put(img, x, y, col)
 
 
@@ -397,17 +472,25 @@ def w_katana_storm(img):
 
 
 def w_greatsword_flame(img):
-    """Flammen-Grossschwert: gefluegelte Parierstange, Glut am Ruecken."""
-    blade(img, OX, OY, 15.5, 1.5, FLAMME, tip=4.0, fuller=True)
-    for u in (3.0, 6.0, 9.0):                             # Feuerzungen
-        speck(img, OX, OY, u, 1.5, 'ember')
-        speck(img, OX, OY, u + 0.5, 2.0, 'orange')
-        speck(img, OX, OY, u + 1.0, 1.5, 'flame')
-    guard(img, OX, OY, -1.0, 0.9, -3.4, 3.4, GOLD, flare=1.0)
-    gem(img, OX, OY, -1.0, 'ember', 'crimson', 'blood_dk', glanz='sand')
-    grip(img, OX, OY, -5.0, -2.2, 0.9,
+    """Flammen-Grossschwert: Glut am Heft, Gold zur Spitze, Fluegelheft.
+
+    Nach Vorbild der Calamity-Flammenklingen - die Klinge wechselt ueber
+    ihre Laenge die Farbwelt, statt einer Rampe zu folgen.
+    """
+    ox, oy = 12, 26
+    blade(img, ox, oy, 20.0, 1.7, BLUT, tip=5.0, fuller=True, profil='flamme',
+          r2=FLAMME, misch=0.38)
+    for u in (4.0, 7.5, 11.0):                            # Feuerzungen
+        speck(img, ox, oy, u, 1.9, 'ember')
+        speck(img, ox, oy, u + 0.6, 2.5, 'orange')
+        speck(img, ox, oy, u + 1.2, 2.0, 'flame')
+    fluegel(img, ox, oy, 4.4, KUPFER, spanne=3.6)
+    guard(img, ox, oy, -0.9, 1.0, -3.6, 3.6, GOLD, flare=0.6,
+          spitze='pale_yellow', schwung=1.2)
+    gem(img, ox, oy, -0.9, 'ember', 'crimson', 'blood_dk', glanz='sand')
+    grip(img, ox, oy, -5.4, -2.2, 1.0,
          rampe('rose', 'blood_dk', 'maroon', 'blood_dk', 'purple_dk', 'ink'))
-    pommel(img, OX, OY, -5.9, 1.7, GOLD)
+    pommel(img, ox, oy, -6.3, 1.8, GOLD)
 
 
 def w_curved_fang(img):
@@ -1207,6 +1290,17 @@ def w_blunderbuss(img):
         put(img, x, 19, C('maroon'))
 
 
+def fluegel(img, ox, oy, weite, r, spanne=3.2, nach_oben=True):
+    """Fluegelpaar am Heft: zwei Sichelbogen, die vom Parier nach oben
+    ausholen. Das ist der Unterschied zwischen einem Balken und einem Heft,
+    das nach etwas aussieht."""
+    for seite in (-1, 1):
+        bx, by = to_xy(0.0, seite * spanne * 0.55, ox, oy)
+        von, bis = (-70, 60) if seite < 0 else (110, 240)
+        sichel(img, bx - seite * int(weite * 0.7), by - int(weite * 0.5),
+               weite, von, bis, weite * 0.45, r, schwund=0.35)
+
+
 # --- Bauplan Schwert -------------------------------------------------------
 # Alle Klingenwaffen folgen demselben Aufbau. Statt ihn je Waffe zu wiederholen,
 # setzt schwert() ihn einmal zusammen und nimmt die Unterschiede als Parameter.
@@ -1217,11 +1311,12 @@ def w_blunderbuss(img):
 
 def schwert(img, ox, oy, laenge, halb, klinge, beschlag, wicklung=LEDER,
             stein=None, stufe=0, kruemmung=0.0, tip=3.5, fuller=None,
-            serr=None, profil='gerade'):
+            serr=None, profil='gerade', klinge2=None, fluegel_r=None,
+            misch=0.45):
     if fuller is None:
         fuller = halb >= 1.25
     blade(img, ox, oy, laenge, halb, klinge, curve_amp=kruemmung, tip=tip,
-          serr=serr, fuller=fuller, profil=profil)
+          serr=serr, fuller=fuller, profil=profil, r2=klinge2, misch=misch)
     if stufe >= 1:
         schliff(img, ox, oy, laenge, halb, klinge, curve_amp=kruemmung,
                 schritt=3 if stufe == 1 else 2)
@@ -1234,54 +1329,62 @@ def schwert(img, ox, oy, laenge, halb, klinge, beschlag, wicklung=LEDER,
             speck(img, ox, oy, u, 0.4 + kruemmung * (u / laenge) ** 2,
                   klinge['glanz'])
 
-    quer = 1.7 + halb * 1.2
-    dick = 0.7 + halb * 0.2
+    quer = 2.1 + halb * 1.35      # der Schutz muss breiter sein als die
+    dick = 0.62 + halb * 0.16     # Klinge, sonst deckt er die Hand nicht
     guard(img, ox, oy, -0.9, dick, -quer, quer, beschlag,
-          flare=0.5 if stufe >= 2 else 0.0,
-          spitze=beschlag['glanz'] if stufe >= 2 else None,
+          flare=0.5 if stufe >= 2 else 0.25,
+          spitze=beschlag['glanz'],
           schwung=(0.0, 0.7, 1.2)[min(stufe, 2)])
     if stein:
         gem(img, ox, oy, -0.9, stein['hell'], stein['mitte'], stein['dunkel'],
             glanz=stein['glanz'])
 
+    if fluegel_r:
+        fluegel(img, ox, oy, 3.4 + halb * 1.1, fluegel_r, spanne=quer)
+
     griff_von = -(3.4 + halb * 1.4)
-    grip(img, ox, oy, griff_von, -1.9, 0.8 + halb * 0.15, wicklung)
+    grip(img, ox, oy, griff_von, -1.9, 0.52 + halb * 0.10, wicklung)
+    for ring in range(1, int(-griff_von) - 1):     # Wicklungsringe
+        speck(img, ox, oy, griff_von + ring * 1.5, 0.0, wicklung['glanz'])
     pommel(img, ox, oy, griff_von - 0.9, 1.1 + halb * 0.35, beschlag)
 
 
 def w_shortsword_copper(img):
     """Kupferkurzschwert - Pre-Hardmode, schlicht. 32x32."""
-    schwert(img, 11, 20, 13.5, 1.0, KUPFER, KUPFER, wicklung=LEDER, stufe=0)
+    schwert(img, 11, 20, 13.5, 1.0, KUPFER, SILBER, wicklung=DUNKELLEDER,
+            stufe=0)
 
 
 def w_broadsword_cobalt(img):
     """Kobaltbreitschwert - Hardmode, Haertelinie und Stein. 36x36."""
-    schwert(img, 12, 23, 17.0, 1.5, KOBALT, SILBER, stein=MOND, stufe=1,
-            tip=4.5, profil='bauchig')
+    schwert(img, 12, 23, 17.0, 1.5, STAHL, SILBER, stein=MOND, stufe=1,
+            tip=4.5, profil='bauchig', klinge2=KOBALT)
 
 
 def w_greatsword_abyss(img):
     """Abgrundgrossschwert - Hardmode, breit und dunkel. 40x40."""
-    schwert(img, 15, 32, 24.0, 2.4, ABGRUND, EISEN, wicklung=DUNKELLEDER,
-            stein=STURM, stufe=1, tip=6.0, profil='keil')
+    schwert(img, 15, 32, 24.0, 2.4, EISEN, EISEN, wicklung=DUNKELLEDER,
+            stein=STURM, stufe=1, tip=6.0, profil='keil', klinge2=ABGRUND)
 
 
 def w_katana_dawn(img):
     """Morgenkatana - Hardmode, gekruemmt, goldenes Heft. 36x36."""
-    schwert(img, 11, 24, 19.0, 1.0, FLAMME, GOLD, stein=None, stufe=1,
-            kruemmung=1.6, tip=4.5, profil='keil')
+    schwert(img, 11, 24, 19.0, 1.0, KUPFER, GOLD, stein=None, stufe=1,
+            kruemmung=1.6, tip=4.5, profil='keil', klinge2=FLAMME)
 
 
 def w_dagger_void(img):
     """Leeredolch - Post-Moon-Lord, Dornen und Funken. 28x28."""
-    schwert(img, 8, 17, 9.5, 0.95, LEERE, GOLD, wicklung=DUNKELLEDER,
-            stein=LEERE, stufe=2, kruemmung=0.8, tip=2.6, profil='blatt')
+    schwert(img, 8, 17, 9.5, 0.95, BLUT, GOLD, wicklung=DUNKELLEDER,
+            stein=LEERE, stufe=2, kruemmung=0.8, tip=2.6, profil='blatt',
+            klinge2=LEERE)
 
 
 def w_blade_astral(img):
     """Astralklinge - Post-Moon-Lord, ausgestellte Quillons. 40x40."""
-    schwert(img, 15, 31, 23.0, 1.9, ASTRAL, GOLD, wicklung=DUNKELLEDER,
-            stein=ASTRAL, stufe=2, tip=6.0, profil='blatt')
+    schwert(img, 15, 31, 23.0, 1.9, MOND, GOLD, wicklung=DUNKELLEDER,
+            stein=ASTRAL, stufe=2, tip=6.0, profil='blatt',
+            klinge2=ASTRAL, fluegel_r=GOLD)
 
 
 # --- Bauplan Stangenwaffe --------------------------------------------------
@@ -1408,76 +1511,132 @@ def w_greataxe_abyss(img):
 # Unterschiede: Lauflaenge, Muendungsform, Magazin, Visier, Kolben - und die
 # Stufe, die Messingbeschlag (1) beziehungsweise Kern und Kuehlrippen (2) setzt.
 
+# Der Kern einer Feuerwaffe - Hahn, Rahmen, Abzugsbuegel, Griff - laesst sich
+# bei dieser Groesse nicht parametrisch bauen. Zwoelf mal zwoelf Pixel, von
+# Hand gesetzt, Proportionen abgelesen an ordinary_revolver.png: Rahmen vier
+# Pixel hoch, Griff vier breit und leicht schraeg, darunter ein Buegel.
+#   H hell  M mitte  D dunkel  K kante   W holz hell  w holz  x holz dunkel
+KERN_PISTOLE = (
+    '....MMMMMMMM',
+    '...KDDDDDDDD',
+    '...KDDDDDDDD',
+    '..KKDDDDDDDD',
+    '..KKDDDDDD..',
+    '.KwwDDDKKD..',
+    '.KWwwDK..K..',
+    '.KWww..KKK..',
+    'KKwww.......',
+    'KKwww.......',
+    '.Kwww.......',
+    '..KKK.......',
+)
+
+KERN_REVOLVER = (
+    '.....MMMMMMM',
+    '...KMDDDDDDD',
+    '...KDDDDDDDD',
+    '..KKDDDDDDDD',
+    '..KKDMDMDD..',
+    '.KwwDMDMKD..',
+    '.KWwwDDD.K..',
+    '.KWww..KKK..',
+    'KKwww.......',
+    'KKwww.......',
+    '.Kwww.......',
+    '..KKK.......',
+)
+
 def schusswaffe(img, metall, holz, laenge=10, stufe=0, magazin=False,
                 visier=False, kolben=False, muendung='gerade', kern=None,
-                x=6, y=13):
-    hoehe = 6
-    if kolben:
-        slant(img, x - 7, y + 1, 8, 5, -0.25, holz)          # Schulterstuetze
-    slant(img, x + 3, y + hoehe, 4, 6, -0.5, holz)           # Griff
-    box(img, x, y, 11, hoehe, metall)                        # Gehaeuse
-    bx, by = x + 11, y + 1
-    box(img, bx, by, laenge, 3, metall)                      # Lauf
+                x=6, y=12, form=KERN_PISTOLE):
+    """Feuerwaffe: gesetzter Kern plus parametrischer Lauf.
 
+    Der Lauf ist der einfache Teil - ein zwei Pixel hoher Balken, dessen
+    Laenge die Waffenart ausmacht. Alles davor ist Handarbeit.
+    """
+    slots = {'H': metall['hell'], 'M': metall['mitte'], 'D': metall['dunkel'],
+             'K': metall['tief'], 'W': holz['hell'], 'w': holz['mitte'],
+             'x': holz['tief']}
+    for dy, zeile in enumerate(form):
+        for dx, z in enumerate(zeile):
+            if z != '.':
+                put(img, x + dx, y + dy, C(slots[z]))
+
+    lauf_x = x + 12
+    # Lauf ueberwiegend dunkel, nur die Oberkante faengt Licht. Gemessen an
+    # ordinary_revolver.png: zwei Drittel der Waffe liegen im Dunkeln und es
+    # gibt keinen einzigen hellen Pixel. Flaechig helles Metall liest sich
+    # als Plastik.
+    for i in range(laenge):
+        put(img, lauf_x + i, y, C(metall['mitte']))
+        put(img, lauf_x + i, y + 1, C(metall['dunkel']))
+        put(img, lauf_x + i, y + 2, C(metall['tief']))
+    put(img, lauf_x + 1, y, C(metall['hell']))    # ein einzelner Glanzpunkt
+
+    mx = lauf_x + laenge
     if muendung == 'trichter':
-        for i in range(5):
-            h = 3 + i
-            box(img, bx + laenge + i, by + 1 - h // 2, 1, h, metall)
+        for j in range(-1, 4):
+            put(img, mx, y + j, C(metall['mitte']))
+            put(img, mx + 1, y + j, C(metall['hell'] if j < 1 else metall['tief']))
     elif muendung == 'kegel':
-        for j, br in ((0, 1), (1, 2), (2, 3), (3, 2), (4, 1)):
+        for j, br in ((0, 2), (1, 3), (2, 2)):
             for i in range(br):
-                put(img, bx + laenge + i, by - 1 + j,
-                    C('crimson' if i else 'salmon'))
+                put(img, mx + i, y + j, C('a_rot' if i else 'a_lachs'))
     else:
-        put(img, bx + laenge - 1, by + 1, C('ink'))          # Seele
+        put(img, mx - 1, y + 1, C('a_schwarz'))
 
+    if kolben:                                    # Schulterstuetze, sitzt
+        for j in range(4):                        # buendig am Rahmen
+            for i in range(6):
+                col = (holz['mitte'] if j == 0 else
+                       holz['tief'] if j == 3 else holz['dunkel'])
+                put(img, x - 4 + i, y + 2 + j, C(col))
     if magazin:
-        box(img, x + 8, y + hoehe, 4, 8, holz)
-        for j in (y + hoehe + 2, y + hoehe + 4, y + hoehe + 6):
-            put(img, x + 9, j, C(holz['glanz']))
+        for j in range(6):
+            for i in range(3):
+                col = (holz['mitte'] if i == 0 and j % 2 else
+                       holz['tief'] if i == 2 else holz['dunkel'])
+                put(img, x + 7 + i, y + 7 + j, C(col))
     if visier:
-        box(img, x + 5, y - 3, 5, 3, metall)
-        put(img, x + 7, y - 2, C(metall['glanz']))
+        put(img, x + 6, y - 1, C(metall['hell']))
+        put(img, x + 7, y - 1, C(metall['glanz']))
     if kern:
-        kristall(img, x + 4, y + hoehe + 1, 3, kern, zacken=False)
-        put(img, x + 4, y + hoehe - 2, C(kern['hell']))
-
-    if stufe >= 1:                                           # Messingbeschlag
-        for j in range(y, y + hoehe):
-            put(img, x + 10, j, C('sand' if j < y + hoehe - 2 else 'amber'))
-    if stufe >= 2:                                           # Kuehlrippen
-        for i in range(bx + 2, bx + laenge - 1, 3):
-            put(img, i, by, C(metall['glanz']))
-        put(img, bx + laenge, by, C('sky'))
-        put(img, bx + laenge, by + 2, C('blue_br'))
-    put(img, x + 11, y + hoehe - 1, C('mauve'))              # Abzug
+        kristall(img, x + 5, y + 6, 2, kern, zacken=False)
+    if stufe >= 1:                                # Messing am Rahmen
+        for j in range(3):
+            put(img, x + 11, y + 2 + j, C('a_amber' if j < 2 else 'a_orange'))
+        put(img, x + 4, y + 3, C('a_amber'))       # Schraube
+    if stufe >= 2:
+        put(img, mx, y, C('a_aqua_h'))
+        put(img, mx, y + 2, C('a_blau_s'))
 
 
 def w_pistol_scrap(img):
     """Schrottpistole - Pre-Hardmode, kurzer Lauf. 30x30."""
-    schusswaffe(img, EISEN, LEDER, laenge=7, stufe=0, x=5, y=12)
+    schusswaffe(img, EISEN, LEDER, laenge=7, stufe=1, x=5, y=12)
 
 
 def w_revolver_heavy(img):
     """Schwerer Revolver - Hardmode, langer Lauf, Messing. 34x34."""
-    schusswaffe(img, SILBER, LEDER, laenge=12, stufe=1, x=5, y=13)
+    schusswaffe(img, EISEN, LEDER, laenge=12, stufe=1, x=5, y=13,
+                form=KERN_REVOLVER)
 
 
 def w_pistol_burst(img):
     """Salvenpistole - Hardmode, Visier. 32x32."""
-    schusswaffe(img, KOBALT, DUNKELLEDER, laenge=8, stufe=1, visier=True,
+    schusswaffe(img, ABGRUND, DUNKELLEDER, laenge=8, stufe=1, visier=True,
                 x=6, y=14)
 
 
 def w_smg_needle(img):
     """Nadel-MP - Hardmode, langes Magazin. 34x34."""
-    schusswaffe(img, SILBER, DUNKELLEDER, laenge=10, stufe=1, magazin=True,
+    schusswaffe(img, EISEN, DUNKELLEDER, laenge=10, stufe=1, magazin=True,
                 visier=True, x=5, y=12)
 
 
 def w_shotgun_scatter(img):
     """Streuflinte - Hardmode, Trichtermuendung und Kolben. 38x38."""
-    schusswaffe(img, SILBER, HOLZ, laenge=11, stufe=1, kolben=True,
+    schusswaffe(img, EISEN, HOLZ, laenge=11, stufe=1, kolben=True,
                 muendung='trichter', x=9, y=15)
 
 
@@ -1517,20 +1676,21 @@ def w_broadsword_bone(img):
 
 def w_rapier_gold(img):
     """Goldrapier - Hardmode, sehr schmale Klinge. 36x36."""
-    schwert(img, 11, 24, 18.0, 0.75, STAHL, GOLD, stein=GOLD, stufe=1,
-            tip=4.0, profil='keil')
+    schwert(img, 11, 24, 18.0, 0.75, GOLD, GOLD, stein=GOLD, stufe=1,
+            tip=4.0, profil='keil', klinge2=STAHL, misch=0.30)
 
 
 def w_katana_void(img):
     """Leerekatana - Post-Moon-Lord, gekruemmt und gedornt. 38x38."""
-    schwert(img, 12, 25, 20.0, 1.0, LEERE, GOLD, wicklung=DUNKELLEDER,
-            stein=LEERE, stufe=2, kruemmung=1.7, tip=4.5, profil='haken')
+    schwert(img, 12, 25, 20.0, 1.0, BLUT, GOLD, wicklung=DUNKELLEDER,
+            stein=LEERE, stufe=2, kruemmung=1.7, tip=4.5, profil='haken',
+            klinge2=LEERE)
 
 
 def w_dagger_cobalt(img):
     """Kobaltdolch - Hardmode. 28x28."""
-    schwert(img, 8, 16, 9.0, 0.9, KOBALT, SILBER, stein=MOND, stufe=1,
-            tip=2.6, profil='blatt')
+    schwert(img, 8, 16, 9.0, 0.9, STAHL, SILBER, stein=MOND, stufe=1,
+            tip=2.6, profil='blatt', klinge2=KOBALT)
 
 
 def w_spear_bone(img):
@@ -1553,7 +1713,7 @@ def w_scythe_copper(img):
 
 def w_rifle_cobalt(img):
     """Kobaltgewehr - Hardmode, langer Lauf mit Zielfernrohr. 42x42."""
-    schusswaffe(img, KOBALT, HOLZ, laenge=16, stufe=1, visier=True,
+    schusswaffe(img, ABGRUND, HOLZ, laenge=16, stufe=1, visier=True,
                 kolben=True, x=10, y=16)
 
 
@@ -1942,8 +2102,8 @@ def w_staff_skull(img):
 def w_gunblade(img):
     """Klingenpistole - Hardmode, Lauf laeuft am Klingenruecken mit. 40x40."""
     ox, oy = 12, 27
-    schwert(img, ox, oy, 18.0, 1.4, KOBALT, SILBER, stein=MOND, stufe=1,
-            tip=4.5, profil='keil')
+    schwert(img, ox, oy, 18.0, 1.4, EISEN, SILBER, stein=MOND, stufe=1,
+            tip=4.5, profil='keil', klinge2=KOBALT)
     lx, ly = to_xy(2.0, 2.2, ox, oy)                 # Lauf am Ruecken
     box(img, lx, ly, 9, 3, SILBER)
     put(img, lx + 9, ly + 1, C('ink'))               # Seele
@@ -1968,8 +2128,9 @@ def w_greatsword_crystal(img):
     """Kristallgrossschwert - Post-Moon-Lord, Kristalle wachsen aus der
     Schneide. 50x50."""
     ox, oy = 15, 31
-    schwert(img, ox, oy, 22.0, 1.8, KOBALT, GOLD, wicklung=DUNKELLEDER,
-            stein=MOND, stufe=2, tip=6.0, profil='bauchig')
+    schwert(img, ox, oy, 22.0, 1.8, ABGRUND, GOLD, wicklung=DUNKELLEDER,
+            stein=MOND, stufe=2, tip=6.0, profil='bauchig',
+            klinge2=KOBALT, fluegel_r=SILBER)
     for u, v, rad in ((7.0, -2.2, 2), (12.0, -2.6, 3), (16.5, -2.0, 2)):
         kx, ky = to_xy(u, v, ox, oy)
         kristall(img, kx, ky, rad, MOND, zacken=False)
@@ -1981,6 +2142,391 @@ def w_longbow_astral(img):
     bogen(img, 12, 3, 38, 8, ASTRAL, sehne='aqua_lt', stufe=2)
 
 
+# --- Sonderformen ----------------------------------------------------------
+# Formen, die im Set noch fehlen. Bewusst keine weiteren Klingenvarianten -
+# die Silhouette soll den Unterschied machen, nicht die Rampe.
+
+def w_nagelkeule(img):
+    """Nagelkeule: Balken aus Holz, zur Spitze hin dicker, gespickt mit
+    Naegeln. 38x38."""
+    ox, oy = 9, 30
+    blade(img, ox, oy, 20.0, 1.7, HOLZ, tip=2.0, profil='haken')
+    for u, v in ((8.0, -1.6), (11.0, 1.7), (13.5, -2.0), (16.0, 1.9),
+                 (10.0, 0.2), (15.0, -0.4)):
+        speck(img, ox, oy, u, v, 'a_stahl_h')      # Nagelkopf
+        speck(img, ox, oy, u + 0.5, v + 0.4, 'a_stahl_t')
+    for u in (5.0, 9.0, 13.0):                     # Bindung
+        speck(img, ox, oy, u, 0.0, 'a_leder_dk')
+    grip(img, ox, oy, -4.6, -0.6, 0.75, DUNKELLEDER)
+    pommel(img, ox, oy, -5.4, 1.3, EISEN)
+
+
+def w_bohrer(img):
+    """Bohrer: Schaft mit Getriebekasten, davor ein gewundener Kegel. 42x42."""
+    ox, oy = 8, 34
+    stange(img, ox, oy, 0.0, 14.0, 0.9, DUNKELLEDER, ringe=(4.0,))
+    guard(img, ox, oy, 14.0, 1.4, -2.2, 2.2, EISEN)     # Getriebekasten
+    speck(img, ox, oy, 14.0, 0.0, 'a_amber')
+    kx, ky = to_xy(15.5, 0.0, ox, oy)
+    blade(img, kx, ky, 11.0, 1.9, SILBER, tip=9.0, profil='keil')
+    for i in range(9):                                 # Windung als schraege
+        u = 1.0 + i * 1.05                             # Baender ueber den Kegel
+        for k in (-1, 0, 1):
+            v = -1.4 + 0.9 * k + 0.5 * (i % 2)
+            speck(img, kx, ky, u + k * 0.4, v,
+                  'a_stahl_k' if i % 2 else 'a_stahl_d')
+    pommel(img, ox, oy, -1.0, 1.4, EISEN)
+
+
+def w_anker(img):
+    """Ankerkette: Kette, Schaft, Querholm, zwei Flunken.
+
+    Die Flunken als Sicheln um denselben Punkt wachsen zusammen - hier
+    laufen sie als eigene Balken vom Schaftfuss nach aussen oben und enden
+    je in einer Spitze.
+    """
+    ox, oy = 8, 40
+    grip(img, ox, oy, 0.0, 3.0, 0.8, DUNKELLEDER)
+    kette(img, ox, oy, 2.5, 11.0, EISEN)
+    ax, ay = to_xy(12.5, 0.0, ox, oy)          # Fuss des Schafts
+    stange(img, ax, ay, 0.0, 11.0, 1.0, EISEN)
+    guard(img, ax, ay, 8.5, 0.9, -4.0, 4.0, EISEN)      # Querholm
+    for v in (-4.6, 4.6):
+        speck(img, ax, ay, 8.5, v, 'a_stahl_h')
+    rx, ry = to_xy(12.5, 0.0, ax, ay)
+    ring(img, rx, ry, 3.2, 1.8, EISEN)                  # Ankerring
+    for seite in (-1, 1):                               # Flunken
+        fx, fy = to_xy(0.5, seite * 1.0, ax, ay)
+        ex, ey = fx + seite * 7, fy - 5
+        balken(img, fx, fy, ex, ey, 1.5, EISEN)
+        put(img, ex + seite, ey - 1, C('a_stahl_h'))    # Spitze
+        put(img, ex + seite, ey, C('a_stahl_d'))
+    pommel(img, ox, oy, -0.8, 1.2, EISEN)
+
+
+def w_kriegsfaecher(img):
+    """Kriegsfaecher: Rippen aus einem Drehpunkt, aussen eine geschliffene
+    Kante. 36x36."""
+    dx, dy = 8, 28
+    for i in range(6):                                  # Rippen
+        winkel = math.radians(-18 - i * 12)
+        ex = dx + int(round(22 * math.cos(winkel)))
+        ey = dy + int(round(22 * math.sin(winkel)))
+        balken(img, dx, dy, ex, ey, 1.1, GOLD if i % 2 else HOLZ)
+    # sichel() misst den Winkel ueber atan2(-dy, dx), die Rippen oben
+    # rechnen direkt mit dem Sinus - das Vorzeichen dreht sich dabei um.
+    sichel(img, dx, dy, 22.0, 14, 80, 3.0, SILBER, schwund=0.0)
+    kugel(img, dx, dy, 2.6, GOLD)                       # Drehpunkt
+    for i in (0, 5):                                    # Rippenenden betonen,
+        winkel = math.radians(-18 - i * 12)             # dicht am Blatt, sonst
+        ex = dx + int(round(20 * math.cos(winkel)))     # schweben sie daneben
+        ey = dy + int(round(20 * math.sin(winkel)))
+        put(img, ex, ey, C('a_gold'))
+
+
+def w_harpune(img):
+    """Harpune: Schaft, Widerhaken, aufgeschossenes Seil. 44x44."""
+    ox, oy = 7, 36
+    stange(img, ox, oy, 0.0, 20.0, 0.7, EISEN, ringe=(6.0, 13.0))
+    bx, by = to_xy(20.0, 0.0, ox, oy)
+    blade(img, bx, by, 8.0, 1.1, SILBER, tip=5.0, profil='blatt')
+    for u, v in ((1.5, -1.8), (3.0, 1.9)):              # Widerhaken
+        speck(img, bx, by, u, v, 'a_stahl_h')
+        speck(img, bx, by, u + 0.8, v * 1.35, 'a_stahl_d')
+        speck(img, bx, by, u + 1.4, v * 1.1, 'a_stahl_t')
+    schnur(img, [(6, 33), (10, 36), (16, 37), (21, 34), (24, 37)], HOLZ,
+           dick_von=0.9, dick_bis=0.7)                  # Seil
+    pommel(img, ox, oy, -1.0, 1.3, EISEN)
+
+
+def w_saegeblatt(img):
+    """Saegeblatt: Wurfscheibe mit Zaehnen und Nabe. 32x32."""
+    ring(img, 15, 15, 11.0, 4.0, SILBER)
+    for i in range(12):                                 # Zaehne
+        w = math.radians(i * 30)
+        for r in (11, 12):
+            put(img, 15 + int(round(r * math.cos(w))),
+                15 + int(round(r * math.sin(w))),
+                C('a_stahl_h' if math.cos(w) + math.sin(w) < 0 else 'a_stahl_d'))
+    ring(img, 15, 15, 4.6, 2.6, GOLD)                   # Nabe
+    kugel(img, 15, 15, 2.4, EISEN)
+
+
+def w_kettenklinge(img):
+    """Kettenklinge: Klingenglieder auf einem duennen Ruecken - jedes Glied
+    sitzt auf dem Ruecken auf, sonst zerfaellt das Sprite in Einzelteile. 42x42."""
+    ox, oy = 10, 32
+    for i in range(int(22.0)):                          # durchgehender Ruecken
+        speck(img, ox, oy, float(i), 0.0, EISEN['dunkel'])
+        speck(img, ox, oy, i + 0.5, 0.5, EISEN['tief'])
+    for k in range(6):                                  # Glieder
+        u = 4.0 + k * 3.0
+        blade(img, *to_xy(u, 0.0, ox, oy), 2.6, 1.25, STAHL, tip=1.4)
+        speck(img, ox, oy, u + 1.2, 0.0, 'a_amber')     # Bolzen
+    guard(img, ox, oy, -1.0, 0.9, -2.6, 2.6, GOLD, spitze='a_gold')
+    grip(img, ox, oy, -5.0, -2.0, 0.7, DUNKELLEDER)
+    pommel(img, ox, oy, -5.9, 1.5, GOLD)
+
+
+def w_laterne(img):
+    """Seelenlaterne: Stange, Haken, daran ein Gehaeuse mit Glutkern. 42x42."""
+    ox, oy = 8, 34
+    stange(img, ox, oy, 0.0, 17.0, 0.8, DUNKELLEDER, ringe=(5.0, 12.0))
+    hx, hy = to_xy(17.0, 0.0, ox, oy)
+    for i in range(4):                                  # Haken
+        put(img, hx + i, hy - 1, C(GOLD['mitte'] if i % 2 else GOLD['hell']))
+    put(img, hx + 3, hy, C(GOLD['dunkel']))
+    lx, ly = hx + 3, hy + 1
+    for j in range(9):                                  # Gehaeuse
+        for i in range(7):
+            rand = i in (0, 6) or j in (0, 8)
+            ecke = (i in (0, 6)) and (j in (0, 8))
+            if ecke:
+                continue
+            put(img, lx - 3 + i, ly + j,
+                C(GOLD['dunkel'] if rand else 'a_schwarz'))
+    kristall(img, lx, ly + 4, 3, FLAMME)                # Glutkern
+    for i in (-2, 2):                                   # Streben
+        for j in range(1, 8):
+            put(img, lx + i, ly + j, C(GOLD['tief']))
+    pommel(img, ox, oy, -1.0, 1.3, GOLD)
+
+
+def w_armkanone(img):
+    """Armkanone: Schiene am Unterarm, darueber das Rohr.
+
+    Schiene und Rohr muessen sich in der Hoehe deutlich trennen - liegen sie
+    auf einer Linie, verschmelzen sie zu einem Balken. 40x40.
+    """
+    for j in range(6):                                  # Armschiene unten
+        for i in range(13):
+            col = (EISEN['hell'] if j == 0 else
+                   EISEN['tief'] if j == 5 else EISEN['mitte'])
+            put(img, 4 + i, 24 + j, C(col))
+    for i in (2, 9):                                    # Riemen
+        for j in range(6):
+            put(img, 4 + i, 24 + j, C(DUNKELLEDER['mitte'] if j % 2
+                                      else DUNKELLEDER['tief']))
+    for j in range(5):                                  # Rohr darueber
+        for i in range(18):
+            col = (SILBER['mitte'] if j == 0 else
+                   SILBER['tief'] if j == 4 else SILBER['dunkel'])
+            put(img, 10 + i, 17 + j, C(col))
+    for j in range(3):                                  # Traeger zwischen beiden
+        for i in range(3):
+            put(img, 12 + i, 22 + j, C(EISEN['dunkel']))
+            put(img, 20 + i, 22 + j, C(EISEN['dunkel']))
+    for j in range(9):                                  # Muendungsring
+        put(img, 28, 15 + j, C(GOLD['mitte'] if j % 2 else GOLD['dunkel']))
+    kristall(img, 14, 19, 3, STURM, zacken=False)       # Kammer
+    put(img, 29, 19, C('a_aqua_h'))
+
+
+def w_regenschirm(img):
+    """Kampfschirm: Kuppel aus Segmenten, Stock mit Krueckgriff. 40x40."""
+    kx, ky = 20, 20
+    sichel(img, kx, ky, 14.0, 12, 168, 4.0, DUNKELLEDER, schwund=0.0)
+    for grad in (24, 60, 96, 132):                      # Rippen
+        w = math.radians(grad)
+        balken(img, kx, ky, kx + int(round(13 * math.cos(w))),
+               ky - int(round(13 * math.sin(w))), 0.8, EISEN)
+    for grad in (12, 48, 84, 120, 156):                 # Zacken am Saum
+        w = math.radians(grad)
+        put(img, kx + int(round(14 * math.cos(w))),
+            ky - int(round(14 * math.sin(w))), C(GOLD['mitte']))
+    for j in range(14):                                 # Stock
+        put(img, kx, ky + j, C(EISEN['mitte'] if j % 2 else EISEN['dunkel']))
+        put(img, kx + 1, ky + j, C(EISEN['tief']))
+    for i in range(4):                                  # Kruecke
+        put(img, kx - 1 - i, 33, C(DUNKELLEDER['hell'] if i < 2
+                                   else DUNKELLEDER['mitte']))
+    put(img, kx - 4, 32, C(DUNKELLEDER['tief']))
+    put(img, kx, 6, C(GOLD['hell']))                    # Spitze
+    put(img, kx, 7, C(GOLD['dunkel']))
+
+
+def w_krallen(img):
+    """Krallenschiene: Panzerung ueber dem Handruecken, drei gebogene Klauen.
+
+    Die Klauen als Sicheln zu bauen ging schief - sie fielen neben die
+    Schiene. Jetzt sind es Balkenzuege, die an der Schiene ansetzen und in
+    einer Spitze auslaufen. 38x34.
+    """
+    for j in range(8):                                  # Schiene
+        for i in range(12):
+            col = (EISEN['hell'] if j == 0 else
+                   EISEN['tief'] if j == 7 else EISEN['mitte'])
+            put(img, 4 + i, 20 + j, C(col))
+    for i in (3, 8):                                    # Nieten
+        put(img, 4 + i, 21, C(GOLD['mitte']))
+        put(img, 4 + i, 25, C(GOLD['dunkel']))
+    for k, hoehe in enumerate((7, 9, 7)):               # drei Klauen
+        bx, by = 15, 21 + k * 3
+        mx, my = bx + 6, by - hoehe + 2
+        ex, ey = mx + 5, my + 2
+        balken(img, bx, by, mx, my, 1.4, STAHL)
+        balken(img, mx, my, ex, ey, 1.0, STAHL)
+        put(img, ex + 1, ey + 1, C(STAHL['hell']))      # Spitze
+        put(img, ex + 1, ey + 2, C(STAHL['tief']))
+    grip(img, 10, 26, -3.0, 0.5, 0.8, DUNKELLEDER)
+
+
+def w_kettensaege(img):
+    """Kettensaege: Motorblock, Schwert mit Zaehnen, Buegelgriff. 44x40."""
+    for j in range(9):                                  # Motorblock
+        for i in range(11):
+            col = (EISEN['hell'] if j == 0 else
+                   EISEN['tief'] if j == 8 else EISEN['mitte'])
+            put(img, 4 + i, 26 - j, C(col))
+    for i in range(3, 9):                               # Buegelgriff
+        put(img, i, 16, C(DUNKELLEDER['mitte']))
+    put(img, 3, 17, C(DUNKELLEDER['tief']))
+    put(img, 9, 17, C(DUNKELLEDER['tief']))
+    for i in (5, 8):                                    # Kuehlrippen
+        for j in range(2, 7):
+            put(img, 4 + i, 26 - j, C(EISEN['dunkel']))
+    for j in range(5):                                  # Schwert
+        for i in range(20):
+            col = (SILBER['mitte'] if j == 0 else
+                   SILBER['tief'] if j == 4 else SILBER['dunkel'])
+            put(img, 15 + i, 24 - j, C(col))
+    for i in range(0, 20, 2):                           # Zaehne oben und unten
+        put(img, 15 + i, 19, C(SILBER['hell']))
+        put(img, 16 + i, 25, C(SILBER['dunkel']))
+    put(img, 35, 22, C(EISEN['tief']))                  # Umlenkrolle
+    kristall(img, 9, 22, 2, FLAMME, zacken=False)       # Zuendung
+
+
+def w_schleuder(img):
+    """Schleuder: Gabel aus Holz, Gummi ueber beide Enden, Lederlasche. 36x36."""
+    ox, oy = 8, 28
+    grip(img, ox, oy, 0.0, 5.0, 0.9, DUNKELLEDER)
+    gx, gy = to_xy(5.5, 0.0, ox, oy)
+    for seite in (-1, 1):                               # Gabelarme
+        ex, ey = gx + 6 + seite, gy - 8 + seite * 3
+        balken(img, gx, gy, ex, ey, 1.1, HOLZ)
+        put(img, ex, ey - 1, C(HOLZ['hell']))
+    o1 = (gx + 5, gy - 12)
+    o2 = (gx + 8, gy - 4)
+    schnur(img, [o1, (o1[0] + 4, o1[1] + 3), (o2[0] + 3, o2[1] - 3), o2],
+           DUNKELLEDER, dick_von=0.7, dick_bis=0.7)     # Gummi
+    for j in range(3):                                  # Lederlasche
+        for i in range(3):
+            put(img, o1[0] + 5 + i, o1[1] + 3 + j,
+                C(DUNKELLEDER['hell'] if i == 0 else DUNKELLEDER['mitte']))
+    pommel(img, ox, oy, -0.9, 1.3, EISEN)
+
+
+def w_blasrohr(img):
+    """Blasrohr: langes duennes Rohr, Mundstueck, Pfeil an der Muendung. 46x46."""
+    ox, oy = 6, 38
+    stange(img, ox, oy, 0.0, 26.0, 0.55, HOLZ, ringe=(7.0, 14.0, 21.0))
+    for u in (0.5, 1.5):                                # Mundstueck
+        for v in (-1.0, 0.0, 1.0):
+            speck(img, ox, oy, u, v, GOLD['mitte'] if v else GOLD['hell'])
+    bx, by = to_xy(26.5, 0.0, ox, oy)
+    blade(img, bx, by, 4.5, 0.6, SILBER, tip=3.0)       # Pfeilspitze
+    for u, v in ((0.5, -0.9), (0.5, 0.9)):              # Fiederung
+        speck(img, bx, by, u, v, 'a_gruen_h')
+        speck(img, bx, by, u - 0.5, v * 1.4, 'a_gruen_t')
+
+
+def w_amboss(img):
+    """Amboss an der Kette: Kette, Amboss mit Horn und Fuss. 42x42."""
+    ox, oy = 7, 36
+    grip(img, ox, oy, 0.0, 3.0, 0.8, DUNKELLEDER)
+    kette(img, ox, oy, 2.5, 12.0, EISEN)
+    ax, ay = to_xy(13.5, 0.0, ox, oy)
+    for j in range(4):                                  # Bahn
+        for i in range(15):
+            col = (EISEN['hell'] if j == 0 else
+                   EISEN['tief'] if j == 3 else EISEN['mitte'])
+            put(img, ax - 4 + i, ay - 4 + j, C(col))
+    for j, br in ((4, 11), (5, 9), (6, 8), (7, 8)):     # Koerper verjuengt
+        for i in range(br):
+            put(img, ax - 2 + i, ay - 4 + j,
+                C(EISEN['dunkel'] if i and i < br - 1 else EISEN['tief']))
+    for j in range(2):                                  # Fuss
+        for i in range(12):
+            put(img, ax - 3 + i, ay + 4 + j,
+                C(EISEN['mitte'] if j == 0 else EISEN['tief']))
+    for i in range(4):                                  # Horn
+        put(img, ax + 11 + i, ay - 3 + i // 2, C(EISEN['hell']))
+        put(img, ax + 11 + i, ay - 2 + i // 2, C(EISEN['dunkel']))
+    pommel(img, ox, oy, -0.8, 1.2, EISEN)
+
+
+def w_standkanone(img):
+    """Handkanone: dickes Rohr auf einer Lafette mit Rad. 44x40."""
+    for j in range(7):                                  # Rohr
+        for i in range(22):
+            col = (EISEN['hell'] if j == 0 else
+                   EISEN['tief'] if j == 6 else EISEN['mitte'])
+            put(img, 8 + i, 14 + j, C(col))
+    for i in (11, 18, 25):                              # Verstaerkungsringe
+        for j in range(7):
+            put(img, i, 14 + j, C(GOLD['mitte'] if j % 2 else GOLD['dunkel']))
+    for j in range(9):                                  # Muendungswulst
+        put(img, 30, 13 + j, C(EISEN['hell'] if j < 2 else EISEN['dunkel']))
+    put(img, 31, 17, C('a_schwarz'))
+    balken(img, 10, 22, 22, 30, 2.2, HOLZ)              # Lafette
+    ring(img, 12, 28, 6.0, 2.6, HOLZ)                   # Rad
+    for w in range(0, 360, 60):                         # Speichen
+        r = math.radians(w)
+        put(img, 12 + int(round(4 * math.cos(r))),
+            28 + int(round(4 * math.sin(r))), C(HOLZ['tief']))
+    kugel(img, 12, 28, 3.0, EISEN, saum=False)          # Nabe reicht bis an
+    #                                                    den Ring heran
+    put(img, 9, 15, C(EISEN['tief']))                   # Zuendloch, auf dem
+    put(img, 10, 14, C('a_amber'))                      # Rohr statt daneben
+
+
+def w_zepter(img):
+    """Zepter: Schaft, Krone aus Zacken, gefasste Kugel. 40x40."""
+    ox, oy = 8, 33
+    stange(img, ox, oy, 0.0, 18.0, 0.8, DUNKELLEDER, ringe=(5.0, 11.0))
+    kx, ky = to_xy(19.0, 0.0, ox, oy)
+    guard(img, ox, oy, 18.0, 1.0, -2.4, 2.4, GOLD)
+    ring(img, kx + 1, ky - 1, 4.6, 3.0, GOLD)           # Krone
+    for w in range(0, 360, 72):                         # Zacken
+        r = math.radians(w)
+        put(img, kx + 1 + int(round(5.4 * math.cos(r))),
+            ky - 1 + int(round(5.4 * math.sin(r))), C(GOLD['hell']))
+    kugel(img, kx + 1, ky - 1, 2.8, MOND)               # Kugel
+    kristall(img, kx + 1, ky - 1, 2, MOND, zacken=False)
+    pommel(img, ox, oy, -1.0, 1.4, GOLD)
+
+
+def w_stimmgabel(img):
+    """Stimmgabel: Griff, zwei Zinken, singende Spitzen. 36x36."""
+    ox, oy = 9, 28
+    grip(img, ox, oy, 0.0, 5.0, 0.85, DUNKELLEDER)
+    guard(img, ox, oy, 5.6, 0.9, -1.8, 1.8, SILBER)
+    bx, by = to_xy(6.4, 0.0, ox, oy)
+    for seite in (-1, 1):                               # Zinken
+        sx, sy = to_xy(0.0, seite * 1.4, bx, by)
+        ex, ey = sx + 9 + seite, sy - 9 + seite
+        balken(img, sx, sy, ex, ey, 1.2, SILBER)
+        put(img, ex, ey - 1, C('a_aqua_h'))             # Klang
+        put(img, ex + 1, ey, C('a_aqua'))
+    pommel(img, ox, oy, -0.9, 1.4, SILBER)
+
+
+def w_pilzkeule(img):
+    """Pilzkeule: Stiel aus Holz, fleischiger Hut mit Tupfen. 38x38."""
+    ox, oy = 8, 30
+    stange(img, ox, oy, 0.0, 15.0, 1.0, HOLZ, ringe=(5.0,))
+    hx, hy = to_xy(16.0, 0.0, ox, oy)
+    pilz = rampe('a_lachs', 'a_rot_dk', 'a_rosa', 'a_rot', 'a_rot_dk', 'a_wein')
+    sichel(img, hx - 1, hy + 7, 9.0, 8, 172, 5.0, pilz, schwund=0.0)
+    for i in range(-5, 6, 3):                           # Tupfen
+        put(img, hx + i, hy - 3 + abs(i) // 2, C('a_creme'))
+        put(img, hx + i, hy - 2 + abs(i) // 2, C('a_sand'))
+    for i in range(-3, 4):                              # Lamellen unter dem Hut
+        put(img, hx + i, hy + 2, C('a_knochen_m' if i % 2 else 'a_knochen_d'))
+    pommel(img, ox, oy, -1.0, 1.3, HOLZ)
+
+
 WEAPONS = [
     ('sword_melee',      'Kurzschwert',            w_sword_melee),
     ('shortsword_bone',  'Knochen-Kurzschwert',    w_shortsword_bone),
@@ -1988,7 +2534,7 @@ WEAPONS = [
     ('broadsword_titan', 'Titanen-Breitschwert',   w_broadsword_titan, 46),
     ('katana_moon',      'Mond-Katana',            w_katana_moon),
     ('katana_storm',     'Sturm-Katana',           w_katana_storm),
-    ('greatsword_flame', 'Flammen-Grossschwert',   w_greatsword_flame),
+    ('greatsword_flame', 'Flammen-Grossschwert',   w_greatsword_flame, 44),
     ('curved_fang',      'Krummschwert Fang',      w_curved_fang),
     ('dagger_bleed',     'Blutdolch',              w_dagger_bleed,    26),
     ('dagger_gold',      'Gnadendolch',            w_dagger_gold,     24),
@@ -2075,6 +2621,25 @@ WEAPONS = [
     ('kusarigama',       'Kettensichel',           w_kusarigama,      46),
     ('greatsword_crystal', 'Kristallgrossschwert', w_greatsword_crystal, 50),
     ('longbow_astral',   'Astrallangbogen',        w_longbow_astral,  44),
+    ('nagelkeule',       'Nagelkeule',             w_nagelkeule,      38),
+    ('bohrer',           'Bohrer',                 w_bohrer,          42),
+    ('anker',            'Ankerkette',             w_anker,           46),
+    ('kriegsfaecher',    'Kriegsfaecher',          w_kriegsfaecher,   36),
+    ('harpune',          'Harpune',                w_harpune,         44),
+    ('saegeblatt',       'Saegeblatt',             w_saegeblatt,      32),
+    ('kettenklinge',     'Kettenklinge',           w_kettenklinge,    42),
+    ('laterne',          'Seelenlaterne',          w_laterne,         42),
+    ('armkanone',        'Armkanone',              w_armkanone,       40),
+    ('regenschirm',      'Kampfschirm',            w_regenschirm,     40),
+    ('krallen',          'Krallenschiene',         w_krallen,         38),
+    ('kettensaege',      'Kettensaege',            w_kettensaege,     44),
+    ('schleuder',        'Schleuder',              w_schleuder,       36),
+    ('blasrohr',         'Blasrohr',               w_blasrohr,        46),
+    ('amboss',           'Ambosskette',            w_amboss,          42),
+    ('standkanone',      'Handkanone',             w_standkanone,     44),
+    ('zepter',           'Zepter',                 w_zepter,          40),
+    ('stimmgabel',       'Stimmgabel',             w_stimmgabel,      36),
+    ('pilzkeule',        'Pilzkeule',              w_pilzkeule,       38),
 ]
 
 
@@ -2128,6 +2693,9 @@ def pruefen(img, name):
     if len(farben) < 8:
         mangel.append('nur %d Farben - Bauteile teilen sich eine Rampe'
                       % len(farben))
+    satz = flaechen_bericht(img)
+    if satz:
+        mangel.append(satz)
     teile = inseln(img)
     if len(teile) > 1:
         mangel.append('%d lose Teile (%s)' % (len(teile), teile))
@@ -2250,6 +2818,7 @@ def main() -> None:
         img = blank(gr)
         fn(img)
         img = zuschneiden(img)
+        entflechten(img)        # hoechstens 3 gleiche Pixel zusammenhaengend
         check_border(img, wid)
         for satz in pruefen(img, wid):
             beanstandet.append((wid, satz))
