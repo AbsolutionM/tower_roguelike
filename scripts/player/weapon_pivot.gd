@@ -11,7 +11,13 @@ class_name WeaponPivot
 ## mitten im Schwung nachzielen und der Bogen bräche ab.
 
 @export var rotation_speed: float = 12.0
-@export var pivot_radius: float = 10.0
+## Radius, auf dem die Fäuste kreisen: Körperbreite plus Vorstrecken der
+## Waffe. Wird jeden Frame aus `body_radius` und `extra_radius` gebildet.
+var pivot_radius: float = 10.0
+## Anteil aus der Körperbreite, vom Spieler gesetzt.
+var body_radius: float = 10.0
+## Anteil aus der Waffe (hand_reach_texels), vom WeaponController gesetzt.
+var extra_radius: float = 0.0
 @export var hand: HandController
 @export var off_hand: OffHandController
 @export var sword: SwordWeapon
@@ -44,6 +50,7 @@ func _process(delta: float) -> void:
 		aim_rotation = lerp_angle(aim_rotation, aim_direction.angle(), rotation_speed * delta)
 
 	rotation = aim_rotation
+	pivot_radius = body_radius + extra_radius
 	update_visuals()
 
 ## Während der Schlag läuft, ist das Zielen gesperrt.

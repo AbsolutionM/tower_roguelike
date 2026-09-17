@@ -18,6 +18,10 @@ const PLACEHOLDER_SCALE := 0.33
 ## Weltdrehung des Haltesprites im Ruhezustand. Die Klingen sind im Sprite
 ## diagonal nach oben rechts gezeichnet; -45 Grad stellt sie senkrecht.
 const UPRIGHT_ROTATION := -PI * 0.25
+## Anhebung der vorgestreckten Ruhehaltung beidhändiger Klingen.
+const REST_TILT := deg_to_rad(25.0)
+## Vorlauf der Klinge vor dem Arm im Schlag.
+const STRIKE_LEAD := 0.45
 
 @export var equipped_weapon: WeaponData
 @export var sword: Node
@@ -92,7 +96,7 @@ func _process(delta: float) -> void:
 	_update_marker()
 	_update_hold_orientation()
 
-	if fire_timer > 0.0 or not current_target:
+	if fire_timer > 0.0 or not current_target or not _aim_settled():
 		return
 
 	var roll := _roll_damage()
@@ -145,6 +149,23 @@ func _fire_special(special: WeaponSpecial) -> void:
 
 # --- Zielerfassung ---------------------------------------------------------
 
+## Erst zuschlagen, wenn der Handkreis in Laufrichtung zeigt. Sonst löst
+## beim Umdrehen ein Schlag aus, dessen Bogen noch halb auf der alten Seite
+## liegt - und der Schlag friert die Drehung ein.
+const AIM_SETTLED := deg_to_rad(20.0)
+
+func _aim_settled() -> bool:
+	if not weapon_pivot:
+		return true
+	return absf(angle_difference(weapon_pivot.aim_rotation, _facing().angle())) <= AIM_SETTLED
+
+## Mitte des Handkreises in der Welt. Von hier aus reichen Arm und Klinge -
+## nicht vom Knotenursprung, der eine Gürtelhöhe darüber liegt.
+func attack_origin() -> Vector2:
+	if weapon_pivot:
+		return global_position + weapon_pivot.position
+	return global_position
+
 ## Reichweite, in der tatsächlich getroffen wird - Nahkampf rechnet den Arm mit.
 func get_attack_range() -> float:
 	if not equipped_weapon:
@@ -157,14 +178,18 @@ func get_attack_range() -> float:
 ## ihm steht, wird nicht angegriffen - man muss sich ihm zuwenden.
 func find_target_in_range() -> Node2D:
 	var max_range := get_attack_range()
-	var facing := _facing()
+	# Der Kegel liegt dort, wo der Handkreis gerade hinzeigt - nicht dort,
+	# wohin der Held schon laufen will. Sonst löst beim Umdrehen ein Schlag
+	# aus, während die Klinge noch auf der alten Seite ist.
+	var facing := Vector2.RIGHT.rotated(weapon_pivot.aim_rotation) if weapon_pivot else _facing()
+	var origin := attack_origin()
 	var nearest: Node2D = null
 	var nearest_distance: float = max_range
 
 	for enemy in get_tree().get_nodes_in_group("enemies"):
 		if not is_instance_valid(enemy):
 			continue
-		var offset: Vector2 = enemy.global_position - global_position
+		var offset: Vector2 = enemy.global_position - origin
 		var distance := offset.length()
 		if distance >= nearest_distance:
 			continue
@@ -195,6 +220,7 @@ func _update_marker() -> void:
 	if not _marker:
 		return
 	_marker.target = current_target
+	_marker.origin_offset = weapon_pivot.position if weapon_pivot else Vector2.ZERO
 	_marker.attack_range = get_attack_range()
 	# Der Kegel folgt dem Kreis, nicht der rohen Laufrichtung - so dreht er
 	# sich weich mit, statt bei jedem Richtungswechsel zu springen.
@@ -228,6 +254,7 @@ func _apply_weapon_visuals() -> void:
 
 	if weapon_pivot:
 		weapon_pivot.two_handed = equipped_weapon.two_handed
+		weapon_pivot.extra_radius = float(equipped_weapon.hand_reach_texels) * WeaponData.PIXEL_SCALE
 
 	var hold_sprite := _get_hold_sprite()
 	if not hold_sprite:
@@ -299,18 +326,34 @@ func _update_hold_orientation() -> void:
 	if not hold_sprite:
 		return
 
-	# Die Neigung aus dem Schwung kommt obendrauf: die Klinge kippt beim
-	# Ausholen zurück und läuft im Schlag dem Arm voraus.
-	var lean: float = sword.swing_lean if sword and "swing_lean" in sword else 0.0
-
 	# Bei gespiegeltem Arm (Zielen nach links) laufen lokale Winkel
 	# andersherum: die Klinge zeigt in der Welt nach θ - (Klinge + φ) statt
 	# θ + (Klinge + φ). Das Vorzeichen allein reicht nicht - es fehlt eine
 	# Vierteldrehung, sonst liegt das Schwert beim Zielen nach oben quer.
-	if weapon_pivot.scale.y < 0.0:
-		hold_sprite.rotation = -(UPRIGHT_ROTATION - weapon_pivot.rotation) + PI * 0.5 + lean
+	var mirrored: bool = weapon_pivot.scale.y < 0.0
+	var upright: float
+	if mirrored:
+		upright = -(UPRIGHT_ROTATION - weapon_pivot.rotation) + PI * 0.5
 	else:
-		hold_sprite.rotation = UPRIGHT_ROTATION - weapon_pivot.rotation + lean
+		upright = UPRIGHT_ROTATION - weapon_pivot.rotation
+
+	# Entlang des Arms: die Klinge zeigt vom Handkreis nach außen. Das ist
+	# die Schlaghaltung - so reicht die Spitze in jeder Richtung gleich weit,
+	# nach oben und unten wie zur Seite.
+	var along: float = _rest_rotation()
+
+	# Ruhehaltung: kleine Klingen hochkant, beidhändige vorgestreckt und
+	# leicht angehoben, damit sie den Körper nicht verdecken.
+	var rest: float = upright
+	if equipped_weapon.two_handed:
+		rest = along + (REST_TILT if mirrored else -REST_TILT)
+
+	# Im Schlag läuft die Klinge dem Arm ein Stück voraus, in Schlagrichtung.
+	var strike: float = along
+	if sword and "strike_sign" in sword:
+		strike += sword.strike_sign * STRIKE_LEAD
+	var blend: float = sword.swing_blend if sword and "swing_blend" in sword else 0.0
+	hold_sprite.rotation = lerp_angle(rest, strike, blend)
 
 func _ensure_placeholder(hold_sprite: Sprite2D) -> WeaponSymbol:
 	if is_instance_valid(_hold_placeholder):

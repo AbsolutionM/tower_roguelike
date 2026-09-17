@@ -98,6 +98,10 @@ const CATEGORY_NAMES := {
 @export_range(0, 10) var required_agility: int = 0
 
 @export_group("Handhabung")
+## Wie weit die Fäuste über den Körperrand hinaus vorgestreckt werden, in
+## Figurpixeln. Große Klingen werden so vom Körper weggehalten, statt ihn
+## zu verdecken.
+@export_range(0, 16) var hand_reach_texels: int = 0
 ## Beide Hände am Griff. Die freie Hand sitzt dann neben der Waffenhand und
 ## schwingt mit, statt gegenüber am Kreis zu stehen.
 @export var two_handed: bool = false

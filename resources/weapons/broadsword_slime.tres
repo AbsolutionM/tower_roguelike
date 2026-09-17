@@ -28,6 +28,7 @@ scaling_fortune = 2
 required_power = 0
 required_agility = 0
 weight = 6.0
+hand_reach_texels = 1
 stagger = 38.0
 bleed_buildup = 12.0
 lifesteal = 0.02

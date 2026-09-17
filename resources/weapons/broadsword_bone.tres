@@ -28,6 +28,7 @@ scaling_fortune = 0
 required_power = 0
 required_agility = 0
 weight = 6.5
+hand_reach_texels = 2
 stagger = 42.0
 bleed_buildup = 0.0
 is_melee = true

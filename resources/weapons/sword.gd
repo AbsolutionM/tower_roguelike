@@ -18,22 +18,32 @@ class_name SwordWeapon
 @export var hit_sound: AudioStreamPlayer
 @export var hitstop_duration: float = 0.06
 @export var hitstop_scale: float = 0.05
+@export var knockback_force: float = 180.0
+@export var shake_amount: float = 4.0
 
-## Länge der Trefferbox in Klingen-Einheiten, aus der Reichweite gerechnet.
-var _hitbox_length: float = 0.0
+## Klingenlänge in lokalen Einheiten (Texturpixel), aus der Reichweite gerechnet.
+var _blade_length: float = 0.0
+## Halbe Breite der Klinge für Treffer, in Weltpixeln.
+const BLADE_HALF_WIDTH := 10.0
 ## Richtung der gemalten Klinge im Sprite: diagonal nach oben rechts.
 const BLADE_TEXTURE_ANGLE := -PI * 0.25
 
 ## Weitester Ausschlag der Hand zu jeder Seite. Ein Bogen über den halben
 ## Körper herum sah mit langen Klingen wie ein Windrad aus.
 const MAX_SWEEP := deg_to_rad(55.0)
-## Wie weit die Klinge am Ende des Schlags dem Arm vorausläuft.
-const LEAD := 1.15
-
-## Neigung der Klinge gegenüber der Ruhehaltung, vom Schwung getrieben.
-var swing_lean: float = 0.0
+## 0 = Ruhehaltung, 1 = Schlaghaltung (Klinge entlang des Arms mit Vorlauf).
+## Der WeaponController blendet die Klingendrehung damit über.
+var swing_blend: float = 0.0
+## Richtung des Schlags in Kreis-Koordinaten: -1 oder +1. Der Schlag läuft
+## immer vom rechten Kegelrand (aus Sicht des Helden) zum linken - je nach
+## Spiegelung des Kreises ist das lokal die eine oder andere Richtung.
+var strike_sign: float = -1.0
 ## Nur während des eigentlichen Schlags: Treffer und Klingenspur.
 var _striking: bool = false
+var _tween: Tween
+## Klingenwinkel des letzten Frames, damit die gefegte Fläche dazwischen
+## keinen Gegner auslässt.
+var _last_blade_angle: float = NAN
 
 var damage: float = 0.0
 var is_crit: bool = false
@@ -54,20 +64,6 @@ func _ready() -> void:
 func _follow_hand() -> void:
 	if hand:
 		transform = hand.global_transform * Transform2D(0.0, grip_offset)
-	_align_hitbox()
-
-## Die Trefferbox liegt immer auf der sichtbaren Klinge - vom Griff zur
-## Spitze, in der Richtung, in der das Sprite gerade zeigt. So trifft die
-## Waffe in jeder Zielrichtung gleich weit, und beim Schlag genau dort, wo
-## die Klinge ist.
-func _align_hitbox() -> void:
-	var collision := get_node_or_null("CollisionShape2D") as CollisionShape2D
-	if not collision or not sprite or _hitbox_length <= 0.0:
-		return
-	var blade: float = sprite.rotation + BLADE_TEXTURE_ANGLE
-	# Das Rechteck ist entlang seiner lokalen Y-Achse lang.
-	collision.rotation = blade - PI * 0.5
-	collision.position = Vector2.RIGHT.rotated(blade) * _hitbox_length * 0.5
 
 ## Wird vom WeaponController gesetzt, damit Waffenklassen sich unterschiedlich anfühlen.
 func configure(duration: float, angle_degrees: float, knockback: float, reach: float = 0.0) -> void:
@@ -82,19 +78,47 @@ func configure(duration: float, angle_degrees: float, knockback: float, reach: f
 ## Die Trefferbox steckte fest in der Szene, die Zielreichweite kommt aber aus
 ## den Waffendaten. Ein Speer zielte dadurch weiter, als er trifft.
 func _resize_hitbox(reach: float) -> void:
-	var collision := get_node_or_null("CollisionShape2D") as CollisionShape2D
-	if not collision or not (collision.shape is RectangleShape2D):
-		return
-
 	# Von Weltpixeln in die lokalen Einheiten der Klinge zurückrechnen.
 	var factor: float = absf(global_scale.x)
-	if factor <= 0.001:
-		return
+	if factor > 0.001:
+		_blade_length = reach / factor
 
-	_hitbox_length = reach / factor
-	var rect: RectangleShape2D = collision.shape
-	rect.size.y = _hitbox_length
-	_align_hitbox()
+## Griff und Spitze der sichtbaren Klinge in der Welt.
+func _blade_segment() -> Array:
+	if not sprite:
+		return [global_position, global_position]
+	var tip: Vector2 = sprite.to_global(Vector2.RIGHT.rotated(BLADE_TEXTURE_ANGLE) * _blade_length)
+	return [sprite.global_position, tip]
+
+## Treffer über die gefegte Fläche: zwischen dem Klingenwinkel des letzten
+## Frames und dem jetzigen wird in kleinen Schritten geprüft, wer auf der
+## Klinge lag. Kein Gegner rutscht mehr zwischen zwei Frames hindurch, und
+## getroffen wird genau dort, wo die Klinge sichtbar durchläuft.
+func _sweep_hits() -> void:
+	var segment := _blade_segment()
+	var grip: Vector2 = segment[0]
+	var tip: Vector2 = segment[1]
+	var length: float = grip.distance_to(tip)
+	if length <= 0.001:
+		return
+	var angle: float = (tip - grip).angle()
+	if is_nan(_last_blade_angle):
+		_last_blade_angle = angle
+	var delta: float = wrapf(angle - _last_blade_angle, -PI, PI)
+	var steps: int = maxi(int(absf(delta) / deg_to_rad(5.0)), 1)
+
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if not (enemy is Area2D) or enemy in hit_enemies or not is_instance_valid(enemy):
+			continue
+		var radius: float = enemy.get_visual_radius() if enemy.has_method("get_visual_radius") else 20.0
+		for step in steps + 1:
+			var a: float = _last_blade_angle + delta * float(step) / float(steps)
+			var end: Vector2 = grip + Vector2.RIGHT.rotated(a) * length
+			var nearest: Vector2 = Geometry2D.get_closest_point_to_segment(enemy.global_position, grip, end)
+			if nearest.distance_to(enemy.global_position) <= radius + BLADE_HALF_WIDTH:
+				try_hit(enemy)
+				break
+	_last_blade_angle = angle
 
 func build_arc() -> void:
 	var half_angle := deg_to_rad(swing_angle_degrees / 2)
@@ -118,19 +142,12 @@ func build_arc() -> void:
 func _process(delta: float) -> void:
 	_follow_hand()
 	if _striking:
-		check_hits()
+		_sweep_hits()
 
 		trail_timer -= delta
 		if trail_timer <= 0.0:
 			spawn_trail()
 			trail_timer = trail_interval
-
-func check_hits() -> void:
-	for area in get_overlapping_areas():
-		try_hit(area)
-
-@export var knockback_force: float = 180.0
-@export var shake_amount: float = 4.0
 
 func try_hit(area: Area2D) -> void:
 	if not area.is_in_group("damageable") or area in hit_enemies:
@@ -182,7 +199,7 @@ func spawn_trail() -> void:
 	t.tween_callback(ghost.queue_free)
 
 ## Ausholen, Schlag, Rückkehr. Die Hand fährt den Bogen, die Klinge kippt
-## dabei voraus (`swing_lean`, siehe WeaponController._update_hold_orientation)
+## dabei in die Schlaghaltung (`swing_blend`, siehe WeaponController._update_hold_orientation)
 ## - so liest sich der Hieb als Schnitt statt als starre Drehung.
 func perform_swing(dmg: float, crit: bool = false) -> void:
 	Audio.play(Audio.ID_SWING)
@@ -199,6 +216,12 @@ func perform_swing(dmg: float, crit: bool = false) -> void:
 	var sweep: float = minf(deg_to_rad(swing_angle_degrees * 0.5), MAX_SWEEP)
 	var windup: float = swing_duration * 0.6
 
+	# Immer vom rechten Kegelrand (aus Sicht des Helden) zum linken. In der
+	# Welt ist das gegen den Uhrzeigersinn; der gespiegelte Kreis kehrt lokale
+	# Winkel um, also dort die andere lokale Richtung.
+	var mirrored: bool = hand.get_parent() is Node2D and hand.get_parent().scale.y < 0.0
+	strike_sign = 1.0 if mirrored else -1.0
+
 	if arc:
 		arc.modulate.a = 0.0
 		var arc_tween := create_tween()
@@ -206,27 +229,27 @@ func perform_swing(dmg: float, crit: bool = false) -> void:
 		arc_tween.tween_property(arc, "modulate:a", 0.5, swing_duration * 0.3)
 		arc_tween.tween_property(arc, "modulate:a", 0.0, swing_duration * 0.7)
 
+	# Ein noch laufender Rückweg des letzten Schlags würde sonst mitten im
+	# neuen Schlag end_swing rufen und die Trefferphase abwürgen.
+	if _tween and _tween.is_valid():
+		_tween.kill()
 	var tween := create_tween()
-	# Ausholen: die Hand ein Stück zurück, die Klinge kippt leicht nach hinten.
-	tween.tween_property(hand, "swing_angle", -sweep * 0.55, windup).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	tween.parallel().tween_property(self, "swing_lean", -0.3, windup).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	# Schlag: schnell nach vorn, die Klinge läuft dem Arm voraus. Erst hier trifft sie.
+	_tween = tween
+	# Ausholen: die Hand zum rechten Rand, die Klinge dreht in die Schlaghaltung.
+	tween.tween_property(hand, "swing_angle", -strike_sign * sweep * 0.55, windup).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(self, "swing_blend", 1.0, windup).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	# Schlag: schnell zum linken Rand, kubisch auslaufend. Erst hier trifft die Klinge.
 	tween.tween_callback(_begin_strike)
-	tween.tween_property(hand, "swing_angle", sweep, swing_duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tween.parallel().tween_property(self, "swing_lean", LEAD, swing_duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(hand, "swing_angle", strike_sign * sweep, swing_duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween.tween_callback(end_swing)
-	# Zurück in die Ruhelage.
+	# Zurück in die Ruhehaltung.
 	tween.tween_property(hand, "swing_angle", 0.0, return_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.parallel().tween_property(self, "swing_lean", 0.0, return_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tween.parallel().tween_property(self, "swing_blend", 0.0, return_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 func _begin_strike() -> void:
-	monitoring = true
 	_striking = true
+	_last_blade_angle = NAN
 
 func end_swing() -> void:
-	monitoring = false
 	_striking = false
 	is_swinging = false
-
-func _on_area_entered(area: Area2D) -> void:
-	try_hit(area)

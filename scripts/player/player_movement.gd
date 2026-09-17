@@ -133,7 +133,7 @@ func _apply_hands() -> void:
 	if pivot:
 		pivot.position.y = _hand_height()
 		pivot.rest_position = pivot.position
-		pivot.pivot_radius = reach
+		pivot.body_radius = reach
 
 ## Höhe der Fäuste in Spieler-Koordinaten: von der Unterkante der gemalten
 ## Figur aus nach oben gemessen (CharacterData.hand_height_from_feet).

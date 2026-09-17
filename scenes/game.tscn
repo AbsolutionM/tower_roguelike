@@ -42,9 +42,6 @@ shader = ExtResource("7_dxicw")
 shader_parameter/outline_color = Color(0, 0, 0, 1)
 shader_parameter/outline_width = 1.0
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_t1g43"]
-size = Vector2(6.0, 28.0)
-
 [node name="Game" type="Node2D" unique_id=1396741292]
 y_sort_enabled = true
 
@@ -117,13 +114,6 @@ hit_sound = NodePath("HitSound")
 texture_filter = 1
 material = SubResource("ShaderMaterial_rig")
 rotation = 1.5707964
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Player/Sword" unique_id=1088408854]
-visible = false
-position = Vector2(14.3, -1.4)
-rotation = 0.75049156
-shape = SubResource("RectangleShape2D_t1g43")
-debug_color = Color(0.9647059, 0, 0.49019608, 0.13333334)
 
 [node name="HitSound" type="AudioStreamPlayer" parent="Player/Sword" unique_id=462831525]
 stream = ExtResource("52_whnll")

@@ -10,6 +10,8 @@ class_name TargetMarker
 var target: Node2D
 var accent: Color = Palette.GOLD
 var attack_range: float = 200.0
+## Versatz des Kegelursprungs gegenüber dem Anker (Mitte des Handkreises).
+var origin_offset: Vector2 = Vector2.ZERO
 ## Mitte und halbe Öffnung des Angriffskegels, in Weltwinkeln.
 var cone_direction: float = 0.0
 var cone_half_angle: float = PI
@@ -34,7 +36,7 @@ func _process(delta: float) -> void:
 	_time += delta
 
 	if _anchor and is_instance_valid(_anchor):
-		global_position = _anchor.global_position
+		global_position = _anchor.global_position + origin_offset
 
 	if not is_instance_valid(target):
 		target = null
