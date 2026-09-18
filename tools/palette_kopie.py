@@ -5,8 +5,9 @@ Ordner, die Originale bleiben unberuehrt.
     Sprites/<pfad>.png       -> Sprites/claude/splendor/<pfad>.png
     Sprites/<pfad>.aseprite  -> Sprites/claude/splendor/<pfad>.png  (erste Ebene)
 
-Jede AAP-64-Farbe wird nach AAP_ZU_SPLENDOR (palette.py) umgesetzt, alles andere
-auf die naechste Palettenfarbe gerueckt.
+Character/ und Weapons/ (vom Spieler gesteuert bzw. getragen) nach der kraeftigen
+Zuordnung, Enemies/ und tilesets/ nach der gedaempften; alles andere auf die
+naechste Palettenfarbe gerueckt.
 
     python tools/duel_kopie.py --quelle C:/Users/maxst/Desktop/Sprites
 """
@@ -63,9 +64,13 @@ def main():
             img = aseprite_ebene(pfad)
         else:
             continue
-        aus = ziel / pfad.relative_to(quelle).with_suffix('.png')
+        rel = pfad.relative_to(quelle)
+        aus = ziel / rel.with_suffix('.png')
         aus.parent.mkdir(parents=True, exist_ok=True)
-        duel_anpassen(img).save(aus)
+        # Was der Spieler steuert oder traegt, ist kraeftig; Gegner und
+        # Kacheln bleiben gedaempft
+        stil = 'kraeftig' if rel.parts[0] in ('Character', 'Weapons') else 'gedaempft'
+        duel_anpassen(img, stil).save(aus)
         n += 1
     print('%d Dateien nach %s' % (n, ziel))
 
