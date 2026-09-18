@@ -41,16 +41,19 @@ from palette import duel_anpassen
 # Rampen aus der Duel-Palette, bewusst aus den gedaempften Reihen: der
 # Schleim ist moosgruen statt giftgruen, das Gift altrosa, die Glut
 # ziegelrot, das Eis stahlblau. Kante .. Glanz.
+# Splendor128, Rampen mit Farbkippung: Schatten kalt (Blaugruen, Violett),
+# Lichter warm (Gelbgruen, Creme). Kante .. Glanz spannt von fast Schwarz
+# bis fast Weiss.
 RAMPEN = {
-    'green': ('1a332c', '325c40', '417455', '498960', '55b67d', '91daa1', 'e0faeb'),
-    'venom': ('2e1026', '49283d', '663659', '975475', 'b96d91', 'c178aa', 'db99bf'),
-    'ember': ('5f0926', '904647', 'a76057', 'bd7d64', 'ce9770', 'edb67c', 'edd493'),
-    'frost': ('181f2f', '23324d', '25466b', '366b8a', '318eb8', '41b2e3', '74f5fd'),
-    'iron': ('222323', '434549', '626871', '828b98', 'a6aeba', 'cdd2da', 'f5f7fa'),
+    'green': ('171819', '2c3b39', '486859', '5d9b79', '86c69a', 'c6b858', 'efdd91'),
+    'venom': ('2a1e23', '654956', '966888', '9052bc', 'd480bb', 'c090a9', 'fad6ff'),
+    'ember': ('2d1b1e', '612721', 'b9451d', 'f1641f', 'e88a36', 'f8c53a', 'fff089'),
+    'frost': ('14121d', '1b2447', '2b4e95', '2789cd', '42bfe8', '73efe8', 'f1f2ff'),
+    'iron': ('171819', '2c3438', '465456', '64878c', '8ac4c3', 'afe9df', 'dceaee'),
     # Sorten mit eigener Bauart auf der gruenen Rampe
-    'king': ('1a332c', '325c40', '417455', '498960', '55b67d', '91daa1', 'e0faeb'),
-    'skull': ('1a332c', '325c40', '417455', '498960', '55b67d', '91daa1', 'e0faeb'),
-    'shadow': ('1d1d21', '26233d', '3b3855', '3c3151', '584a7f', '7964ba', '9585f1'),
+    'king': ('171819', '2c3b39', '486859', '5d9b79', '86c69a', 'c6b858', 'efdd91'),
+    'skull': ('171819', '2c3b39', '486859', '5d9b79', '86c69a', 'c6b858', 'efdd91'),
+    'shadow': ('050403', '171516', '322f35', '564f5b', '87738f', 'bfa5c9', 'e3cddf'),
 }
 NUR_GROSS = {'king'}
 SCHWARZ = (0, 0, 0, 255)
@@ -364,7 +367,7 @@ def sorte_venom(img, px, innen, ton, groesse, muede, w, h, oben, cx, hw, augen, 
 
 def sorte_ember(img, px, innen, ton, groesse, muede, w, h, oben, cx, hw, augen, ay):
     """Flammenzungen auf dem Ruecken, Krustenrisse mit Glut, gluehende Augen."""
-    gold, gold_m, kupfer, dk = rgb('ffbc4e'), rgb('f99b4e'), rgb('cd5e46'), rgb('662b29')
+    gold, gold_m, kupfer, dk = rgb('f8c53a'), rgb('e88a36'), rgb('b9451d'), rgb('612721')
     zungen = {'small': ((int(cx) + 1, 2),),
               'medium': ((int(cx) - 3, 4), (int(cx) + 3, 5), (int(cx) + 7, 3)),
               'giant': ((int(cx) - 7, 4), (int(cx) - 1, 6), (int(cx) + 5, 5),
@@ -407,7 +410,7 @@ def sorte_ember(img, px, innen, ton, groesse, muede, w, h, oben, cx, hw, augen, 
 
 def sorte_frost(img, px, innen, ton, groesse, muede, w, h, oben, cx, hw, augen, ay):
     """Eissplitter aus dem Ruecken, Facettenband, Funkeln, Rautenaugen."""
-    eis_h, eis_m, eis_d, eis_k = rgb('f5f7fa'), rgb('c6ecff'), rgb('318eb8'), rgb('23324d')
+    eis_h, eis_m, eis_d, eis_k = rgb('f1f2ff'), rgb('c9d4fd'), rgb('2789cd'), rgb('1b2447')
     splitter = {'small': ((int(cx) + 1, 3),),
                 'medium': ((int(cx) - 4, 4), (int(cx) + 2, 5), (int(cx) + 6, 3)),
                 'giant': ((int(cx) - 8, 4), (int(cx) - 2, 6), (int(cx) + 4, 5),

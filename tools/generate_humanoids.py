@@ -37,20 +37,21 @@ from palette import duel_anpassen
 
 # Duel-Toene direkt in die Namensliste der Figuren haengen
 gc.AAP.update({
-    'moder_hell': '87ae8e', 'moder': '71957d', 'moder_dk': '5b7b69', 'moder_tief': '2d4b47',
-    'lumpen_hell': '9e8c79', 'lumpen': '857565', 'lumpen_dk': '625d54', 'lumpen_tief': '434549',
-    'hosen_dk': '4a353c', 'hosen_tief': '31222a',
-    'bein_hell': 'eadbc9', 'bein': 'ccc3b1', 'bein_dk': 'aea189', 'bein_tief': '857565',
-    'rost_hell': 'a6aeba', 'rost': '828b98', 'rost_dk': '626871', 'rost_tief': '434549',
-    'ghul_hell': 'b98c93', 'ghul': '977488', 'ghul_dk': '765d73', 'ghul_tief': '554769',
-    'robe_hell': '904647', 'robe': '6e2434', 'robe_dk': '5f0926', 'robe_tief': '3b303c',
-    'glut': 'ffe949', 'glut_dk': 'f99b4e',
-    'binde_hell': 'fff3d6', 'binde': 'eadbc9', 'binde_dk': 'ccc3b1', 'binde_tief': '9e8c79',
-    'haut2_hell': 'eadbc9', 'haut2': 'ebbd9d', 'haut2_dk': 'ac6f6e', 'haut2_tief': '77535b',
-    'tuch': 'b63c35', 'tuch_dk': '904647', 'tuch_tief': '5f0926',
-    'leder2_hell': 'cca96e', 'leder2': 'a96d58', 'leder2_dk': '633432', 'leder2_tief': '4a353c',
-    'nacht2': '1d1d21', 'schwarz2': '000000', 'kralle': 'f5f7fa', 'blut': '904647',
-    'haar_dk': '31222a', 'haar': '4a353c',
+    # Splendor128, Schatten kalt / Lichter warm
+    'moder_hell': 'b5e7cb', 'moder': '86c69a', 'moder_dk': '5d9b79', 'moder_tief': '2c3b39',
+    'lumpen_hell': 'b29476', 'lumpen': '886e6a', 'lumpen_dk': '594d4d', 'lumpen_tief': '322f35',
+    'hosen_dk': '36282b', 'hosen_tief': '2a1e23',
+    'bein_hell': 'f1ebdb', 'bein': 'ddcebf', 'bein_dk': 'bda499', 'bein_tief': '886e6a',
+    'rost_hell': 'b8ccd8', 'rost': '88a3bc', 'rost_dk': '5e718e', 'rost_tief': '282c3c',
+    'ghul_hell': 'c090a9', 'ghul': '966888', 'ghul_dk': '654956', 'ghul_tief': '36282b',
+    'robe_hell': 'b25266', 'robe': '64364b', 'robe_dk': '2a1e23', 'robe_tief': '171516',
+    'glut': 'fff089', 'glut_dk': 'e88a36',
+    'binde_hell': 'fcf7be', 'binde': 'f1ebdb', 'binde_dk': 'ddcebf', 'binde_tief': 'b29476',
+    'haut2_hell': 'ffe0b7', 'haut2': 'eeb59c', 'haut2_dk': 'b28b78', 'haut2_tief': '966888',
+    'tuch': 'b25266', 'tuch_dk': '64364b', 'tuch_tief': '2a1e23',
+    'leder2_hell': 'e1bf89', 'leder2': 'b47538', 'leder2_dk': '724b2c', 'leder2_tief': '4f342f',
+    'nacht2': '0e0c0c', 'schwarz2': '050403', 'kralle': 'ffffff', 'blut': '64364b',
+    'haar_dk': '2a1e23', 'haar': '36282b',
 })
 
 MODER = ('moder_hell', 'moder', 'moder_dk', 'moder_tief')
