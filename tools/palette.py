@@ -81,13 +81,13 @@ def _karte(zuordnung):
             for k, v in zuordnung.items()}
 
 
-# Fuer die Kopien der Nutzer-Figuren: kraeftig, aber das Rot des Ponchos
-# bleibt ein kuehles Karmin mit Weinrot-Schatten (kein Orange mit
-# Braunschatten - das war fuer den Cowboy falsch), Hut und Hautschatten
-# gedaempft wie im Original.
+# Fuer die Kopien der Nutzer-Figuren (Spielerfiguren, also kraeftig): das
+# Poncho-Rot ist die kraeftigste Rotreihe der Palette (Orangerot, Maroon,
+# Tiefrot - ein Farbton), Hut und Hautschatten bleiben wie im Original
+# gedaempft, damit nur die Kleidung leuchtet und das Gesicht nicht kippt.
 AAP_ZU_SPLENDOR_FIGUR = dict(AAP_ZU_SPLENDOR_KRAEFTIG)
 AAP_ZU_SPLENDOR_FIGUR.update({
-    'b4202a': 'b25266', '73172d': '64364b', '3b1725': '2a1e23',
+    'b4202a': 'b9451d', '73172d': '612721', '3b1725': '2d1b1e',
     '796755': '886e6a', '5a4e44': '594d4d', '423934': '33272a', '322b28': '271f1b',
     '8e5252': '966888', 'ba756a': 'b28b78', '5b3138': '4f342f', '71413b': '724b2c',
 })
