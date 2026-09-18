@@ -15,9 +15,8 @@ SPLENDOR_SET = set(SPLENDOR_RGB)
 # AAP-64 -> Splendor, von Hand: gedaempfte Reihen (Schleimgruen wird Salbei,
 # Rot wird Himbeer/Ziegel, Stahl wird Blaugrau). Eindeutig, damit Baender
 # und die 3-Pixel-Regel auf den Waffen erhalten bleiben.
-# Farbtheorie: Schatten kippen ins Kalte (Blau, Violett), Lichter ins
-# Warme (Gelb, Creme); jede Rampe spannt von fast Schwarz bis fast Weiss -
-# das gibt Kontrast, ohne Saettigung zu stapeln.
+# Farbtheorie mit leichter Hand: Schatten kippen etwas ins Kalte, Lichter
+# etwas ins Warme; die Rampen enden eine Stufe vor Schwarz und Weiss.
 AAP_ZU_SPLENDOR = {
     # Schwarz und Kanten: kuehl
     '060608': '050403', '141013': '0e0c0c', '221c1a': '171516', '242234': '282c3c',
@@ -27,21 +26,21 @@ AAP_ZU_SPLENDOR = {
     'f9a31b': 'e88a36', 'ffd541': 'f8c53a', 'fffc40': 'fff089',
     # Gruen: Schatten blaugruen, Licht warm gelbgruen
     '122020': '171819', '24523b': '2c3b39', '1a7a3e': '486859', '14a02e': '5d9b79',
-    '59c135': '86c69a', '9cdb43': 'c6b858', 'd6f264': 'efdd91',
+    '59c135': '86c69a', '9cdb43': 'b5e7cb', 'd6f264': 'efdd91',
     # Blau / Kristall
     '143464': '1b2447', '285cc4': '2b4e95', '249fde': '2789cd', '20d6c7': '42bfe8',
     'a6fcdb': '73efe8', '849be4': '8aa1f6',
     # Haut: Schatten ins Violett, Licht ins Creme
     'fef3c0': 'fcf7be', 'fad6b8': 'ffe0b7', 'f5a097': 'eeb59c', 'ba756a': 'b28b78',
-    '8e5252': '966888', 'e86a73': 'e27285',
+    '8e5252': '886e6a', 'e86a73': 'e27285',
     # Violett
-    'bc4a9b': 'd480bb', '793a80': '9052bc', '403353': '494182',
+    'bc4a9b': 'd480bb', '793a80': '966888', '403353': '654956',
     # Leder / Holz
     'f4d29c': 'e1bf89', 'dba463': 'd6a851', 'bb7547': 'b47538', '71413b': '724b2c',
     '5b3138': '4f342f',
     # Stahl: Licht fast weiss, Schatten tiefblau
     'ffffff': 'ffffff', 'fdf6d5': 'f1ebdb', 'dae0ea': 'e6e7f0', 'b3b9d1': 'c5c7dd',
-    '8b93af': '88a3bc', '6d758d': '5e718e', '4a5462': '464762', '333941': '2c3438',
+    '8b93af': '9a97b9', '6d758d': '696682', '4a5462': '464762', '333941': '2c3438',
     '422433': '36282b',
     # Knochen: warm, Schatten grau-violett
     'e4d2aa': 'ddcebf', 'c7b08b': 'bda499', 'a08662': 'b29476', '796755': '886e6a',

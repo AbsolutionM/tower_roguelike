@@ -26,7 +26,7 @@ from PIL import Image
 from palette import duel_anpassen
 
 # Duel-Palette, gedaempfte Moosreihe: Kante .. Glanz
-RAMPE = ('171819', '2c3b39', '486859', '5d9b79', '86c69a', 'c6b858', 'efdd91')
+RAMPE = ('2c3b39', '486859', '5d9b79', '86c69a', 'b5e7cb', 'd0ffea', 'efdd91')
 SCHWARZ = (0, 0, 0, 255)
 WEISS = (245, 247, 250, 255)
 

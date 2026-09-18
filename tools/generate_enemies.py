@@ -45,15 +45,15 @@ from palette import duel_anpassen
 # Lichter warm (Gelbgruen, Creme). Kante .. Glanz spannt von fast Schwarz
 # bis fast Weiss.
 RAMPEN = {
-    'green': ('171819', '2c3b39', '486859', '5d9b79', '86c69a', 'c6b858', 'efdd91'),
-    'venom': ('2a1e23', '654956', '966888', '9052bc', 'd480bb', 'c090a9', 'fad6ff'),
-    'ember': ('2d1b1e', '612721', 'b9451d', 'f1641f', 'e88a36', 'f8c53a', 'fff089'),
-    'frost': ('14121d', '1b2447', '2b4e95', '2789cd', '42bfe8', '73efe8', 'f1f2ff'),
-    'iron': ('171819', '2c3438', '465456', '64878c', '8ac4c3', 'afe9df', 'dceaee'),
+    'green': ('2c3b39', '486859', '5d9b79', '86c69a', 'b5e7cb', 'd0ffea', 'efdd91'),
+    'venom': ('36282b', '654956', '966888', '9052bc', 'd480bb', 'c090a9', 'e3cddf'),
+    'ember': ('64364b', '612721', 'b9451d', 'f1641f', 'e88a36', 'f8c53a', 'fff089'),
+    'frost': ('1b2447', '2b4e95', '2789cd', '42bfe8', '73efe8', 'afe9df', 'dceaee'),
+    'iron': ('282c3c', '464762', '696682', '9a97b9', 'c5c7dd', 'e6e7f0', 'eee6ea'),
     # Sorten mit eigener Bauart auf der gruenen Rampe
-    'king': ('171819', '2c3b39', '486859', '5d9b79', '86c69a', 'c6b858', 'efdd91'),
-    'skull': ('171819', '2c3b39', '486859', '5d9b79', '86c69a', 'c6b858', 'efdd91'),
-    'shadow': ('050403', '171516', '322f35', '564f5b', '87738f', 'bfa5c9', 'e3cddf'),
+    'king': ('2c3b39', '486859', '5d9b79', '86c69a', 'b5e7cb', 'd0ffea', 'efdd91'),
+    'skull': ('2c3b39', '486859', '5d9b79', '86c69a', 'b5e7cb', 'd0ffea', 'efdd91'),
+    'shadow': ('171516', '322f35', '564f5b', '87738f', '9a97b9', 'bfa5c9', 'c5c7dd'),
 }
 NUR_GROSS = {'king'}
 SCHWARZ = (0, 0, 0, 255)
