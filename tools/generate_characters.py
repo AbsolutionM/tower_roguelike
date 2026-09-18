@@ -202,19 +202,21 @@ def gesicht(px, cx, y0, haut, seitlich=0, hinten=False, haar=None, bart=None):
     """Gesicht 10 breit, 5 Zeilen: Schattenzeile unter der Krempe, links
     hell, rechts dunkel, Kinn dunkel. Augen 2x2 in Wein. seitlich verschiebt
     Augen; hinten zeigt Haar."""
+    # 11 breit, mittig auf cx: Licht von oben links, also links hell und
+    # rechts dunkel - das ist Beleuchtung, keine schiefe Form
     hh, hm, hd, hk = (C(t) for t in haut)
     x0 = cx - 5
     for j in range(5):
-        for i in range(10):
+        for i in range(11):
             x = x0 + i
-            u = (i + 0.5) / 10
-            if j == 4 and (i < 1 or i > 8):
+            u = (i + 0.5) / 11
+            if j == 4 and (i < 1 or i > 9):
                 continue
             if j == 0:
-                col = hk if i < 2 or i > 7 else hd        # Krempenschatten
+                col = hk if i < 2 or i > 8 else hd        # Krempenschatten
             elif i == 0 or (j == 4 and i == 1):
                 col = hk if j > 2 else hd
-            elif i == 9 or (j == 4 and i == 8):
+            elif i == 10 or (j == 4 and i == 9):
                 col = hk
             elif j == 4:
                 col = hd
@@ -228,23 +230,26 @@ def gesicht(px, cx, y0, haut, seitlich=0, hinten=False, haar=None, bart=None):
     if hinten:
         bh, bm, bd, bk = (C(t) for t in haar)
         for j in range(5):
-            for i in range(10):
+            for i in range(11):
                 x = x0 + i
                 if px[x, y0 + j][3]:
-                    u = (i + 0.5) / 10
-                    put(px, x, y0 + j, bk if i in (0, 9) or j == 4 else (bm if u < 0.6 else bd))
+                    u = (i + 0.5) / 11
+                    put(px, x, y0 + j, bk if i in (0, 10) or j == 4 else (bm if u < 0.6 else bd))
         return
     ey = y0 + 2
-    for ex in (cx - 3 + seitlich, cx + 1 + seitlich):
-        if x0 < ex < x0 + 9:
+    for ex in (cx - 3 + seitlich, cx + 2 + seitlich):
+        if x0 < ex < x0 + 10:
             put(px, ex, ey, AUGE)
             put(px, ex + 1, ey, AUGE)
             put(px, ex, ey + 1, AUGE)
     if seitlich:                                       # hinteres Auge verdeckt
-        hx = cx - 3 + seitlich if seitlich > 0 else cx + 1 + seitlich
+        hx = cx - 3 + seitlich if seitlich > 0 else cx + 2 + seitlich
         put(px, hx, ey, hm if seitlich > 0 else hd)
         put(px, hx + 1, ey, hm if seitlich > 0 else hd)
         put(px, hx, ey + 1, hm if seitlich > 0 else hd)
+    # Mund: drei Pixel im Kinnton, seitlich mit verschoben
+    for dx in (-1, 0, 1):
+        put(px, cx + dx + seitlich // 2, y0 + 4, hk)
     if bart:
         b1, b2 = (C(t) for t in bart)
         for i in range(-2, 3):
@@ -315,12 +320,46 @@ SCHRITTE = (
     (0, 'beide'), (-1, 'lang'), (-1, 'lang'), (0, 'beide'), (-2, 'keine'),
     (-1, 'keine'), (0, 'rechts'), (-2, 'keine'), (-1, 'keine'), (0, 'links'),
 )
+# Seitlich (FSide1-10 des Cowboys): ein echter Schritt. Je Frame Hub und die
+# beiden Stiefel als (dx, dy) relativ zur Grundstellung, None = angehoben.
+SCHRITTE_SEITE = (
+    (0, ((0, 0), (0, 0))),
+    (-1, ((-1, 1), (1, 1))),
+    (-1, ((-2, 1), (1, 1))),
+    (0, ((-1, 0), (1, 0))),
+    (0, (None, (1, 0))),
+    (-2, (None, None)),
+    (-1, ((0, 0), (0, 0))),
+    (0, ((1, 0), (-1, 1))),
+    (-1, ((1, 1), None)),
+    (-2, (None, None)),
+)
+
+
+def fuss_spec(fuesse):
+    """Frontzyklus-Namen in Stiefelpaare uebersetzen."""
+    return {'beide': ((0, 0), (0, 0)), 'lang': ((0, 1), (0, 1)), 'keine': (None, None),
+            'rechts': (None, (0, 0)), 'links': ((0, 0), None)}[fuesse]
+
+
+def stiefel_paar(px, cx, y_fuss, ton, paar):
+    """Zwei Stiefel symmetrisch unter der Figur: x 12-13 und 17-18 bei cx 15."""
+    links, rechts = paar
+    if links:
+        stiefel(px, cx - 3 + links[0], y_fuss + links[1], ton, 0, spitze_rechts=True)
+    if rechts:
+        stiefel(px, cx + 2 + rechts[0], y_fuss + rechts[1], ton, 0, spitze_rechts=False)
 
 
 def frame(fig, richtung, nr):
     img = Image.new('RGBA', (32, 32), (0, 0, 0, 0))
     px = img.load()
-    hub, fuesse = SCHRITTE[nr - 1]
+    seite = richtung in ('FSide', 'BSide')
+    if seite:
+        hub, paar = SCHRITTE_SEITE[nr - 1]
+    else:
+        hub, fuesse = SCHRITTE[nr - 1]
+        paar = fuss_spec(fuesse)
     hinten = richtung in ('Back', 'BSide')
     seitlich = {'Front': 0, 'FSide': 2, 'BSide': -2, 'Back': 0}[richtung]
     cx = 15
@@ -332,16 +371,7 @@ def frame(fig, richtung, nr):
     y_fuss = y_hose + 1
 
     # Stiefel zuerst, der Rumpf liegt darueber
-    # Stiefel symmetrisch zur Figurenmitte (14.5): x 12-13 und 16-17, Luecke 2
-    lx, rx = cx - 3, cx + 1
-    if fuesse in ('beide', 'lang'):
-        lang = 1 if fuesse == 'lang' else 0
-        stiefel(px, lx, y_fuss, fig['stiefel'], lang, spitze_rechts=True)
-        stiefel(px, rx, y_fuss, fig['stiefel'], lang, spitze_rechts=False)
-    elif fuesse == 'rechts':
-        stiefel(px, rx, y_fuss, fig['stiefel'], 0, spitze_rechts=False)
-    elif fuesse == 'links':
-        stiefel(px, lx, y_fuss, fig['stiefel'], 0, spitze_rechts=True)
+    stiefel_paar(px, cx, y_fuss, fig['stiefel'], paar)
     hose(px, cx, y_hose, fig['hose'])
     guertel(px, cx, y_guertel, fig['guertel'], fig['schnalle'], hinten=hinten)
     rumpf(px, cx, y_rumpf, fig['rumpf'], fig['brust'], hinten=hinten, seitlich=seitlich)

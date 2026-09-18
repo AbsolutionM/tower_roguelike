@@ -31,8 +31,8 @@ from pathlib import Path
 from PIL import Image
 
 import generate_characters as gc
-from generate_characters import (C, gesicht, guertel, helm, hose, kapuze, put,
-                                 rumpf, stiefel)
+from generate_characters import (C, fuss_spec, gesicht, guertel, helm, hose, kapuze,
+                                 put, rumpf, stiefel, stiefel_paar)
 from duel import duel_anpassen
 
 # Duel-Toene direkt in die Namensliste der Figuren haengen
@@ -135,7 +135,7 @@ def schaedel(px, cx, y0, seitlich=0):
             u = (i + 0.5) / 10
             col = hd if (i in (0, 9) or j == 4) else (hh if u < 0.35 and j < 3 else (hd if u > 0.8 else hm))
             put(px, x, y0 + j, col)
-    for ex in (cx - 3 + seitlich, cx + 1 + seitlich):
+    for ex in (cx - 3 + seitlich, cx + 2 + seitlich):
         for dx in (0, 1):
             put(px, ex + dx, y0 + 1, C('nacht2'))
             put(px, ex + dx, y0 + 2, C('schwarz2'))
@@ -169,15 +169,8 @@ def brustkorb(px, cx, y0):
 # (0 / 2), hinten (Rueckansicht: kein Gesicht, Hinterkopf).
 
 def fuesse_setzen(px, cx, y_fuss, ton, fuesse):
-    lx, rx = cx - 3, cx + 1
-    if fuesse in ('beide', 'lang'):
-        lang = 1 if fuesse == 'lang' else 0
-        stiefel(px, lx, y_fuss, ton, lang, spitze_rechts=True)
-        stiefel(px, rx, y_fuss, ton, lang, spitze_rechts=False)
-    elif fuesse == 'rechts':
-        stiefel(px, rx, y_fuss, ton, 0, spitze_rechts=False)
-    elif fuesse == 'links':
-        stiefel(px, lx, y_fuss, ton, 0, spitze_rechts=True)
+    """fuesse ist ein Stiefelpaar ((dx, dy) | None, (dx, dy) | None)."""
+    stiefel_paar(px, cx, y_fuss, ton, fuesse)
 
 
 def hinterkopf(px, cx, y0, ton):
@@ -206,7 +199,7 @@ def zombie(px, cx, y, fuesse, seitlich, hinten):
         hinterkopf(px, cx, y_gesicht, HAAR)
     else:
         gesicht(px, cx, y_gesicht, MODER, seitlich=seitlich)
-        for ex in (cx - 3 + seitlich, cx + 1 + seitlich):
+        for ex in (cx - 3 + seitlich, cx + 2 + seitlich):
             dy = 1 if ex > cx else 0
             put(px, ex, y_gesicht + 2 + dy, C('nacht2'))
             put(px, ex + 1, y_gesicht + 2 + dy, C('nacht2'))
@@ -265,7 +258,7 @@ def ghoul(px, cx, y, fuesse, seitlich, hinten):
         hinterkopf(px, cx, y_gesicht, GHUL)
     else:
         gesicht(px, cx, y_gesicht, GHUL, seitlich=seitlich)
-        for ex in (cx - 3 + seitlich, cx + 1 + seitlich):
+        for ex in (cx - 3 + seitlich, cx + 2 + seitlich):
             put(px, ex, y_gesicht + 2, C('glut'))
             put(px, ex + 1, y_gesicht + 2, C('nacht2'))
         if seitlich:
@@ -278,7 +271,7 @@ def ghoul(px, cx, y, fuesse, seitlich, hinten):
     put(px, cx + 5, y_gesicht + 1, C('ghul_dk'))
     put(px, cx + 5, y_gesicht, C('ghul'))
     hh, hm, hd, hk = (C(t) for t in GHUL)
-    schwung = 1 if fuesse in ('lang', 'rechts') else 0
+    schwung = 1 if (fuesse[0] is None) != (fuesse[1] is None) else 0
     for sgn, x0 in ((-1, cx - 7), (1, cx + 6)):
         laenge = 8 + (schwung if sgn > 0 else 0)
         for j in range(laenge):
@@ -390,6 +383,7 @@ GEGNER = {'zombie': zombie, 'skeleton_warrior': skeleton, 'ghoul': ghoul,
 # Animationen je Richtung: (Hub, Fuesse, seitlicher Versatz)
 ANIMATIONEN = {
     'walk': tuple((h, f, 0) for h, f in gc.SCHRITTE),
+    'walk_seite': tuple((h, p, 0) for h, p in gc.SCHRITTE_SEITE),
     'idle': ((0, 'beide', 0), (0, 'beide', 0), (-1, 'beide', 0), (-1, 'beide', 0),
              (0, 'beide', 0), (0, 'beide', 0), (1, 'keine', 0), (0, 'beide', 0)),
     # Angriff: ducken, abspringen, vorschnellen, landen
@@ -408,7 +402,11 @@ NAMEN = {'walk': '%s%d', 'idle': '%s_idle%d', 'attack': '%s_attack%d',
 def gegner_frame(bauen, richtung, nr, anim='walk'):
     img = Image.new('RGBA', (32, 32), (0, 0, 0, 0))
     px = img.load()
+    if anim == 'walk' and richtung in ('FSide', 'BSide'):
+        anim = 'walk_seite'
     hub, fuesse, versatz = ANIMATIONEN[anim][nr - 1]
+    if isinstance(fuesse, str):
+        fuesse = fuss_spec(fuesse)
     if anim == 'death' and hub >= 10:
         # untere Haelfte im Boden: Zeilen unterhalb der Kante 31 fallen weg
         pass
@@ -441,6 +439,8 @@ def main():
         gesamt = 0
         for richtung in ('Front', 'FSide', 'BSide', 'Back'):
             for anim, schritte in ANIMATIONEN.items():
+                if anim == 'walk_seite':
+                    continue
                 reihe = []
                 for nr in range(1, len(schritte) + 1):
                     img = gegner_frame(bauen, richtung, nr, anim)
