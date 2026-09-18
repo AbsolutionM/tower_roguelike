@@ -9,7 +9,8 @@ Vom Cowboy abgelesen (Front1-10, FSide1, Back1):
     Gesicht links hell / rechts dunkler, Rumpf an den Flanken dunkler und
     unten links am dunkelsten, Rumpf verjuengt sich zum Guertel.
     Augen sind 2x2-Bloecke in 422433, kein Weiss, kein Schwarz.
-    Stiefel: 2 px breit, dunkel + weisse Spitze, darunter ein dunkles Pixel.
+    Stiefel: 2 px breit, dunkel + helle Spitze, darunter ein dunkles Pixel.
+    Rumpf symmetrisch (die Poncho-Schraege gehoert nur dem Cowboy).
     Laufzyklus ist ein Huepfen: Frame 1 Stand, 2-3 Koerper 1 hoch mit
     gestreckten Beinen, 4 Stand, 5 zwei hoch mit eingezogenen Beinen,
     6 eins hoch eingezogen, 7 nur rechter Fuss unten, 8-9 wie 5-6,
@@ -128,26 +129,23 @@ def rumpf(px, cx, y0, ton, brust=None, hinten=False, seitlich=0):
     9, Flanken dunkel, unten links am dunkelsten (Kante), Licht links.
     brust: Rampe fuer ein Brustfeld in der Mitte (Wappen, Weste)."""
     hell, mitte, dunkel, kante = (C(t) for t in ton)
-    breiten = (11, 11, 11, 10, 9, 9)
+    # symmetrisch: der Poncho des Cowboys haengt schief, ein Panzer oder
+    # Hemd nicht. Schulterlinie hell, Flanken dunkel, Kante aussen, die
+    # unterste Zeile im Schatten.
+    breiten = (11, 11, 11, 11, 9, 9)
     for j, b in enumerate(breiten):
-        x0 = cx - b // 2 + (1 if b % 2 == 0 and j >= 3 else 0)
+        x0 = cx - b // 2
         for i in range(b):
             x = x0 + i
-            u = (i + 0.5) / b
+            rand = min(i, b - 1 - i)                   # Abstand zur naeheren Flanke
             if j == 0:
-                col = dunkel if i in (0, b - 1) else (hell if u < 0.45 else mitte)
-            elif i == 0:
-                col = kante if j >= 3 else dunkel
-            elif i == b - 1:
+                col = dunkel if rand == 0 else hell
+            elif rand == 0:
                 col = kante if j >= 2 else dunkel
-            elif j >= 4 and u < 0.35:
-                col = kante if j == 5 else dunkel
-            elif j == 5 and u > 0.7:
+            elif rand == 1 or j == 5:
                 col = dunkel
-            elif u < 0.3 and j < 4:
-                col = hell
-            elif u > 0.78:
-                col = dunkel
+            elif j == 1 and rand >= 2:
+                col = hell if rand >= 3 else mitte
             else:
                 col = mitte
             put(px, x, y0 + j, col)
@@ -163,19 +161,20 @@ def rumpf(px, cx, y0, ton, brust=None, hinten=False, seitlich=0):
 
 def guertel(px, cx, y, ton, schnalle, hinten=False):
     hell, mitte, dunkel, kante = (C(t) for t in ton)
-    for i in range(8):
+    for i in range(9):
         x = cx - 4 + i
-        put(px, x, y, kante if i == 0 else (mitte if i < 5 else dunkel))
+        put(px, x, y, kante if i in (0, 8) else mitte)
     if not hinten:
-        put(px, cx, y, C(schnalle[0]))
-        put(px, cx + 1, y, C(schnalle[1]))
+        put(px, cx - 1, y, C(schnalle[0]))
+        put(px, cx, y, C(schnalle[1]))
+        put(px, cx + 1, y, C(schnalle[0]))
 
 
 def hose(px, cx, y, ton):
     hell, mitte, dunkel, kante = (C(t) for t in ton)
-    for i in range(8):
+    for i in range(9):
         x = cx - 4 + i
-        put(px, x, y, kante if i == 0 else (dunkel if i < 3 else mitte))
+        put(px, x, y, kante if i in (0, 8) else (dunkel if i in (1, 7) else mitte))
 
 
 def stiefel(px, x, y, ton, lang=0, spitze_rechts=False):
@@ -187,13 +186,15 @@ def stiefel(px, x, y, ton, lang=0, spitze_rechts=False):
         put(px, x, y + j, dunkel)
         put(px, x + 1, y + j, kante if j == 0 else dunkel)
     yb = y + 1 + lang
+    # keine weisse Spitze - die gehoert nur dem Cowboy; die Spitze ist der
+    # helle Ton des Stiefels
     if spitze_rechts:
-        put(px, x, yb, WEISS)
+        put(px, x, yb, hell)
         put(px, x + 1, yb, dunkel)
         put(px, x + 1, yb + 1, kante)
     else:
         put(px, x, yb, dunkel)
-        put(px, x + 1, yb, WEISS)
+        put(px, x + 1, yb, hell)
         put(px, x, yb + 1, kante)
 
 

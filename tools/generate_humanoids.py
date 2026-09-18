@@ -328,7 +328,7 @@ def mummy(px, cx, y, fuesse, seitlich, hinten):
     # Bandagen: schraege Baender, zwei Pixel breit, alle fuenf Zeilen
     for yy in range(y_gesicht - 2, y_guertel):
         for x in range(cx - 6, cx + 7):
-            if not px[x, yy][3]:
+            if not (0 <= yy < 32 and 0 <= x < 32) or not px[x, yy][3]:
                 continue
             r = (x + yy * 2) % 6
             if r == 0:
@@ -387,13 +387,36 @@ GEGNER = {'zombie': zombie, 'skeleton_warrior': skeleton, 'ghoul': ghoul,
           'cultist': cultist, 'mummy': mummy, 'bandit': bandit}
 
 
-def gegner_frame(bauen, richtung, nr):
+# Animationen je Richtung: (Hub, Fuesse, seitlicher Versatz)
+ANIMATIONEN = {
+    'walk': tuple((h, f, 0) for h, f in gc.SCHRITTE),
+    'idle': ((0, 'beide', 0), (0, 'beide', 0), (-1, 'beide', 0), (-1, 'beide', 0),
+             (0, 'beide', 0), (0, 'beide', 0), (1, 'keine', 0), (0, 'beide', 0)),
+    # Angriff: ducken, abspringen, vorschnellen, landen
+    'attack': ((1, 'keine', 0), (-3, 'lang', 1), (-1, 'lang', 3), (0, 'beide', 2),
+               (0, 'beide', 1), (0, 'beide', 0)),
+    # Treffer: zurueckgeworfen, dann zurueck
+    'hurt': ((0, 'beide', -2), (1, 'beide', -3), (0, 'beide', -1), (0, 'beide', 0)),
+    # Tod: sackt zusammen und sinkt in den Boden
+    'death': ((1, 'keine', 0), (3, 'keine', 0), (6, 'keine', 0), (10, 'keine', 0),
+              (14, 'keine', 0), (18, 'keine', 0)),
+}
+NAMEN = {'walk': '%s%d', 'idle': '%s_idle%d', 'attack': '%s_attack%d',
+         'hurt': '%s_hurt%d', 'death': '%s_death%d'}
+
+
+def gegner_frame(bauen, richtung, nr, anim='walk'):
     img = Image.new('RGBA', (32, 32), (0, 0, 0, 0))
     px = img.load()
-    hub, fuesse = gc.SCHRITTE[nr - 1]
+    hub, fuesse, versatz = ANIMATIONEN[anim][nr - 1]
+    if anim == 'death' and hub >= 10:
+        # untere Haelfte im Boden: Zeilen unterhalb der Kante 31 fallen weg
+        pass
     hinten = richtung in ('Back', 'BSide')
     seitlich = 2 if richtung in ('FSide', 'BSide') else 0
-    cx = 15
+    cx = 15 + (versatz if richtung in ('Front', 'Back') and False else 0)
+    if richtung in ('FSide', 'BSide'):
+        cx += versatz                            # seitlich: nach vorn/zurueck
     y_gesicht = 14 + hub
     y_rumpf = y_gesicht + 5
     y_guertel = y_rumpf + 6
@@ -414,20 +437,26 @@ def main():
     for name, bauen in GEGNER.items():
         ziel = wurzel / name
         ziel.mkdir(parents=True, exist_ok=True)
-        frames = []
+        zeilen = []
+        gesamt = 0
         for richtung in ('Front', 'FSide', 'BSide', 'Back'):
-            for nr in range(1, 11):
-                img = gegner_frame(bauen, richtung, nr)
-                img.save(ziel / ('%s%d.png' % (richtung, nr)))
-                frames.append(img)
+            for anim, schritte in ANIMATIONEN.items():
+                reihe = []
+                for nr in range(1, len(schritte) + 1):
+                    img = gegner_frame(bauen, richtung, nr, anim)
+                    img.save(ziel / ((NAMEN[anim] % (richtung, nr)) + '.png'))
+                    reihe.append(img)
+                zeilen.append(reihe)
+                gesamt += len(reihe)
         if args.sheet:
-            sc = 4
-            blatt = Image.new('RGBA', (10 * 34 * sc, 4 * 34 * sc), (34, 35, 35, 255))
-            for i, im in enumerate(frames):
-                g = im.resize((32 * sc, 32 * sc), Image.NEAREST)
-                blatt.alpha_composite(g, ((i % 10) * 34 * sc + sc, (i // 10) * 34 * sc + sc))
+            sc = 3
+            blatt = Image.new('RGBA', (10 * 34 * sc, len(zeilen) * 34 * sc), (34, 35, 35, 255))
+            for r, reihe in enumerate(zeilen):
+                for i, im in enumerate(reihe):
+                    g = im.resize((32 * sc, 32 * sc), Image.NEAREST)
+                    blatt.alpha_composite(g, (i * 34 * sc + sc, r * 34 * sc + sc))
             blatt.save(ziel / '_sheet.png')
-        print('  %-18s 40 Frames -> %s' % (name, ziel))
+        print('  %-18s %d Frames -> %s' % (name, gesamt, ziel))
 
 
 if __name__ == '__main__':
