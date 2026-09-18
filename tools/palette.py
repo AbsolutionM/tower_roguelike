@@ -48,22 +48,56 @@ AAP_ZU_SPLENDOR = {
 }
 assert len(set(AAP_ZU_SPLENDOR.values())) == len(AAP_ZU_SPLENDOR), 'Zuordnung nicht eindeutig'
 assert all(v in SPLENDOR for v in AAP_ZU_SPLENDOR.values())
-_KARTE = {tuple(int(k[i:i + 2], 16) for i in (0, 2, 4)): tuple(int(v[i:i + 2], 16) for i in (0, 2, 4)) + (255,)
-          for k, v in AAP_ZU_SPLENDOR.items()}
+
+# Kraeftige Fassung fuer Spielfiguren und Waffen: dieselben Rampen, aber
+# eine Stufe gesaettigter - Gegner und Umgebung bleiben gedaempft, damit
+# der Spieler sich vom Turm abhebt.
+AAP_ZU_SPLENDOR_KRAEFTIG = dict(AAP_ZU_SPLENDOR)
+AAP_ZU_SPLENDOR_KRAEFTIG.update({
+    # Rot / Feuer / Gold
+    '73172d': '612721', 'b4202a': 'b9451d', 'df3e23': 'f1641f', 'fa6a0a': 'e88a36',
+    'f9a31b': 'f8c53a', 'ffd541': 'f8f644', 'fffc40': 'fff089', 'e86a73': 'e27285',
+    # Gruen
+    '122020': '181c19', '24523b': '293f21', '1a7a3e': '477238', '14a02e': '42a459',
+    '59c135': '61a53f', '9cdb43': '8fd032', 'd6f264': 'c4f129',
+    # Blau / Kristall
+    '143464': '2b4e95', '285cc4': '4572e3', '249fde': '2789cd', '20d6c7': '42bfe8',
+    'a6fcdb': '73efe8', '849be4': '8aa1f6',
+    # Violett
+    'bc4a9b': 'd480bb', '793a80': '9052bc', '403353': '494182',
+    # Leder / Holz
+    'f4d29c': 'f6d896', 'dba463': 'd39741', 'bb7547': 'c68556', '71413b': '8c5b3e',
+    '5b3138': '724b2c',
+    # Stahl: etwas kuehler und heller
+    'dae0ea': 'f1f2ff', 'b3b9d1': 'c9d4fd', '8b93af': '9a97b9', '6d758d': '696682',
+    '4a5462': '464762', '333941': '2c3438',
+})
+assert len(set(AAP_ZU_SPLENDOR_KRAEFTIG.values())) == len(AAP_ZU_SPLENDOR_KRAEFTIG), 'kraeftig nicht eindeutig'
+assert all(v in SPLENDOR for v in AAP_ZU_SPLENDOR_KRAEFTIG.values())
 
 
-def naechste(c):
+def _karte(zuordnung):
+    return {tuple(int(k[i:i + 2], 16) for i in (0, 2, 4)): tuple(int(v[i:i + 2], 16) for i in (0, 2, 4)) + (255,)
+            for k, v in zuordnung.items()}
+
+
+KARTEN = {'gedaempft': _karte(AAP_ZU_SPLENDOR), 'kraeftig': _karte(AAP_ZU_SPLENDOR_KRAEFTIG)}
+
+
+def naechste(c, stil='gedaempft'):
     r, g, b = c[:3]
-    if (r, g, b) in _KARTE:
-        return _KARTE[(r, g, b)]
+    karte = KARTEN[stil]
+    if (r, g, b) in karte:
+        return karte[(r, g, b)]
     if (r, g, b) in SPLENDOR_SET:
         return (r, g, b, 255)
     best = min(SPLENDOR_RGB, key=lambda k: (k[0] - r) ** 2 + (k[1] - g) ** 2 + (k[2] - b) ** 2)
     return best + (255,)
 
 
-def palette_anpassen(img):
-    """Alle deckenden Pixel auf die Palette ruecken."""
+def palette_anpassen(img, stil='gedaempft'):
+    """Alle deckenden Pixel auf die Palette ruecken. stil: gedaempft (Gegner,
+    Kacheln) oder kraeftig (Spielfiguren, Waffen)."""
     px = img.load()
     cache = {}
     for y in range(img.height):
@@ -72,7 +106,7 @@ def palette_anpassen(img):
             if c[3] == 0:
                 continue
             if c not in cache:
-                cache[c] = naechste(c)
+                cache[c] = naechste(c, stil)
             px[x, y] = cache[c]
     return img
 

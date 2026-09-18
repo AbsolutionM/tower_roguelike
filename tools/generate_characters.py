@@ -414,7 +414,7 @@ def main():
         frames = []
         for richtung in ('Front', 'FSide', 'BSide', 'Back'):
             for nr in range(1, 11):
-                img = duel_anpassen(frame(fig, richtung, nr))
+                img = duel_anpassen(frame(fig, richtung, nr), 'kraeftig')
                 img.save(ziel / ('%s%d.png' % (richtung, nr)))
                 frames.append(img)
         if args.sheet:

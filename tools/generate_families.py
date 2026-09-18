@@ -1232,7 +1232,7 @@ def main():
             print('  %-40s %2dx%-2d %s' % (datei.relative_to(wurzel.parent),
                                           img.width, img.height,
                                           ', '.join(mangel) or 'ok'))
-            duel_anpassen(img).save(datei)          # Pruefung auf AAP, Ausgabe in Duel
+            duel_anpassen(img, 'kraeftig').save(datei)   # Pruefung auf AAP, Ausgabe kraeftig
 
 
 if __name__ == '__main__':
