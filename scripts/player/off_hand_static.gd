@@ -26,6 +26,9 @@ var base_radius: float = 20.0
 var center: Vector2 = Vector2.ZERO
 ## Schrittauslenkung in Pivot-Koordinaten.
 var gait: Vector2 = Vector2.ZERO
+## Pendelwinkel des Schritts, siehe HandController. Da diese Hand gegenüber
+## sitzt, schwingt sie mit demselben Winkel automatisch zur anderen Seite.
+var gait_angle: float = 0.0
 ## Waffenhand, an deren Griff diese Hand mitgreift. Null = eigene Seite.
 var grip: HandController = null
 
@@ -45,12 +48,12 @@ func _process(_delta: float) -> void:
 	if grip:
 		# Am Griff: derselbe Kreis wie die Waffenhand, um den Griffversatz
 		# verschoben, und mit dem Schlag mitgedreht.
-		local_position = (Vector2(base_radius, 0.0) + GRIP_OFFSET).rotated(grip.swing_angle) + gait + center
+		local_position = (Vector2(base_radius, 0.0) + GRIP_OFFSET).rotated(grip.swing_angle + gait_angle) + gait + center
 		local_rotation = grip.swing_angle
 		flip_h = false
 	else:
 		# Gegenüber der Waffenhand: derselbe Kreis, um 180 Grad versetzt.
-		local_position = Vector2(-base_radius, 0.0) + gait + Vector2(-center.x, center.y)
+		local_position = Vector2(-base_radius, 0.0).rotated(gait_angle) + gait + Vector2(-center.x, center.y)
 		local_rotation = 0.0
 		flip_h = true
 

@@ -21,8 +21,10 @@ const LIGHT_TEXTURE := preload("res://resources/materials/light_gradient.tres")
 @export var shadow_radius: float = 14.0
 @export var step_dust_interval: float = 0.3
 @export var bob_strength: float = 0.035
-## Wie weit die Arme beim Laufen pumpen, in Sprite-Pixeln.
-@export var gait_swing_texels: float = 3.0
+## Wie weit die Arme beim Laufen um den Körper pendeln, in Grad je Seite.
+## Der Handkreis zeigt in Laufrichtung - ein Pumpen entlang des Arms wäre
+## unsichtbar, das Pendel quer dazu ist es nicht.
+@export var gait_swing_degrees: float = 28.0
 ## Die Geh-Animation läuft gezeichnet mit 10 Bildern pro Sekunde. Bei vollem
 ## Lauftempo so viel schneller, damit ein Schritt etwa eine halbe
 ## Körperlänge trägt statt einer ganzen - die Füße rutschen sonst.
@@ -339,25 +341,23 @@ func _update_gait() -> void:
 
 	if phase >= 0.0 and move_velocity.length() > 12.0:
 		var wave: float = sin(phase * TAU)
-		var swing: float = roundf(wave * gait_swing_texels) * texel
-		# Pendel statt Schlitten: an den Umkehrpunkten heben sich beide Hände
-		# einen Sprite-Pixel, in der Mitte hängen sie am tiefsten.
+		var angle: float = wave * deg_to_rad(gait_swing_degrees)
+		# An den Umkehrpunkten heben sich beide Hände einen Sprite-Pixel, in
+		# der Mitte hängen sie am tiefsten.
 		var lift := Vector2(0.0, -roundf(absf(wave)) * texel)
-		var forward: Vector2 = move_velocity.normalized() * swing
 		# Im Schlag führt die Waffenhand den Bogen, die freie Hand steht -
 		# da hat kein Schritt dazwischenzufunken.
 		if swinging:
-			pivot.set_gait(Vector2.ZERO, Vector2.ZERO)
-		elif pivot.two_handed:
-			# Beide Fäuste am Griff bewegen sich als eine.
-			pivot.set_gait(forward + lift, forward + lift)
+			pivot.set_gait(Vector2.ZERO, Vector2.ZERO, 0.0)
 		else:
-			pivot.set_gait(forward + lift, -forward + lift)
+			# Die freie Hand sitzt gegenüber und schwingt mit demselben Winkel
+			# von selbst zur anderen Seite; am Griff beidhändig als eine.
+			pivot.set_gait(lift, lift, angle)
 		return
 
 	# Im Stand: ein Atemzug von einem Sprite-Pixel, beide Hände gemeinsam.
 	var breath: float = roundf(sin(_anim_time * 2.4) * 0.6) * texel
-	pivot.set_gait(Vector2(0.0, breath), Vector2(0.0, breath))
+	pivot.set_gait(Vector2(0.0, breath), Vector2(0.0, breath), 0.0)
 
 ## Stauchen im Takt der Schritte - zwei Auftritte pro Animationsdurchlauf.
 func _update_bob(delta: float) -> void:

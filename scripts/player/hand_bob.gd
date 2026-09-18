@@ -21,9 +21,12 @@ var swing_angle: float = 0.0
 ## Schrittauslenkung in Pivot-Koordinaten. Liegt außerhalb der Schlagdrehung,
 ## damit der Bogen nicht mit dem Schritt eiert.
 var gait: Vector2 = Vector2.ZERO
+## Pendelwinkel des Schritts auf dem Kreis: die Faust schwingt seitlich vor
+## dem Körper hin und her, die Waffe kommt mit.
+var gait_angle: float = 0.0
 
 func _process(_delta: float) -> void:
-	position = Vector2(base_radius, 0.0).rotated(swing_angle) + gait + center
+	position = Vector2(base_radius, 0.0).rotated(swing_angle + gait_angle) + gait + center
 	# Das Handgelenk dreht mit, damit die Waffe den Bogen mitnimmt und
 	# der Griff dabei in der Hand bleibt.
 	rotation = swing_angle
