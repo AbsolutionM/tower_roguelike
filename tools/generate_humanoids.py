@@ -3,19 +3,18 @@
 
 Gleicher Koerperbau wie die Figuren aus generate_characters (Cowboy-Mass:
 Kopfbedeckung, Gesicht, Poncho-Rumpf, Guertel, Hose, Stiefel, Huepf-Zyklus),
-aber mit dem, was Untote ausmacht - und das sind hier auch Arme, weil ein
-Zombie ohne ausgestreckte Arme kein Zombie ist:
+ohne Arme wie der Cowboy - was den Gegner ausmacht, sitzt in Kopf und
+Rumpf. Nur der Ghul hat lange Arme.
 
-    zombie     graugruene Haut, zerrissenes Hemd, Haarbueschel, hohle Augen,
-               offener Mund, Arme nach vorn gestreckt, ein Bein nachgezogen
-    skeleton   Schaedel mit Rosthelm, Brustkorb mit Rippen statt Rumpf,
-               Knochenarme haengen, Schild am Guertel
+    zombie     graugruene Haut, zerrissenes Hemd, Haarbueschel, hohle Augen
+               (eins haengt tiefer), offener Mund
+    skeleton   Schaedel mit Rostkappe, Brustkorb mit Rippen statt Rumpf
     ghoul      gebueckt, lila-graue Haut, lange Arme mit Krallen bis zum Boden,
                Ohren, Zahnreihe
     cultist    Kapuzenrobe, Gesicht im Schatten, zwei gluehende Augen,
-               Haende zusammengelegt (Aermel)
-    mummy      Bandagen in Streifen, ein Auge frei, lose Bandagenenden,
-               Arme steif nach vorn
+               gluehendes Augensymbol auf der Brust
+    mummy      Bandagen in Streifen, Kopf ganz umwickelt, ein Auge frei,
+               lose Bandagenenden
     bandit     Mensch: Kopftuch, Augenbinde, Lederweste, Dolch am Guertel
 
 Je vier Frames: Front1, Front2, FSide1, FSide2 (Gehen). Keine 3-Pixel-Regel.
@@ -162,50 +161,55 @@ def brustkorb(px, cx, y0):
 
 
 # --- Figuren -------------------------------------------------------------------
+# Nach dem Cowboy gebaut: keine Arme, Kopfbedeckung / Haar, Gesicht, Poncho-
+# Rumpf, Guertel, Hose, zwei Stiefel. Was den Gegner ausmacht, sitzt in Kopf
+# und Rumpf. Nur der Ghul faellt heraus - er hat lange Arme, weil er so
+# gefiel.
+
+def fuesse(px, cx, y_fuss, ton, frame):
+    """Stiefel wie bei den Figuren; im zweiten Frame ist ein Fuss oben."""
+    stiefel(px, cx - 3, y_fuss, ton, 0, spitze_rechts=True)
+    if not frame:
+        stiefel(px, cx + 1, y_fuss, ton, 0, spitze_rechts=False)
+
 
 def zombie(px, cx, y, frame, seitlich):
     y_gesicht, y_rumpf, y_guertel, y_hose, y_fuss = y
-    # Beine: eins nachgezogen
-    stiefel(px, cx - 3, y_fuss, LUMPEN, 0, spitze_rechts=True)
-    stiefel(px, cx + 1 + (1 if frame else 0), y_fuss - (1 if frame else 0), LUMPEN, 0)
+    fuesse(px, cx, y_fuss, LUMPEN, frame)
     hose(px, cx, y_hose, HOSEN)
     guertel(px, cx, y_guertel, ('lumpen', 'lumpen_dk', 'lumpen_tief', 'nacht2'), ('lumpen_dk', 'lumpen_dk'))
     rumpf(px, cx, y_rumpf, LUMPEN, None, seitlich=seitlich)
-    for x, yy in ((cx - 4, y_rumpf + 2), (cx + 2, y_rumpf + 4), (cx - 1, y_rumpf + 5)):   # Loecher im Hemd
+    # zerrissenes Hemd: Loecher, durch die die Haut scheint, ein Riss am Saum
+    for x, yy in ((cx - 4, y_rumpf + 2), (cx + 2, y_rumpf + 3), (cx - 1, y_rumpf + 5)):
         put(px, x, yy, C('moder_dk'))
         put(px, x + 1, yy, C('moder'))
+    put(px, cx + 3, y_rumpf + 5, C('moder_dk'))
     gesicht(px, cx, y_gesicht, MODER, seitlich=seitlich)
-    # hohle Augen, offener Mund, Haarbueschel
-    for ex in (cx - 3 + seitlich, cx + 1 + seitlich):
-        put(px, ex, y_gesicht + 2, C('nacht2'))
-        put(px, ex + 1, y_gesicht + 2, C('nacht2'))
-        put(px, ex, y_gesicht + 3, C('moder_tief'))
-    put(px, cx + seitlich // 2, y_gesicht + 4, C('nacht2'))
+    for ex in (cx - 3 + seitlich, cx + 1 + seitlich):   # hohle Augen, eins haengt tiefer
+        dy = 1 if ex > cx else 0
+        put(px, ex, y_gesicht + 2 + dy, C('nacht2'))
+        put(px, ex + 1, y_gesicht + 2 + dy, C('nacht2'))
+        put(px, ex + 1, y_gesicht + 3 + dy, C('moder_tief'))
+    put(px, cx + seitlich // 2, y_gesicht + 4, C('nacht2'))        # offener Mund
     put(px, cx + 1 + seitlich // 2, y_gesicht + 4, C('nacht2'))
+    put(px, cx + 2 + seitlich // 2, y_gesicht + 4, C('moder_tief'))
     haarbueschel(px, cx, y_gesicht - 1, HAAR,
                  ((-4, 0, 1), (-3, 0, 0), (-2, -1, 1), (-1, 0, 0), (0, -1, 1), (1, 0, 0), (2, 0, 1), (3, -1, 1), (4, 0, 2),
-                  (-4, 1, 2), (4, 1, 2)))
-    # Arme nach vorn gestreckt, leicht ungleich
-    haengarm(px, cx - 7, y_rumpf + 1, -1, 6, LUMPEN, MODER, vor=2)
-    haengarm(px, cx + 6, y_rumpf + 1, 1, 7 if frame else 6, LUMPEN, MODER, vor=2)
+                  (-4, 1, 2), (4, 1, 2), (-5, 1, 2)))
 
 
 def skeleton(px, cx, y, frame, seitlich):
     y_gesicht, y_rumpf, y_guertel, y_hose, y_fuss = y
-    stiefel(px, cx - 3, y_fuss, BEIN, 0, spitze_rechts=True)
-    stiefel(px, cx + 1, y_fuss - (1 if frame else 0), BEIN, 0)
+    fuesse(px, cx, y_fuss, BEIN, frame)
     hose(px, cx, y_hose, ('bein', 'bein_dk', 'bein_tief', 'nacht2'))
     guertel(px, cx, y_guertel, LEDER2, ('rost', 'rost_hell'))
     brustkorb(px, cx, y_rumpf)
     schaedel(px, cx, y_gesicht, seitlich)
-    # Rostkappe: flache Kuppel ohne Krempe, ein Sprung darin
     gc.kuppel(px, cx + 0.5, y_gesicht - 0.5, 5.5, 3.6, ROST, oben_nur=True)
     for x in range(cx - 5, cx + 6):
         put(px, x, y_gesicht - 1, C('rost_dk'))
     put(px, cx + 2, y_gesicht - 3, C('rost_tief'))
     put(px, cx + 3, y_gesicht - 2, C('rost_tief'))
-    haengarm(px, cx - 7, y_rumpf + 1, -1, 5, BEIN)
-    haengarm(px, cx + 6, y_rumpf + 1, 1, 6 if frame else 5, BEIN)
 
 
 def ghoul(px, cx, y, frame, seitlich):
@@ -228,7 +232,6 @@ def ghoul(px, cx, y, frame, seitlich):
     put(px, cx - 6, y_gesicht, C('ghul'))
     put(px, cx + 5, y_gesicht + 1, C('ghul_dk'))
     put(px, cx + 5, y_gesicht, C('ghul'))
-    # lange Arme haengen aussen am Rumpf bis unter den Guertel, Krallen
     hh, hm, hd, hk = (C(t) for t in GHUL)
     for sgn, x0 in ((-1, cx - 7), (1, cx + 6)):
         laenge = 8 + (1 if frame and sgn > 0 else 0)
@@ -237,19 +240,23 @@ def ghoul(px, cx, y, frame, seitlich):
             put(px, x0 + sgn, y_rumpf + 1 + j, hd if sgn < 0 else hk)
         put(px, x0, y_rumpf + 1, hh)
         hy = y_rumpf + 1 + laenge
-        for k in range(3):                              # drei Krallen
+        for k in range(3):
             put(px, x0 + sgn * (k - 1), hy + (1 if k == 1 else 0), C('kralle'))
 
 
 def cultist(px, cx, y, frame, seitlich):
     y_gesicht, y_rumpf, y_guertel, y_hose, y_fuss = y
-    stiefel(px, cx - 3, y_fuss, ('robe_dk', 'robe_tief', 'nacht2', 'nacht2'), 0, spitze_rechts=True)
-    stiefel(px, cx + 1, y_fuss - (1 if frame else 0), ('robe_dk', 'robe_tief', 'nacht2', 'nacht2'), 0)
+    fuesse(px, cx, y_fuss, ('robe_dk', 'robe_tief', 'nacht2', 'nacht2'), frame)
     hose(px, cx, y_hose, ROBE)
     guertel(px, cx, y_guertel, ('leder2_hell', 'leder2', 'leder2_dk', 'leder2_tief'), ('glut_dk', 'glut'))
     rumpf(px, cx, y_rumpf, ROBE, None, seitlich=seitlich)
-    # Gesicht im Schatten der Kapuze: nur zwei gluehende Augen
     hh, hm, hd, hk = (C(t) for t in ROBE)
+    # Symbol auf der Brust: ein gluehendes Auge
+    put(px, cx - 1, y_rumpf + 2, hk); put(px, cx + 2, y_rumpf + 2, hk)
+    put(px, cx, y_rumpf + 2, C('glut_dk')); put(px, cx + 1, y_rumpf + 2, C('glut'))
+    for x in range(cx - 1, cx + 3):
+        put(px, x, y_rumpf + 3, hk)
+    # Gesicht im Schatten der Kapuze: nur zwei gluehende Augen
     for j in range(5):
         for i in range(10):
             put(px, cx - 5 + i, y_gesicht + j, C('nacht2') if 1 <= i <= 8 else hk)
@@ -257,56 +264,47 @@ def cultist(px, cx, y, frame, seitlich):
         put(px, ex, y_gesicht + 2, C('glut'))
         put(px, ex, y_gesicht + 3, C('glut_dk'))
     kapuze(px, cx, y_gesicht - 2, ROBE)
-    # Aermel: vom Schulteransatz schraeg zur Mitte, treffen sich vor dem Bauch
-    for sgn in (-1, 1):
-        for j in range(4):
-            x = cx + sgn * (5 - j) + (0 if sgn < 0 else 1)
-            put(px, x, y_rumpf + 1 + j, hm if sgn < 0 else hd)
-            put(px, x, y_rumpf + 2 + j, hd if sgn < 0 else hk)
-    for x in range(cx - 1, cx + 3):
-        put(px, x, y_rumpf + 5, hk)
 
 
 def mummy(px, cx, y, frame, seitlich):
     y_gesicht, y_rumpf, y_guertel, y_hose, y_fuss = y
-    stiefel(px, cx - 3, y_fuss, BINDE, 0, spitze_rechts=True)
-    stiefel(px, cx + 1, y_fuss - (1 if frame else 0), BINDE, 0)
+    fuesse(px, cx, y_fuss, BINDE, frame)
     hose(px, cx, y_hose, BINDE)
     guertel(px, cx, y_guertel, ('binde_dk', 'binde_tief', 'lumpen_dk', 'lumpen_tief'), ('binde_tief', 'binde_dk'))
     rumpf(px, cx, y_rumpf, BINDE, None, seitlich=seitlich)
     gesicht(px, cx, y_gesicht, BINDE, seitlich=seitlich)
-    # Bandagenstreifen: schraege dunkle Linien ueber Kopf und Rumpf
-    for yy in range(y_gesicht, y_guertel):
-        for x in range(cx - 5, cx + 6):
+    # Bandagen: schraege Streifen ueber Kopf und Rumpf, im Rumpf breiter
+    for yy in range(y_gesicht - 1, y_guertel):
+        for x in range(cx - 6, cx + 7):
             if px[x, yy][3] and (x + yy * 2) % 5 == 0:
                 put(px, x, yy, C('binde_tief'))
-    # ein Auge frei
+            elif px[x, yy][3] and (x + yy * 2) % 5 == 1 and yy >= y_rumpf:
+                put(px, x, yy, C('binde_dk'))
+    # Kopf ganz bandagiert, ein Auge frei
+    for x in range(cx - 5, cx + 5):
+        put(px, x, y_gesicht - 1, C('binde_dk'))
+        put(px, x, y_gesicht - 2, C('binde'))
+    put(px, cx - 5, y_gesicht - 1, C('binde_tief')); put(px, cx + 4, y_gesicht - 2, C('binde_tief'))
     put(px, cx + 1 + seitlich, y_gesicht + 2, C('nacht2'))
     put(px, cx + 2 + seitlich, y_gesicht + 2, C('nacht2'))
     put(px, cx + 2 + seitlich, y_gesicht + 1, C('binde_hell'))
-    # lose Enden
-    for j in range(3):
+    for j in range(3):                                # lose Enden
         put(px, cx - 7, y_gesicht + 3 + j, C('binde_dk' if j < 2 else 'binde_tief'))
     put(px, cx + 6, y_rumpf + 5, C('binde_dk'))
     put(px, cx + 6, y_rumpf + 6, C('binde_tief'))
-    haengarm(px, cx - 7, y_rumpf + 1, -1, 6, BINDE, BINDE, vor=1)
-    haengarm(px, cx + 6, y_rumpf + 1, 1, 7 if frame else 6, BINDE, BINDE, vor=1)
 
 
 def bandit(px, cx, y, frame, seitlich):
     y_gesicht, y_rumpf, y_guertel, y_hose, y_fuss = y
-    stiefel(px, cx - 3, y_fuss, LEDER2, 0, spitze_rechts=True)
-    stiefel(px, cx + 1, y_fuss - (1 if frame else 0), LEDER2, 0)
+    fuesse(px, cx, y_fuss, LEDER2, frame)
     hose(px, cx, y_hose, ('lumpen', 'hosen_dk', 'hosen_tief', 'nacht2'))
     guertel(px, cx, y_guertel, LEDER2, ('rost', 'rost_hell'))
     rumpf(px, cx, y_rumpf, ('lumpen_hell', 'lumpen', 'lumpen_dk', 'lumpen_tief'), LEDER2, seitlich=seitlich)
-    # Dolch am Guertel rechts
-    put(px, cx + 4, y_guertel + 1, C('rost_hell'))
+    put(px, cx + 4, y_guertel + 1, C('rost_hell'))    # Dolch am Guertel
     put(px, cx + 4, y_guertel + 2, C('rost'))
     put(px, cx + 4, y_guertel, C('leder2_dk'))
     gesicht(px, cx, y_gesicht, HAUT2, seitlich=seitlich)
-    # Augenklappe links mit Riemen, rechtes Auge frei, Stoppeln
-    for dx in (-3, -2):
+    for dx in (-3, -2):                               # Augenklappe mit Riemen
         put(px, cx + dx + seitlich, y_gesicht + 2, C('nacht2'))
         put(px, cx + dx + seitlich, y_gesicht + 3, C('nacht2'))
     for x in range(cx - 5, cx - 3):
@@ -316,15 +314,12 @@ def bandit(px, cx, y, frame, seitlich):
     put(px, cx + 1 + seitlich, y_gesicht + 2, gc.AUGE)
     put(px, cx + 2 + seitlich, y_gesicht + 2, gc.AUGE)
     put(px, cx + 1 + seitlich, y_gesicht + 3, gc.AUGE)
-    for x in range(cx - 2, cx + 3, 2):
+    for x in range(cx - 2, cx + 3, 2):                 # Stoppeln
         put(px, x + seitlich // 2, y_gesicht + 4, C('haut2_tief'))
-    haengarm(px, cx - 7, y_rumpf + 1, -1, 5, LUMPEN, HAUT2)
-    haengarm(px, cx + 6, y_rumpf + 1, 1, 6 if frame else 5, LUMPEN, HAUT2)
-    # Kopftuch: flache Kuppel mit Knoten hinten
     gc.kuppel(px, cx + 0.5, y_gesicht - 0.5, 5.8, 4.0, TUCH, oben_nur=True)
     for x in range(cx - 5, cx + 6):
         put(px, x, y_gesicht - 1, C('tuch_dk'))
-    put(px, cx + 6, y_gesicht - 1, C('tuch_dk'))
+    put(px, cx + 6, y_gesicht - 1, C('tuch_dk'))       # Knoten
     put(px, cx + 7, y_gesicht, C('tuch_tief'))
     put(px, cx + 7, y_gesicht + 1, C('tuch_dk'))
 

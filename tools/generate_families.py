@@ -1014,65 +1014,58 @@ def schuppen(img, ox, oy, laenge, halb, stufe, ton):
 
 
 def rune(img, stufe):
-    """Runenschwert: grauer Stein mit leuchtenden Runen in der Kehle,
-    Stangenenden als Steinknoten, Knauf ein Runenstein."""
+    """Runenstein: eine breite Steinplatte mit gerade abgeschlagener Spitze
+    und gemeisselten Kanten - keine Klinge, ein Schlagstein. Glyphenreihe
+    leuchtet, Fassung aus Stein, Schaft mit Lederwicklung."""
     m = masse(stufe, 'rune')
-    L, halb = m['laenge'], m['halb'] * 1.1
+    L, halb = m['laenge'] * 0.95, m['halb'] * 1.35
     ox, oy = ursprung(img, L, stufe)
-    klinge(img, ox, oy, L, halb, RUNENSTEIN, spitze=m['spitze'] * 0.9,
-           ricasso=m['ricasso'] * 1.2, rinne_bis=0.8, glanz=(L * 0.6,))
-    # drei bis fuenf klare Glyphen in einer Reihe auf der Lichtseite, jede
-    # ein eigenes Zeichen, leuchtend; dazwischen bleibt der Stein ruhig
+    klinge(img, ox, oy, L, halb, RUNENSTEIN, spitze=1.2, ricasso=m['ricasso'] * 1.3,
+           rinne_bis=0.82, glanz=(), stumpf=True)
+    # gemeisselte Kanten: eine zweite dunkle Linie innen entlang der Schneide
+    for i in range(int(m['ricasso']) + 1, int(L) - 2):
+        speck(img, ox, oy, float(i), -halb + 1.4, 'stein_tief')
     anzahl = min(5, 2 + stufe)
-    schritt = (L * 0.75 - m['ricasso'] - 2.0) / anzahl
+    schritt = (L * 0.8 - m['ricasso'] - 2.0) / anzahl
     for k in range(anzahl):
         u = m['ricasso'] + 2.0 + k * schritt
-        bx, by = to_xy(u, -halb * 0.35, ox, oy)
+        bx, by = to_xy(u, 0.0, ox, oy)
         for dx, dy in RUNEN[k % len(RUNEN)]:
             put(img, bx + dx, by + dy - 1, C('kristall_licht'))
         put(img, bx, by, C('kristall_hell'))
-    pd, pw = m['pd'] * 1.2, m['pw'] * 1.2
+    pd, pw = m['pd'] * 1.3, m['pw'] * 1.1
     schlagschatten(img, ox, oy, RUNENSTEIN, 0.0, 0.8 + 0.3 * stufe, halb)
-    parier(img, ox, oy, -pd * 1.1, pd, pw, *('stein_hell', 'stein', 'stein_dk', 'stahl_kante'), schwung=0.0)
-    for sgn in (-1, 1):
-        ex, ey = to_xy(-pd * 1.1, sgn * pw, ox, oy)
-        kugel(img, ex, ey, 0.9 + stufe * 0.3, ('stein_hell', 'stein', 'stein_dk', 'stahl_kante'))
-    speck(img, ox, oy, -pd * 1.1, 0.0, 'kristall_licht')
+    stein = ('stein_hell', 'stein', 'stein_dk', 'stahl_kante')
+    block(img, ox, oy, -pd * 1.1, pd, pw, stein)
+    for sgn in (-1, 1):                                # Kerben in der Fassung
+        speck(img, ox, oy, -pd * 1.1, sgn * pw * 0.5, 'stahl_kante')
     glen = m['glen'] * 1.2
-    griff(img, ox, oy, -(pd * 1.1 + glen + 0.4), -(pd * 1.1 + 0.8),
+    griff(img, ox, oy, -(pd * 1.1 + glen + 0.4), -(pd * 1.1 + 0.9),
           0.45 + stufe * 0.07, *GRIFF_LEDER)
     kn = m['knauf'] * 1.1
     ku = -(pd * 1.1 + glen + 0.4) - kn * 0.6
-    block(img, ox, oy, ku, kn * 0.7, kn * 0.8, ('stein_hell', 'stein', 'stein_dk', 'stahl_kante'))
+    block(img, ox, oy, ku, kn * 0.7, kn * 0.8, stein)
     speck(img, ox, oy, ku, 0.0, 'kristall_licht')
-    return None                                     # keine Extra-Runen der Veredelung
+    return None
 
 
 def coral(img, stufe):
-    """Korallenschwert: rosa Klinge mit gewellter Schneide, Muschel als
-    Parier, Perlenknauf, Seegras statt Troddel."""
+    """Korallen-Falchion: gekruemmte Klinge, die sich zur Spitze weitet und
+    dort schraeg abgeschnitten ist; Muschel als Parier, Perlenknauf,
+    Seegras. Eine andere Silhouette als jedes gerade Schwert."""
     m = masse(stufe, 'coral')
-    L, halb = m['laenge'], m['halb'] * 1.05
+    L, halb = m['laenge'], m['halb'] * 0.85
     ox, oy = ursprung(img, L, stufe)
-    klinge(img, ox, oy, L, halb, KORALLE, spitze=m['spitze'] * 1.2,
-           ricasso=m['ricasso'], rinne_bis=0.7, glanz=(L * 0.35, L * 0.7),
-           stumpf=False)
-    # Korallenaeste wachsen aus dem Ruecken: kurze Keile, gegabelt bei den
-    # grossen Stufen - eine Silhouette, kein Muster
-    for k, f in enumerate(((0.5,), (0.4, 0.7), (0.3, 0.55, 0.78), (0.25, 0.45, 0.65, 0.85))[stufe - 1]):
-        u = min(L * f, L - m['spitze'] * 1.2 - 1.0)
-        bx, by = to_xy(u, halb - 0.5, ox, oy)
-        al = 2.0 + stufe * 0.8
-        keil(img, bx, by, 0.9, 0.9, al, 0.7 + stufe * 0.2, KORALLE_TON, kruemmung=0.6, spitz=False)
-        if stufe >= 3 and k % 2 == 0:
-            keil(img, int(bx + al * 0.5), int(by + al * 0.5), 1.0, 0.3, al * 0.6, 0.6 + stufe * 0.1, KORALLE_TON, spitz=False)
+    oy -= 1 + stufe
+    klinge(img, ox, oy, L, halb, KORALLE, spitze=2.5 + stufe * 0.5,
+           ricasso=m['ricasso'], rinne_bis=0.6, kruemmung=0.35 * stufe, bauch=0.6,
+           glanz=(L * 0.5, L * 0.8), stumpf=True)
     pd = m['pd']
     schlagschatten(img, ox, oy, KORALLE, 0.0, 0.8 + 0.3 * stufe, halb)
-    # Muschel: halbe Kugel mit Rillen als Parier
     cx, cy = to_xy(-pd * 0.7, 0.0, ox, oy)
     r = 1.6 + stufe * 0.6
     kugel(img, cx, cy, r, PERLE_TON)
-    for k in range(-1, 2):
+    for k in range(-1, 2):                             # Rillen der Muschel
         put(img, int(cx + k), int(cy - r * 0.5), C('knochen_fase'))
         put(img, int(cx + k * 2), int(cy + r * 0.3), C('knochen_fase'))
     glen = m['glen'] * 1.15
@@ -1081,30 +1074,20 @@ def coral(img, stufe):
     kn = m['knauf'] * 1.2
     kx, ky = to_xy(-(pd * 1.1 + glen + 0.4) - kn * 0.6, 0.0, ox, oy)
     kugel(img, kx, ky, kn, PERLE_TON, glanz='weiss')
-    # Seegras: gruene Strang haengt
     for i in range(2 + stufe * 2):
         put(img, kx - i // 2, ky + int(kn) + i, C('gruen' if i % 2 else 'gruen_dk'))
     return ox, oy, L, halb, KORALLE
 
 
 def dragon(img, stufe):
-    """Drachenschwert: rote Schuppenklinge, Hornzaehne als Parier, Klaue
-    haelt den Knauf, Goldschneide."""
+    """Drachen-Flamberge: die ganze Klinge wellt sich, Goldschneide,
+    Hornzaehne als Parier, Klauenknauf. Die Welle ist die Silhouette."""
     m = masse(stufe, 'dragon')
-    L, halb = m['laenge'], m['halb'] * 1.1
+    L, halb = m['laenge'], m['halb']
     ox, oy = ursprung(img, L, stufe)
     klinge(img, ox, oy, L, halb, DRACHE, spitze=m['spitze'] * 1.3,
-           ricasso=m['ricasso'], rinne_bis=0.0, kruemmung=0.25 * stufe,
+           ricasso=m['ricasso'], rinne_bis=0.7, welle=(0.35 + 0.12 * stufe, 4.0 + stufe * 0.5),
            glanz=(L * 0.3, L * 0.6), stumpf=False)
-    # Rueckenstacheln aus Horn, zur Spitze geneigt; ab Stufe 3 ein zweiter
-    # Kamm kleiner dahinter
-    for f, sl in ((0.35, 3.0), (0.55, 3.5), (0.75, 2.5))[:1 + stufe // 2 + (1 if stufe >= 2 else 0)]:
-        u = min(L * f, L - m['spitze'] * 1.3 - 1.0)
-        bx, by = to_xy(u, halb - 0.5, ox, oy)
-        keil(img, bx, by, 1.2, 0.6, sl + stufe * 0.6, 0.6 + stufe * 0.2, HORN_TON, kruemmung=0.5)
-    # Grat: eine helle Linie parallel zur Schneide auf der Lichtseite
-    for i in range(int(m['ricasso']) + 1, int(L) - 3):
-        speck(img, ox, oy, float(i), -halb * 0.45, 'gold_mitte' if i % 2 else 'drache_hell')
     pd = m['pd']
     schlagschatten(img, ox, oy, DRACHE, 0.0, 0.8 + 0.3 * stufe, halb)
     cx, cy = to_xy(-pd * 0.7, 0.0, ox, oy)
@@ -1118,7 +1101,7 @@ def dragon(img, stufe):
     kn = m['knauf'] * 1.2
     kx, ky = to_xy(-(pd * 1.1 + glen + 0.4) - kn * 0.6, 0.0, ox, oy)
     kugel(img, kx, ky, kn, ('gold', 'gold_mitte', 'gold_dunkel', 'rost_dk'), glanz='gold_hell')
-    for sgn in (-1, 1):                                # Klauen um den Knauf
+    for sgn in (-1, 1):
         keil(img, kx + sgn * kn * 0.6, ky - kn * 0.4, sgn * 0.6, 1.0, kn + 1.0, 0.6, HORN_TON, kruemmung=-sgn * 0.8)
     return ox, oy, L, halb, DRACHE
 

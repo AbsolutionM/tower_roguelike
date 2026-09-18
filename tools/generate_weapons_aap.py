@@ -205,7 +205,8 @@ def farbbaender(ton, breite, rinne, ricasso):
 
 def klinge(img, ox, oy, laenge, halb, ton, spitze=6.0, kruemmung=0.0,
            ricasso=2.5, rinne_bis=0.74, scharten=(), zaehne=(),
-           glanz=(), marken=(), stumpf=True, scharte=0.55):
+           glanz=(), marken=(), stumpf=True, scharte=0.55, bauch=0.0,
+           welle=None):
     """Klinge mit Hohlkehle, Ricasso und Scharten.
 
     ricasso   ungeschliffenes Stueck ueber der Parierstange - dort fehlt die
@@ -222,11 +223,13 @@ def klinge(img, ox, oy, laenge, halb, ton, spitze=6.0, kruemmung=0.0,
             u, v = to_uv(x, y, ox, oy)
             if u < -0.001 or u > laenge:
                 continue
-            w = halb
+            w = halb * (1.0 + bauch * min(1.0, max(0.0, u) / koerper))   # Bauch: weitet sich zur Spitze
             for su in scharten:
                 if abs(u - su) < 0.7:
                     w -= scharte
             vv = v - kruemmung * (max(0.0, u) / laenge) ** 2
+            if welle and ricasso <= u <= koerper:                          # Flamberge
+                vv -= welle[0] * math.sin((u - ricasso) * 2 * math.pi / welle[1])
             # Spitze: bei der Vorlage einseitig abgeschraegt - die Schneide
             # laeuft zum Ruecken hoch, der Ruecken bleibt gerade. Eine
             # beidseitig zulaufende Spitze sieht daneben aus wie ein Dolch.
