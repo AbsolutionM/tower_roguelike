@@ -32,7 +32,7 @@ AAP_ZU_SPLENDOR = {
     'a6fcdb': '73efe8', '849be4': '8aa1f6',
     # Haut: Schatten ins Violett, Licht ins Creme
     'fef3c0': 'fcf7be', 'fad6b8': 'ffe0b7', 'f5a097': 'eeb59c', 'ba756a': 'b28b78',
-    '8e5252': '886e6a', 'e86a73': 'e27285',
+    '8e5252': '8c5b3e', 'e86a73': 'e27285',
     # Violett
     'bc4a9b': 'd480bb', '793a80': '966888', '403353': '654956',
     # Leder / Holz
