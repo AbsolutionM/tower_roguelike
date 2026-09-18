@@ -34,23 +34,27 @@ from pathlib import Path
 
 from PIL import Image
 
+from duel import duel_anpassen
+
 
 # Rampe: kante, dunkel, mittel, koerper, hell, licht, glanz
-# Rampen eine Stufe tiefer als bei den Vorlagen - der Turm ist duester
+# Rampen aus der Duel-Palette, bewusst aus den gedaempften Reihen: der
+# Schleim ist moosgruen statt giftgruen, das Gift altrosa, die Glut
+# ziegelrot, das Eis stahlblau. Kante .. Glanz.
 RAMPEN = {
-    'green': ('122020', '24523b', '1a7a3e', '14a02e', '59c135', '9cdb43', 'd6f264'),
-    'venom': ('242234', '403353', '793a80', '793a80', 'bc4a9b', 'e86a73', 'f5a097'),
-    'ember': ('3b1725', '73172d', 'b4202a', 'df3e23', 'fa6a0a', 'f9a31b', 'ffd541'),
-    'frost': ('122020', '143464', '285cc4', '249fde', '20d6c7', 'a6fcdb', 'ffffff'),
-    'iron': ('141013', '242234', '333941', '4a5462', '6d758d', '8b93af', 'b3b9d1'),
+    'green': ('1a332c', '325c40', '417455', '498960', '55b67d', '91daa1', 'e0faeb'),
+    'venom': ('2e1026', '49283d', '663659', '975475', 'b96d91', 'c178aa', 'db99bf'),
+    'ember': ('5f0926', '904647', 'a76057', 'bd7d64', 'ce9770', 'edb67c', 'edd493'),
+    'frost': ('181f2f', '23324d', '25466b', '366b8a', '318eb8', '41b2e3', '74f5fd'),
+    'iron': ('222323', '434549', '626871', '828b98', 'a6aeba', 'cdd2da', 'f5f7fa'),
     # Sorten mit eigener Bauart auf der gruenen Rampe
-    'king': ('122020', '24523b', '1a7a3e', '14a02e', '59c135', '9cdb43', 'd6f264'),
-    'skull': ('122020', '24523b', '1a7a3e', '14a02e', '59c135', '9cdb43', 'd6f264'),
-    'shadow': ('060608', '141013', '221c1a', '242234', '403353', '793a80', 'bc4a9b'),
+    'king': ('1a332c', '325c40', '417455', '498960', '55b67d', '91daa1', 'e0faeb'),
+    'skull': ('1a332c', '325c40', '417455', '498960', '55b67d', '91daa1', 'e0faeb'),
+    'shadow': ('1d1d21', '26233d', '3b3855', '3c3151', '584a7f', '7964ba', '9585f1'),
 }
 NUR_GROSS = {'king'}
-SCHWARZ = (6, 6, 8, 255)
-WEISS = (255, 255, 255, 255)
+SCHWARZ = (0, 0, 0, 255)
+WEISS = (245, 247, 250, 255)
 
 # Groessen wie die Vorlagen: (breite, hoehe, augen, blase)
 GROESSEN = {
@@ -360,7 +364,7 @@ def sorte_venom(img, px, innen, ton, groesse, muede, w, h, oben, cx, hw, augen, 
 
 def sorte_ember(img, px, innen, ton, groesse, muede, w, h, oben, cx, hw, augen, ay):
     """Flammenzungen auf dem Ruecken, Krustenrisse mit Glut, gluehende Augen."""
-    gold, gold_m, kupfer, dk = rgb('ffd541'), rgb('f9a31b'), rgb('df3e23'), rgb('73172d')
+    gold, gold_m, kupfer, dk = rgb('ffbc4e'), rgb('f99b4e'), rgb('cd5e46'), rgb('662b29')
     zungen = {'small': ((int(cx) + 1, 2),),
               'medium': ((int(cx) - 3, 4), (int(cx) + 3, 5), (int(cx) + 7, 3)),
               'giant': ((int(cx) - 7, 4), (int(cx) - 1, 6), (int(cx) + 5, 5),
@@ -403,7 +407,7 @@ def sorte_ember(img, px, innen, ton, groesse, muede, w, h, oben, cx, hw, augen, 
 
 def sorte_frost(img, px, innen, ton, groesse, muede, w, h, oben, cx, hw, augen, ay):
     """Eissplitter aus dem Ruecken, Facettenband, Funkeln, Rautenaugen."""
-    eis_h, eis_m, eis_d, eis_k = rgb('ffffff'), rgb('a6fcdb'), rgb('249fde'), rgb('143464')
+    eis_h, eis_m, eis_d, eis_k = rgb('f5f7fa'), rgb('c6ecff'), rgb('318eb8'), rgb('23324d')
     splitter = {'small': ((int(cx) + 1, 3),),
                 'medium': ((int(cx) - 4, 4), (int(cx) + 2, 5), (int(cx) + 6, 3)),
                 'giant': ((int(cx) - 8, 4), (int(cx) - 2, 6), (int(cx) + 4, 5),
@@ -592,7 +596,7 @@ def main():
                 name = name.replace('__', '_').lstrip('_')
                 if not muede and groesse == 'medium':
                     name = '%s_slime' % art
-                img = zuschneiden(schleim(art, groesse, muede))
+                img = duel_anpassen(zuschneiden(schleim(art, groesse, muede)))
                 img.save(ziel / (name + '.png'))
                 bilder.append(img)
                 print('  %-26s %2dx%d' % (name, img.width, img.height))

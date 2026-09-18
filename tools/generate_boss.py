@@ -23,10 +23,12 @@ from pathlib import Path
 
 from PIL import Image
 
-# Rampe eine Stufe tiefer als bei den Vorlagen: der Boss ist duester
-RAMPE = ('122020', '24523b', '1a7a3e', '14a02e', '59c135', '9cdb43', 'd6f264')
-SCHWARZ = (6, 6, 8, 255)
-WEISS = (255, 255, 255, 255)
+from duel import duel_anpassen
+
+# Duel-Palette, gedaempfte Moosreihe: Kante .. Glanz
+RAMPE = ('1a332c', '325c40', '417455', '498960', '55b67d', '91daa1', 'e0faeb')
+SCHWARZ = (0, 0, 0, 255)
+WEISS = (245, 247, 250, 255)
 
 
 def rgb(h):
@@ -201,7 +203,7 @@ def boss(frame):
             if y != unten:
                 kerben.add((x, y))
         if frame == 3 and abs(x - cx) < 3 and (x, unten - 2) in innen:
-            px[x, unten - 2] = rgb('122020')           # Rachen
+            px[x, unten - 2] = rgb('002219')           # Rachen
     # Schleimwulst: das Gel hebt sich um Augen und Mund - heller Saum rundum,
     # unten rechts (zum Licht) am hellsten
     for x, y in list(kerben):
@@ -277,7 +279,7 @@ def main():
     ziel.mkdir(parents=True, exist_ok=True)
     bilder = []
     for frame, name in enumerate(('idle_1', 'idle_2', 'idle_3', 'attack_1')):
-        img = boss(frame)
+        img = duel_anpassen(boss(frame))
         # alle Frames gleich gross, Boden unten buendig
         img.save(ziel / (name + '.png'))
         bilder.append(img)
