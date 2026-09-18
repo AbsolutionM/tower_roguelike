@@ -34,6 +34,8 @@ const MAX_SWEEP := deg_to_rad(55.0)
 ## 0 = Ruhehaltung, 1 = Schlaghaltung (Klinge entlang des Arms mit Vorlauf).
 ## Der WeaponController blendet die Klingendrehung damit über.
 var swing_blend: float = 0.0
+## 0..1: wie viel Vorlauf die Klinge vor dem Arm hat. Wächst im Schlag.
+var swing_lead: float = 0.0
 ## Richtung des Schlags in Kreis-Koordinaten: -1 oder +1. Der Schlag läuft
 ## immer vom rechten Kegelrand (aus Sicht des Helden) zum linken - je nach
 ## Spiegelung des Kreises ist das lokal die eine oder andere Richtung.
@@ -236,15 +238,19 @@ func perform_swing(dmg: float, crit: bool = false) -> void:
 	var tween := create_tween()
 	_tween = tween
 	# Ausholen: die Hand zum rechten Rand, die Klinge dreht in die Schlaghaltung.
-	tween.tween_property(hand, "swing_angle", -strike_sign * sweep * 0.55, windup).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_property(hand, "swing_angle", -strike_sign * sweep, windup).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tween.parallel().tween_property(self, "swing_blend", 1.0, windup).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	# Schlag: schnell zum linken Rand, kubisch auslaufend. Erst hier trifft die Klinge.
 	tween.tween_callback(_begin_strike)
 	tween.tween_property(hand, "swing_angle", strike_sign * sweep, swing_duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	# Der Vorlauf der Klinge baut sich erst im Schlag auf - am Kegelrand
+	# beginnt sie genau am Rand, nicht schon ein Stück davor.
+	tween.parallel().tween_property(self, "swing_lead", 1.0, swing_duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween.tween_callback(end_swing)
 	# Zurück in die Ruhehaltung.
 	tween.tween_property(hand, "swing_angle", 0.0, return_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	tween.parallel().tween_property(self, "swing_blend", 0.0, return_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tween.parallel().tween_property(self, "swing_lead", 0.0, return_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 func _begin_strike() -> void:
 	_striking = true

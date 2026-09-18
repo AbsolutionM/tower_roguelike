@@ -189,13 +189,21 @@ func find_target_in_range() -> Node2D:
 	for enemy in get_tree().get_nodes_in_group("enemies"):
 		if not is_instance_valid(enemy):
 			continue
+		# Der Körper zählt, nicht der Mittelpunkt: wer den Kegel mit dem Rand
+		# berührt, wird angegriffen. Dafür der Kreis um den Gegner - Abstand
+		# minus Radius gegen die Reichweite, Winkel minus halbe Sichtbreite
+		# gegen die Kegelöffnung.
+		var radius: float = enemy.get_visual_radius() if enemy.has_method("get_visual_radius") else 20.0
 		var offset: Vector2 = enemy.global_position - origin
 		var distance := offset.length()
-		if distance >= nearest_distance:
+		var edge_distance: float = distance - radius
+		if edge_distance >= nearest_distance:
 			continue
-		if distance > 0.001 and absf(facing.angle_to(offset)) > CONE_HALF_ANGLE:
-			continue
-		nearest_distance = distance
+		if distance > radius:
+			var half_width: float = asin(clampf(radius / distance, 0.0, 1.0))
+			if absf(facing.angle_to(offset)) - half_width > CONE_HALF_ANGLE:
+				continue
+		nearest_distance = edge_distance
 		nearest = enemy
 
 	return nearest
@@ -351,7 +359,7 @@ func _update_hold_orientation() -> void:
 	# Im Schlag läuft die Klinge dem Arm ein Stück voraus, in Schlagrichtung.
 	var strike: float = along
 	if sword and "strike_sign" in sword:
-		strike += sword.strike_sign * STRIKE_LEAD
+		strike += sword.strike_sign * STRIKE_LEAD * sword.swing_lead
 	var blend: float = sword.swing_blend if sword and "swing_blend" in sword else 0.0
 	hold_sprite.rotation = lerp_angle(rest, strike, blend)
 
