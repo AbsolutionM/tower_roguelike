@@ -412,12 +412,17 @@ def gegner_frame(bauen, richtung, nr, anim='walk'):
         pass
     hinten = richtung in ('Back', 'BSide')
     seitlich = 2 if richtung in ('FSide', 'BSide') else 0
-    cx = 15 + (versatz if richtung in ('Front', 'Back') and False else 0)
+    cx = 15
+    gc.LEHNEN = 0
     if richtung in ('FSide', 'BSide'):
         cx += versatz                            # seitlich: nach vorn/zurueck
+        if anim == 'walk_seite':
+            gc.LEHNEN = gc.LEHNEN_SEITE[nr - 1]
+            cx += gc.LEHNEN
+    gc.AKTIV_ZEILEN = 5 if fuesse == (None, None) else 6
     y_gesicht = 14 + hub
     y_rumpf = y_gesicht + 5
-    y_guertel = y_rumpf + 6
+    y_guertel = y_rumpf + gc.AKTIV_ZEILEN
     y_hose = y_guertel + 1
     y_fuss = y_hose + 1
     bauen(px, cx, (y_gesicht, y_rumpf, y_guertel, y_hose, y_fuss), fuesse, seitlich, hinten)

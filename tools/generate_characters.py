@@ -124,6 +124,12 @@ def kuppel(px, cx, cy, rx, ry, ton, oben_nur=False, licht=(-0.55, -0.6)):
             put(px, x, y, col)
 
 
+# Stauchung: im Sprung (Fuesse eingezogen) ist der Rumpf eine Zeile
+# kuerzer und die Hosenzeile faellt weg - beim Cowboy ist die Figur in
+# Frame 5 fuenf Zeilen kuerzer als im Stand (Beine 3, Rumpf 1, Hose 1).
+AKTIV_ZEILEN = 6
+
+
 def rumpf(px, cx, y0, ton, brust=None, hinten=False, seitlich=0):
     """Rumpf wie der Poncho des Cowboys: sechs Zeilen, oben 11 breit, unten
     9, Flanken dunkel, unten links am dunkelsten (Kante), Licht links.
@@ -132,7 +138,7 @@ def rumpf(px, cx, y0, ton, brust=None, hinten=False, seitlich=0):
     # symmetrisch: der Poncho des Cowboys haengt schief, ein Panzer oder
     # Hemd nicht. Schulterlinie hell, Flanken dunkel, Kante aussen, die
     # unterste Zeile im Schatten.
-    breiten = (11, 11, 11, 11, 9, 9)
+    breiten = (11, 11, 11, 11, 9, 9)[:AKTIV_ZEILEN] if AKTIV_ZEILEN >= 6 else (11, 11, 11, 9, 9)
     for j, b in enumerate(breiten):
         x0 = cx - b // 2
         for i in range(b):
@@ -142,7 +148,7 @@ def rumpf(px, cx, y0, ton, brust=None, hinten=False, seitlich=0):
                 col = dunkel if rand == 0 else hell
             elif rand == 0:
                 col = kante if j >= 2 else dunkel
-            elif rand == 1 or j == 5:
+            elif rand == 1 or j == len(breiten) - 1:
                 col = dunkel
             elif j == 1 and rand >= 2:
                 col = hell if rand >= 3 else mitte
@@ -171,6 +177,8 @@ def guertel(px, cx, y, ton, schnalle, hinten=False):
 
 
 def hose(px, cx, y, ton):
+    if AKTIV_ZEILEN < 6:                            # eingezogen: keine Hosenzeile
+        return
     hell, mitte, dunkel, kante = (C(t) for t in ton)
     for i in range(9):
         x = cx - 4 + i
@@ -336,6 +344,13 @@ SCHRITTE_SEITE = (
 )
 
 
+# Vorlehnen im Schritt: Kopf und Rumpf ruecken ein Pixel nach vorn, die
+# Fuesse bleiben - wie der Poncho des Cowboys, der im Schritt nach hinten
+# schwingt. Je Seitenframe.
+LEHNEN_SEITE = (0, 1, 1, 0, 0, 0, 0, 1, 1, 0)
+LEHNEN = 0
+
+
 def fuss_spec(fuesse):
     """Frontzyklus-Namen in Stiefelpaare uebersetzen."""
     return {'beide': ((0, 0), (0, 0)), 'lang': ((0, 1), (0, 1)), 'keine': (None, None),
@@ -345,6 +360,7 @@ def fuss_spec(fuesse):
 def stiefel_paar(px, cx, y_fuss, ton, paar):
     """Zwei Stiefel symmetrisch unter der Figur: x 12-13 und 17-18 bei cx 15."""
     links, rechts = paar
+    cx -= LEHNEN                                    # Fuesse bleiben am Boden
     if links:
         stiefel(px, cx - 3 + links[0], y_fuss + links[1], ton, 0, spitze_rechts=True)
     if rechts:
@@ -362,11 +378,14 @@ def frame(fig, richtung, nr):
         paar = fuss_spec(fuesse)
     hinten = richtung in ('Back', 'BSide')
     seitlich = {'Front': 0, 'FSide': 2, 'BSide': -2, 'Back': 0}[richtung]
-    cx = 15
+    global AKTIV_ZEILEN, LEHNEN
+    AKTIV_ZEILEN = 5 if paar == (None, None) else 6
+    LEHNEN = LEHNEN_SEITE[nr - 1] if seite else 0
+    cx = 15 + LEHNEN
     y_krempe = 12 + hub
     y_gesicht = y_krempe + 2
     y_rumpf = y_gesicht + 5
-    y_guertel = y_rumpf + 6
+    y_guertel = y_rumpf + AKTIV_ZEILEN
     y_hose = y_guertel + 1
     y_fuss = y_hose + 1
 
