@@ -14,8 +14,8 @@ class_name OffHandController
 ## Sie ist bewusst kein Kind des Pivots, sondern ein Geschwister des Körpers
 ## im Rig: alles im Rig teilt sich einen z-Index (sonst fällt es aus dem
 ## gemeinsamen Umriss), also entscheidet die Reihenfolge im Baum, was vor
-## dem Körper liegt - und die freie Hand liegt meist auf der anderen Seite
-## als die Waffenhand. Ihre Lage rechnet sie aus dem Pivot selbst aus.
+## dem Körper liegt. Ihre Lage ist das Spiegelbild der Waffenhand an der
+## Körperachse, siehe _process.
 
 ## Der Kreis, auf dem sie sitzt.
 @export var pivot: Node2D
@@ -43,26 +43,28 @@ func _process(_delta: float) -> void:
 	if not pivot:
 		return
 
-	var local_position: Vector2
-	var local_rotation: float
 	if grip:
 		# Am Griff: derselbe Kreis wie die Waffenhand, um den Griffversatz
 		# verschoben, und mit dem Schlag mitgedreht.
-		local_position = (Vector2(base_radius, 0.0) + GRIP_OFFSET).rotated(grip.swing_angle + gait_angle) + gait + center
-		local_rotation = grip.swing_angle
+		var local_position: Vector2 = (Vector2(base_radius, 0.0) + GRIP_OFFSET).rotated(grip.swing_angle + gait_angle) + gait + center
+		var mirrored: bool = pivot.scale.y < 0.0
+		global_position = pivot.to_global(local_position)
+		global_rotation = pivot.global_rotation + (-grip.swing_angle if mirrored else grip.swing_angle)
 		flip_h = false
-	else:
-		# Gegenüber der Waffenhand: derselbe Kreis, um 180 Grad versetzt.
-		local_position = Vector2(-base_radius, 0.0).rotated(gait_angle) + gait + Vector2(-center.x, center.y)
-		local_rotation = 0.0
-		flip_h = true
+		flip_v = mirrored
+		return
 
-	# Der Pivot spiegelt sich beim Zielen nach links (scale.y = -1). Als Kind
-	# hätte die Hand das geerbt; als Geschwister muss sie es nachstellen.
-	var mirrored: bool = pivot.scale.y < 0.0
-	global_position = pivot.to_global(local_position) + (Vector2.ZERO if grip else Vector2(0.0, -RAISE))
-	global_rotation = pivot.global_rotation + (-local_rotation if mirrored else local_rotation)
-	flip_v = mirrored
+	# Sonst das Spiegelbild der Waffenhand an der Körperachse: ist die Waffe
+	# rechts, ist diese Hand links - und wandert die Waffenhand über die
+	# Achse, wechselt sie mit. Ohne den Schlag: der Schwung bleibt bei der
+	# Waffenhand, diese steht. Vier Figurpixel höher als die Waffenhand.
+	var rest: Vector2 = Vector2(base_radius, 0.0).rotated(gait_angle) + gait
+	var hand_world: Vector2 = pivot.to_global(rest)
+	var axis_x: float = pivot.global_position.x
+	global_position = Vector2(2.0 * axis_x - hand_world.x, hand_world.y - RAISE) + Vector2(-center.x, center.y)
+	global_rotation = 0.0
+	flip_h = true
+	flip_v = false
 
 func set_radius(radius: float) -> void:
 	base_radius = radius

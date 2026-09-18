@@ -96,7 +96,17 @@ func _order_rig(facing_up: bool) -> void:
 	if two_handed:
 		order = [off_hand, self, body] if facing_up else [body, off_hand, self]
 	else:
-		order = [self, body, off_hand] if facing_up else [off_hand, body, self]
+		# Die freie Hand ist das Spiegelbild der Waffenhand: nach oben liegen
+		# beide hinter dem Körper, nach unten beide davor, und seitlich liegt
+		# die Waffenhand vorn und die freie auf der abgewandten Seite dahinter.
+		var dir := Vector2.RIGHT.rotated(aim_rotation)
+		var sideways: bool = absf(dir.x) > absf(dir.y)
+		if facing_up:
+			order = [self, off_hand, body]
+		elif sideways:
+			order = [off_hand, body, self]
+		else:
+			order = [body, off_hand, self]
 	for index in order.size():
 		if rig.get_child(index) != order[index]:
 			rig.move_child(order[index], index)

@@ -115,6 +115,11 @@ texture_filter = 1
 material = SubResource("ShaderMaterial_rig")
 rotation = 1.5707964
 
+[node name="HandOverlay" type="Sprite2D" parent="Player/Sword" unique_id=2081959996]
+texture_filter = 1
+material = SubResource("ShaderMaterial_rig")
+position = Vector2(-1.365, 0)
+
 [node name="HitSound" type="AudioStreamPlayer" parent="Player/Sword" unique_id=462831525]
 stream = ExtResource("52_whnll")
 volume_db = -13.539

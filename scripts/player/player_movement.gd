@@ -41,6 +41,9 @@ const LIGHT_TEXTURE := preload("res://resources/materials/light_gradient.tres")
 ## Beide Hände - die Sprites haben keine, sie kommen aus den Charakterdaten.
 @onready var weapon_hand: Sprite2D = get_node_or_null("RigView/Rig/WeaponPivot/FirstHand")
 @onready var off_hand: Sprite2D = get_node_or_null("RigView/Rig/SecondHand")
+## Zweite Zeichnung der Waffenhand in der Welt, über der Klinge: die Faust
+## liegt vor dem Griff, nicht der Griff vor der Faust.
+@onready var hand_overlay: Sprite2D = get_node_or_null("Sword/HandOverlay")
 
 var stats: PlayerStats
 var health: PlayerHealth
@@ -123,6 +126,10 @@ func _apply_hands() -> void:
 		hand.offset = Vector2.ZERO
 		if hand.texture:
 			hand.center = PixelDraw.center_offset(hand.texture)
+	if hand_overlay:
+		hand_overlay.texture = character_data.hand_texture
+		hand_overlay.modulate = character_data.sprite_modulate
+		hand_overlay.visible = hand_overlay.texture != null
 
 	# Beide Hände sitzen auf einem Kreis um den Körpermittelpunkt. Der Kreis
 	# selbst ist der WeaponPivot - der wandert dorthin, wo die Figur wirklich
