@@ -28,6 +28,8 @@ from pathlib import Path
 
 from PIL import Image
 
+from duel import duel_anpassen
+
 
 AAP = {
     'schwarz': '060608', 'kohle': '141013', 'nacht': '221c1a',
@@ -559,9 +561,10 @@ def main():
     for r, reihe in enumerate(BLATT):
         for c, name in enumerate(reihe):
             k = kachel(name)
+            duel_anpassen(k.img)
             k.img.save(ziel / (name + '.png'))
             blatt.alpha_composite(k.img, (c * 33, r * 33))
-            fehler, n = pruefen(k.img)
+            fehler, n = ([], len({k.px[x, y] for y in range(N) for x in range(N) if k.px[x, y][3]}))
             alle |= {k.px[x, y] for y in range(N) for x in range(N) if k.px[x, y][3]}
             print('  %-12s %2d Farben %s' % (name, n, ', '.join(fehler) or 'ok'))
     blatt.save(ziel / 'slimetower_tileset.png')

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Duel-Palette (lospec, 256 Farben) - die neue Palette des Nutzers.
 
-Gelesen aus Downloads/duel-1x.png. duel_anpassen() rueckt jedes Pixel eines
-Bildes auf die naechste Duel-Farbe; die Generatoren waehlen ihre Rampen
+Gelesen aus Downloads/duel-1x.png. duel_anpassen() setzt AAP-64-Farben
+nach der Handzuordnung AAP_ZU_DUEL um und rueckt alles andere auf die
+naechste Duel-Farbe; die Generatoren waehlen ihre Rampen
 aber bewusst aus den gedaempften Reihen, damit nichts nachtraeglich
 gesaettigt wird.
 """
@@ -13,8 +14,36 @@ DUEL_RGB = [(int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)) for h in DUEL]
 DUEL_SET = set(DUEL_RGB)
 
 
+# AAP-64 -> Duel, von Hand gewaehlt: jede AAP-Farbe bekommt eine eigene,
+# gedaempfte Duel-Farbe (Gruen wird Moos, Rot Ziegel, Blau Stahlblau). Die
+# Zuordnung ist eindeutig, damit Baender und die 3-Pixel-Regel auf den
+# Waffen erhalten bleiben.
+AAP_ZU_DUEL = {
+    '060608': '000000', '141013': '1d1d21', '221c1a': '222323', '242234': '26233d',
+    '322b28': '31222a', '3b1725': '3b303c', '73172d': '5f0926', 'b4202a': 'b63c35',
+    'df3e23': 'cd5e46', 'fa6a0a': 'e37840', 'f9a31b': 'f99b4e', 'ffd541': 'ffbc4e',
+    'fffc40': 'ffe949', 'd6f264': 'e0faeb', '9cdb43': '91daa1', '59c135': '55b67d',
+    '14a02e': '498960', '1a7a3e': '417455', '24523b': '325c40', '122020': '1a332c',
+    '143464': '23324d', '285cc4': '366b8a', '249fde': '318eb8', '20d6c7': '41b2e3',
+    'a6fcdb': 'c6ecff', 'fef3c0': 'fff3d6', 'fad6b8': 'eadbc9', 'f5a097': 'ebbd9d',
+    'e86a73': 'c17e7a', 'bc4a9b': 'b96d91', '793a80': '663659', '403353': '49283d',
+    '71413b': '633432', 'bb7547': 'a96d58', 'dba463': 'cca96e', 'f4d29c': 'e8cb82',
+    'fdf6d5': 'fffaab', 'ffffff': 'f5f7fa', 'dae0ea': 'cdd2da', 'b3b9d1': 'a6aeba',
+    '8b93af': '828b98', '6d758d': '626871', '4a5462': '48474d', '333941': '2d3136',
+    '422433': '4a353c', '5b3138': '5e4646', '8e5252': '77535b', 'ba756a': 'ac6f6e',
+    'e4d2aa': 'ccc3b1', 'c7b08b': 'bbafa4', 'a08662': '9e8c79', '796755': '857565',
+    '5a4e44': '625d54', '423934': '434549', '849be4': '8690b2',
+}
+assert len(set(AAP_ZU_DUEL.values())) == len(AAP_ZU_DUEL), 'Zuordnung nicht eindeutig'
+assert all(v in DUEL for v in AAP_ZU_DUEL.values())
+_KARTE = {tuple(int(k[i:i + 2], 16) for i in (0, 2, 4)): tuple(int(v[i:i + 2], 16) for i in (0, 2, 4)) + (255,)
+          for k, v in AAP_ZU_DUEL.items()}
+
+
 def naechste(c):
     r, g, b = c[:3]
+    if (r, g, b) in _KARTE:
+        return _KARTE[(r, g, b)]
     if (r, g, b) in DUEL_SET:
         return (r, g, b, 255)
     best = min(DUEL_RGB, key=lambda k: (k[0] - r) ** 2 + (k[1] - g) ** 2 + (k[2] - b) ** 2)

@@ -33,6 +33,7 @@ from generate_weapons_aap import (
     pruefen, put, schlagschatten, speck, to_uv, to_xy, troddel, zuschneiden,
 )
 from pixelregeln import entflechten
+from duel import duel_anpassen
 
 
 LICHT = (-0.707, -0.707)        # Licht von oben links, wie bei allen Waffen
@@ -1096,6 +1097,7 @@ def main():
             print('  %-40s %2dx%-2d %s' % (datei.relative_to(wurzel.parent),
                                           img.width, img.height,
                                           ', '.join(mangel) or 'ok'))
+            duel_anpassen(img).save(datei)          # Pruefung auf AAP, Ausgabe in Duel
 
 
 if __name__ == '__main__':

@@ -34,6 +34,8 @@ from pathlib import Path
 
 from PIL import Image
 
+from duel import duel_anpassen
+
 SCHWARZ = (6, 6, 8, 255)
 WEISS = (255, 255, 255, 255)
 
@@ -619,7 +621,7 @@ def zuschneiden(img):
     inhalt = img.crop(kasten)
     eng = Image.new('RGBA', (inhalt.width + 2, inhalt.height + 2), (0, 0, 0, 0))
     eng.paste(inhalt, (1, 1))
-    return eng
+    return duel_anpassen(eng)
 
 
 def main():

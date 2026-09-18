@@ -30,6 +30,8 @@ from pathlib import Path
 
 from PIL import Image
 
+from duel import duel_anpassen
+
 
 AAP = {
     'schwarz': '060608', 'kohle': '141013', 'nacht': '221c1a',
@@ -362,7 +364,7 @@ def main():
         frames = []
         for richtung in ('Front', 'FSide', 'BSide', 'Back'):
             for nr in range(1, 11):
-                img = frame(fig, richtung, nr)
+                img = duel_anpassen(frame(fig, richtung, nr))
                 img.save(ziel / ('%s%d.png' % (richtung, nr)))
                 frames.append(img)
         if args.sheet:
