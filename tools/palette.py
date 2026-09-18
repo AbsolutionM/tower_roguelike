@@ -66,8 +66,8 @@ AAP_ZU_SPLENDOR_KRAEFTIG.update({
     # Violett
     'bc4a9b': 'd480bb', '793a80': '9052bc', '403353': '494182',
     # Leder / Holz
-    'f4d29c': 'f6d896', 'dba463': 'd39741', 'bb7547': 'c68556', '71413b': '855f39',
-    '5b3138': '724b2c',
+    'f4d29c': 'f6d896', 'dba463': 'd39741', 'bb7547': 'c68556', '71413b': '724b2c',
+    '5b3138': '673931',
     # Stahl: etwas kuehler und heller
     'dae0ea': 'f1f2ff', 'b3b9d1': 'c9d4fd', '8b93af': '9a97b9', '6d758d': '696682',
     '4a5462': '464762', '333941': '2c3438',
@@ -81,7 +81,20 @@ def _karte(zuordnung):
             for k, v in zuordnung.items()}
 
 
-KARTEN = {'gedaempft': _karte(AAP_ZU_SPLENDOR), 'kraeftig': _karte(AAP_ZU_SPLENDOR_KRAEFTIG)}
+# Fuer die Kopien der Nutzer-Figuren: kraeftig, aber das Rot des Ponchos
+# bleibt ein kuehles Karmin mit Weinrot-Schatten (kein Orange mit
+# Braunschatten - das war fuer den Cowboy falsch), Hut und Hautschatten
+# gedaempft wie im Original.
+AAP_ZU_SPLENDOR_FIGUR = dict(AAP_ZU_SPLENDOR_KRAEFTIG)
+AAP_ZU_SPLENDOR_FIGUR.update({
+    'b4202a': 'b25266', '73172d': '64364b', '3b1725': '2a1e23',
+    '796755': '886e6a', '5a4e44': '594d4d', '423934': '33272a', '322b28': '271f1b',
+    '8e5252': '966888', 'ba756a': 'b28b78', '5b3138': '4f342f', '71413b': '724b2c',
+})
+assert len(set(AAP_ZU_SPLENDOR_FIGUR.values())) == len(AAP_ZU_SPLENDOR_FIGUR), 'figur nicht eindeutig'
+
+KARTEN = {'gedaempft': _karte(AAP_ZU_SPLENDOR), 'kraeftig': _karte(AAP_ZU_SPLENDOR_KRAEFTIG),
+          'figur': _karte(AAP_ZU_SPLENDOR_FIGUR)}
 
 
 def naechste(c, stil='gedaempft'):

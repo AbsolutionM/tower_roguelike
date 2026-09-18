@@ -69,7 +69,7 @@ def main():
         aus.parent.mkdir(parents=True, exist_ok=True)
         # Was der Spieler steuert oder traegt, ist kraeftig; Gegner und
         # Kacheln bleiben gedaempft
-        stil = 'kraeftig' if rel.parts[0] in ('Character', 'Weapons') else 'gedaempft'
+        stil = {'Character': 'figur', 'Weapons': 'kraeftig'}.get(rel.parts[0], 'gedaempft')
         duel_anpassen(img, stil).save(aus)
         n += 1
     print('%d Dateien nach %s' % (n, ziel))
