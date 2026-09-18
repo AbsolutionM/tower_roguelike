@@ -66,7 +66,7 @@ AAP_ZU_SPLENDOR_KRAEFTIG.update({
     # Violett
     'bc4a9b': 'd480bb', '793a80': '9052bc', '403353': '494182',
     # Leder / Holz
-    'f4d29c': 'f6d896', 'dba463': 'd39741', 'bb7547': 'c68556', '71413b': '8c5b3e',
+    'f4d29c': 'f6d896', 'dba463': 'd39741', 'bb7547': 'c68556', '71413b': '855f39',
     '5b3138': '724b2c',
     # Stahl: etwas kuehler und heller
     'dae0ea': 'f1f2ff', 'b3b9d1': 'c9d4fd', '8b93af': '9a97b9', '6d758d': '696682',
