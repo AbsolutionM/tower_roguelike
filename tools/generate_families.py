@@ -986,9 +986,10 @@ KORALLE = {'kante': 'koralle_tief', 'glanz': 'perle', 'hell': 'koralle_hell',
            'rinne': 'koralle_tief', 'ruecken': 'koralle_dk'}
 KORALLE_TON = ('koralle_hell', 'koralle', 'koralle_dk', 'koralle_tief')
 PERLE_TON = ('weiss', 'perle', 'knochen_mitte', 'knochen_fase')
-DRACHE = {'kante': 'feuer_tief', 'glanz': 'gold', 'hell': 'drache_hell',
+# sechs verschiedene Toene, sonst legt die Band-Entdopplung Streifen an
+DRACHE = {'kante': 'feuer_tief', 'glanz': 'gold', 'hell': 'gold_dunkel',
           'fase': 'drache_dk', 'mitte': 'drache', 'licht': 'drache_hell',
-          'rinne': 'feuer_tief', 'ruecken': 'drache_dk'}
+          'rinne': 'feuer_tief', 'ruecken': 'schatten_dk'}
 DRACHE_TON = ('drache_hell', 'drache', 'drache_dk', 'feuer_tief')
 HORN_TON = ('creme', 'knochen_mitte', 'knochen_fase', 'knochen_kante')
 
@@ -1020,10 +1021,16 @@ def rune(img, stufe):
     ox, oy = ursprung(img, L, stufe)
     klinge(img, ox, oy, L, halb, RUNENSTEIN, spitze=m['spitze'] * 0.9,
            ricasso=m['ricasso'] * 1.2, rinne_bis=0.8, glanz=(L * 0.6,))
-    # leuchtende Runen in der Kehle
-    for i in range(int(m['ricasso']) + 2, int(L * 0.78), 3):
-        speck(img, ox, oy, float(i), 0.0, 'kristall_licht')
-        speck(img, ox, oy, i + 0.5, -0.5 if i % 2 else 0.5, 'kristall_hell')
+    # drei bis fuenf klare Glyphen in einer Reihe auf der Lichtseite, jede
+    # ein eigenes Zeichen, leuchtend; dazwischen bleibt der Stein ruhig
+    anzahl = min(5, 2 + stufe)
+    schritt = (L * 0.75 - m['ricasso'] - 2.0) / anzahl
+    for k in range(anzahl):
+        u = m['ricasso'] + 2.0 + k * schritt
+        bx, by = to_xy(u, -halb * 0.35, ox, oy)
+        for dx, dy in RUNEN[k % len(RUNEN)]:
+            put(img, bx + dx, by + dy - 1, C('kristall_licht'))
+        put(img, bx, by, C('kristall_hell'))
     pd, pw = m['pd'] * 1.2, m['pw'] * 1.2
     schlagschatten(img, ox, oy, RUNENSTEIN, 0.0, 0.8 + 0.3 * stufe, halb)
     parier(img, ox, oy, -pd * 1.1, pd, pw, *('stein_hell', 'stein', 'stein_dk', 'stahl_kante'), schwung=0.0)
@@ -1038,7 +1045,7 @@ def rune(img, stufe):
     ku = -(pd * 1.1 + glen + 0.4) - kn * 0.6
     block(img, ox, oy, ku, kn * 0.7, kn * 0.8, ('stein_hell', 'stein', 'stein_dk', 'stahl_kante'))
     speck(img, ox, oy, ku, 0.0, 'kristall_licht')
-    return ox, oy, L, halb, RUNENSTEIN
+    return None                                     # keine Extra-Runen der Veredelung
 
 
 def coral(img, stufe):
@@ -1047,15 +1054,18 @@ def coral(img, stufe):
     m = masse(stufe, 'coral')
     L, halb = m['laenge'], m['halb'] * 1.05
     ox, oy = ursprung(img, L, stufe)
-    scharten = tuple(m['ricasso'] + 2.0 + i * 2.6 for i in range(10) if m['ricasso'] + 2.0 + i * 2.6 < L - 3.0)
     klinge(img, ox, oy, L, halb, KORALLE, spitze=m['spitze'] * 1.2,
-           ricasso=m['ricasso'], rinne_bis=0.7, scharten=scharten,
-           glanz=(L * 0.35, L * 0.7), stumpf=False, scharte=0.4)
-    # Poren: dunkle Punkte versetzt
-    for i in range(int(m['ricasso']) + 2, int(L) - 3, 3):
-        speck(img, ox, oy, float(i), halb * 0.35, 'koralle_tief')
-        if stufe >= 3:
-            speck(img, ox, oy, i + 1.5, -halb * 0.3, 'koralle_tief')
+           ricasso=m['ricasso'], rinne_bis=0.7, glanz=(L * 0.35, L * 0.7),
+           stumpf=False)
+    # Korallenaeste wachsen aus dem Ruecken: kurze Keile, gegabelt bei den
+    # grossen Stufen - eine Silhouette, kein Muster
+    for k, f in enumerate(((0.5,), (0.4, 0.7), (0.3, 0.55, 0.78), (0.25, 0.45, 0.65, 0.85))[stufe - 1]):
+        u = min(L * f, L - m['spitze'] * 1.2 - 1.0)
+        bx, by = to_xy(u, halb - 0.5, ox, oy)
+        al = 2.0 + stufe * 0.8
+        keil(img, bx, by, 0.9, 0.9, al, 0.7 + stufe * 0.2, KORALLE_TON, kruemmung=0.6, spitz=False)
+        if stufe >= 3 and k % 2 == 0:
+            keil(img, int(bx + al * 0.5), int(by + al * 0.5), 1.0, 0.3, al * 0.6, 0.6 + stufe * 0.1, KORALLE_TON, spitz=False)
     pd = m['pd']
     schlagschatten(img, ox, oy, KORALLE, 0.0, 0.8 + 0.3 * stufe, halb)
     # Muschel: halbe Kugel mit Rillen als Parier
@@ -1086,8 +1096,15 @@ def dragon(img, stufe):
     klinge(img, ox, oy, L, halb, DRACHE, spitze=m['spitze'] * 1.3,
            ricasso=m['ricasso'], rinne_bis=0.0, kruemmung=0.25 * stufe,
            glanz=(L * 0.3, L * 0.6), stumpf=False)
-    if stufe >= 2:
-        schuppen(img, ox, oy, L, halb, stufe, DRACHE)
+    # Rueckenstacheln aus Horn, zur Spitze geneigt; ab Stufe 3 ein zweiter
+    # Kamm kleiner dahinter
+    for f, sl in ((0.35, 3.0), (0.55, 3.5), (0.75, 2.5))[:1 + stufe // 2 + (1 if stufe >= 2 else 0)]:
+        u = min(L * f, L - m['spitze'] * 1.3 - 1.0)
+        bx, by = to_xy(u, halb - 0.5, ox, oy)
+        keil(img, bx, by, 1.2, 0.6, sl + stufe * 0.6, 0.6 + stufe * 0.2, HORN_TON, kruemmung=0.5)
+    # Grat: eine helle Linie parallel zur Schneide auf der Lichtseite
+    for i in range(int(m['ricasso']) + 1, int(L) - 3):
+        speck(img, ox, oy, float(i), -halb * 0.45, 'gold_mitte' if i % 2 else 'drache_hell')
     pd = m['pd']
     schlagschatten(img, ox, oy, DRACHE, 0.0, 0.8 + 0.3 * stufe, halb)
     cx, cy = to_xy(-pd * 0.7, 0.0, ox, oy)

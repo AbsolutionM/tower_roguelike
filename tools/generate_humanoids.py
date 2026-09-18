@@ -93,6 +93,30 @@ def arm(px, x0, y0, richtung, laenge, ton, hand=None, neigung=0.0):
         put(px, x, y + 1, kante)
 
 
+def haengarm(px, x0, y0, sgn, laenge, ton, hand=None, vor=0):
+    """Arm haengt aussen am Rumpf: 2 px breit, Schulter hell, Innenseite im
+    Schatten. vor > 0 winkelt den Unterarm nach vorn (Zombie, Mumie):
+    die letzten Zeilen ruecken nach innen unten. Hand am Ende, 3 px."""
+    hell, mitte, dunkel, kante = (C(t) for t in ton)
+    x = x0
+    for j in range(laenge):
+        if vor and j >= laenge - vor:
+            x = x0 - sgn * (j - (laenge - vor) + 1)
+        put(px, x, y0 + j, mitte if sgn < 0 else dunkel)
+        put(px, x + sgn, y0 + j, dunkel if sgn < 0 else kante)
+    put(px, x0, y0, hell)
+    hy = y0 + laenge
+    if hand:
+        hh, hm, hd, hk = (C(t) for t in hand)
+        put(px, x, hy, hm)
+        put(px, x + sgn, hy, hd)
+        put(px, x - sgn, hy, hm)
+        put(px, x, hy + 1, hk)
+    else:
+        put(px, x, hy, dunkel)
+        put(px, x + sgn, hy, kante)
+
+
 def haarbueschel(px, cx, y, ton, muster):
     hell, mitte, dunkel, kante = (C(t) for t in ton)
     for dx, dy, t in muster:
@@ -128,7 +152,7 @@ def brustkorb(px, cx, y0):
         b = (11, 11, 11, 10, 9, 9)[j]
         x0 = cx - b // 2 + (1 if b % 2 == 0 else 0)
         for i in range(b):
-            put(px, x0 + i, y0 + j, C('nacht2'))
+            put(px, x0 + i, y0 + j, C('nacht2') if 0 < i < b - 1 else C('lumpen_tief'))
     for j in range(6):
         put(px, cx, y0 + j, hd)
     for j in (1, 3, 5):
@@ -162,8 +186,8 @@ def zombie(px, cx, y, frame, seitlich):
                  ((-4, 0, 1), (-3, 0, 0), (-2, -1, 1), (-1, 0, 0), (0, -1, 1), (1, 0, 0), (2, 0, 1), (3, -1, 1), (4, 0, 2),
                   (-4, 1, 2), (4, 1, 2)))
     # Arme nach vorn gestreckt, leicht ungleich
-    arm(px, cx - 6, y_rumpf + 1, -1, 4 + (1 if frame else 0), LUMPEN, MODER, neigung=-0.15)
-    arm(px, cx + 5, y_rumpf + 1, 1, 4, LUMPEN, MODER, neigung=0.1 if frame else -0.1)
+    haengarm(px, cx - 7, y_rumpf + 1, -1, 6, LUMPEN, MODER, vor=2)
+    haengarm(px, cx + 6, y_rumpf + 1, 1, 7 if frame else 6, LUMPEN, MODER, vor=2)
 
 
 def skeleton(px, cx, y, frame, seitlich):
@@ -173,11 +197,6 @@ def skeleton(px, cx, y, frame, seitlich):
     hose(px, cx, y_hose, ('bein', 'bein_dk', 'bein_tief', 'nacht2'))
     guertel(px, cx, y_guertel, LEDER2, ('rost', 'rost_hell'))
     brustkorb(px, cx, y_rumpf)
-    # Schild am Guertel links
-    for j in range(4):
-        for i in range(3):
-            put(px, cx - 8 + i, y_rumpf + 3 + j, C('rost') if (i + j) % 2 else C('rost_dk'))
-    put(px, cx - 7, y_rumpf + 4, C('rost_hell'))
     schaedel(px, cx, y_gesicht, seitlich)
     # Rostkappe: flache Kuppel ohne Krempe, ein Sprung darin
     gc.kuppel(px, cx + 0.5, y_gesicht - 0.5, 5.5, 3.6, ROST, oben_nur=True)
@@ -185,8 +204,8 @@ def skeleton(px, cx, y, frame, seitlich):
         put(px, x, y_gesicht - 1, C('rost_dk'))
     put(px, cx + 2, y_gesicht - 3, C('rost_tief'))
     put(px, cx + 3, y_gesicht - 2, C('rost_tief'))
-    arm(px, cx - 6, y_rumpf + 1, -1, 1, BEIN, neigung=1.2)
-    arm(px, cx + 5, y_rumpf + 1, 1, 2 if frame else 1, BEIN, neigung=0.9)
+    haengarm(px, cx - 7, y_rumpf + 1, -1, 5, BEIN)
+    haengarm(px, cx + 6, y_rumpf + 1, 1, 6 if frame else 5, BEIN)
 
 
 def ghoul(px, cx, y, frame, seitlich):
@@ -238,10 +257,14 @@ def cultist(px, cx, y, frame, seitlich):
         put(px, ex, y_gesicht + 2, C('glut'))
         put(px, ex, y_gesicht + 3, C('glut_dk'))
     kapuze(px, cx, y_gesicht - 2, ROBE)
-    # Aermel zusammengelegt vor dem Bauch
-    for i in range(6):
-        put(px, cx - 3 + i, y_rumpf + 3, hm if i in (0, 5) else hd)
-        put(px, cx - 3 + i, y_rumpf + 4, hd if i in (0, 5) else hk)
+    # Aermel: vom Schulteransatz schraeg zur Mitte, treffen sich vor dem Bauch
+    for sgn in (-1, 1):
+        for j in range(4):
+            x = cx + sgn * (5 - j) + (0 if sgn < 0 else 1)
+            put(px, x, y_rumpf + 1 + j, hm if sgn < 0 else hd)
+            put(px, x, y_rumpf + 2 + j, hd if sgn < 0 else hk)
+    for x in range(cx - 1, cx + 3):
+        put(px, x, y_rumpf + 5, hk)
 
 
 def mummy(px, cx, y, frame, seitlich):
@@ -266,8 +289,8 @@ def mummy(px, cx, y, frame, seitlich):
         put(px, cx - 7, y_gesicht + 3 + j, C('binde_dk' if j < 2 else 'binde_tief'))
     put(px, cx + 6, y_rumpf + 5, C('binde_dk'))
     put(px, cx + 6, y_rumpf + 6, C('binde_tief'))
-    arm(px, cx - 6, y_rumpf + 1, -1, 4, BINDE, BINDE, neigung=0.0)
-    arm(px, cx + 5, y_rumpf + 1, 1, 4 if frame else 3, BINDE, BINDE, neigung=0.0)
+    haengarm(px, cx - 7, y_rumpf + 1, -1, 6, BINDE, BINDE, vor=1)
+    haengarm(px, cx + 6, y_rumpf + 1, 1, 7 if frame else 6, BINDE, BINDE, vor=1)
 
 
 def bandit(px, cx, y, frame, seitlich):
@@ -282,14 +305,21 @@ def bandit(px, cx, y, frame, seitlich):
     put(px, cx + 4, y_guertel + 2, C('rost'))
     put(px, cx + 4, y_guertel, C('leder2_dk'))
     gesicht(px, cx, y_gesicht, HAUT2, seitlich=seitlich)
-    # Augenbinde ueber dem linken Auge, Stoppeln
-    for x in range(cx - 5, cx + 5):
-        put(px, x + (seitlich // 2), y_gesicht + 2, C('nacht2') if x < cx - 1 else px[x + seitlich // 2, y_gesicht + 2])
+    # Augenklappe links mit Riemen, rechtes Auge frei, Stoppeln
+    for dx in (-3, -2):
+        put(px, cx + dx + seitlich, y_gesicht + 2, C('nacht2'))
+        put(px, cx + dx + seitlich, y_gesicht + 3, C('nacht2'))
+    for x in range(cx - 5, cx - 3):
+        put(px, x + seitlich, y_gesicht + 1, C('nacht2'))
+    for x in range(cx - 1, cx + 5):
+        put(px, x + seitlich, y_gesicht + 1, C('haut2_tief'))
     put(px, cx + 1 + seitlich, y_gesicht + 2, gc.AUGE)
     put(px, cx + 2 + seitlich, y_gesicht + 2, gc.AUGE)
     put(px, cx + 1 + seitlich, y_gesicht + 3, gc.AUGE)
     for x in range(cx - 2, cx + 3, 2):
         put(px, x + seitlich // 2, y_gesicht + 4, C('haut2_tief'))
+    haengarm(px, cx - 7, y_rumpf + 1, -1, 5, LUMPEN, HAUT2)
+    haengarm(px, cx + 6, y_rumpf + 1, 1, 6 if frame else 5, LUMPEN, HAUT2)
     # Kopftuch: flache Kuppel mit Knoten hinten
     gc.kuppel(px, cx + 0.5, y_gesicht - 0.5, 5.8, 4.0, TUCH, oben_nur=True)
     for x in range(cx - 5, cx + 6):
@@ -308,7 +338,7 @@ def gegner_frame(bauen, richtung, frame):
     px = img.load()
     seitlich = 2 if richtung == 'FSide' else 0
     cx = 15
-    y_gesicht = 14
+    y_gesicht = 14 - (1 if frame else 0)
     y_rumpf = y_gesicht + 5
     y_guertel = y_rumpf + 6
     y_hose = y_guertel + 1
