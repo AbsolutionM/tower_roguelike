@@ -61,6 +61,9 @@ AAP = {
     'eis_hell': 'a6fcdb', 'eis': '20d6c7', 'eis_dk': '249fde', 'eis_tief': '285cc4',
     'eis_nacht': '143464', 'blitz': 'fffc40', 'smaragd': '59c135', 'smaragd_dk': '1a7a3e',
     'schatten': '242234', 'schatten_dk': '141013', 'lila_hell': 'bc4a9b',
+    'stein_hell': 'b3b9d1', 'stein': '8b93af', 'stein_dk': '6d758d', 'stein_tief': '4a5462',
+    'koralle_hell': 'f5a097', 'koralle': 'e86a73', 'koralle_dk': 'b4202a', 'koralle_tief': '73172d',
+    'perle': 'fef3c0', 'drache_hell': 'df3e23', 'drache': 'b4202a', 'drache_dk': '73172d',
 }
 
 

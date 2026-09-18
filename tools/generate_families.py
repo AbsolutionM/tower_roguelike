@@ -235,6 +235,8 @@ PROPORTION = {
     'shadow': {3: (1.0, 0.85), 4: (1.05, 0.75)},           # wird zur Sichel
     'royal': {4: (1.05, 0.85)},
     'axe': {}, 'spear': {},
+    'rune': {1: (0.95, 1.3), 4: (0.95, 1.15)},
+    'coral': {2: (0.95, 1.3)}, 'dragon': {4: (1.05, 0.85)},
 }
 
 
@@ -974,6 +976,136 @@ def spear(img, stufe):
     return None
 
 
+# --- Rune, Koralle, Drache -----------------------------------------------------
+
+RUNENSTEIN = {'kante': 'stahl_kante', 'glanz': 'stahl_licht', 'hell': 'stein_hell',
+              'fase': 'stein_tief', 'mitte': 'stein', 'licht': 'stein_hell',
+              'rinne': 'stahl_kante', 'ruecken': 'stein_tief'}
+KORALLE = {'kante': 'koralle_tief', 'glanz': 'perle', 'hell': 'koralle_hell',
+           'fase': 'koralle_dk', 'mitte': 'koralle', 'licht': 'koralle_hell',
+           'rinne': 'koralle_tief', 'ruecken': 'koralle_dk'}
+KORALLE_TON = ('koralle_hell', 'koralle', 'koralle_dk', 'koralle_tief')
+PERLE_TON = ('weiss', 'perle', 'knochen_mitte', 'knochen_fase')
+DRACHE = {'kante': 'feuer_tief', 'glanz': 'gold', 'hell': 'drache_hell',
+          'fase': 'drache_dk', 'mitte': 'drache', 'licht': 'drache_hell',
+          'rinne': 'feuer_tief', 'ruecken': 'drache_dk'}
+DRACHE_TON = ('drache_hell', 'drache', 'drache_dk', 'feuer_tief')
+HORN_TON = ('creme', 'knochen_mitte', 'knochen_fase', 'knochen_kante')
+
+
+def schuppen(img, ox, oy, laenge, halb, stufe, ton):
+    """Schuppenmuster auf der Klinge: versetzte Boegen in Kante und Licht."""
+    ricasso = STUFEN[stufe - 1][3]
+    px = img.load()
+    for y in range(img.height):
+        for x in range(img.width):
+            if not px[x, y][3]:
+                continue
+            u, v = to_uv(x, y, ox, oy)
+            if u < ricasso + 1 or u > laenge - 3 or abs(v) > halb - 0.8:
+                continue
+            reihe = int((v + halb) // 1.0)
+            phase = (u + (0.5 if reihe % 2 else 0.0)) % 2.0
+            if phase < 0.5:
+                put(img, x, y, C(ton['kante']))
+            elif phase < 1.0 and (v + halb) % 1.0 < 0.5:
+                put(img, x, y, C(ton['glanz']))
+
+
+def rune(img, stufe):
+    """Runenschwert: grauer Stein mit leuchtenden Runen in der Kehle,
+    Stangenenden als Steinknoten, Knauf ein Runenstein."""
+    m = masse(stufe, 'rune')
+    L, halb = m['laenge'], m['halb'] * 1.1
+    ox, oy = ursprung(img, L, stufe)
+    klinge(img, ox, oy, L, halb, RUNENSTEIN, spitze=m['spitze'] * 0.9,
+           ricasso=m['ricasso'] * 1.2, rinne_bis=0.8, glanz=(L * 0.6,))
+    # leuchtende Runen in der Kehle
+    for i in range(int(m['ricasso']) + 2, int(L * 0.78), 3):
+        speck(img, ox, oy, float(i), 0.0, 'kristall_licht')
+        speck(img, ox, oy, i + 0.5, -0.5 if i % 2 else 0.5, 'kristall_hell')
+    pd, pw = m['pd'] * 1.2, m['pw'] * 1.2
+    schlagschatten(img, ox, oy, RUNENSTEIN, 0.0, 0.8 + 0.3 * stufe, halb)
+    parier(img, ox, oy, -pd * 1.1, pd, pw, *('stein_hell', 'stein', 'stein_dk', 'stahl_kante'), schwung=0.0)
+    for sgn in (-1, 1):
+        ex, ey = to_xy(-pd * 1.1, sgn * pw, ox, oy)
+        kugel(img, ex, ey, 0.9 + stufe * 0.3, ('stein_hell', 'stein', 'stein_dk', 'stahl_kante'))
+    speck(img, ox, oy, -pd * 1.1, 0.0, 'kristall_licht')
+    glen = m['glen'] * 1.2
+    griff(img, ox, oy, -(pd * 1.1 + glen + 0.4), -(pd * 1.1 + 0.8),
+          0.45 + stufe * 0.07, *GRIFF_LEDER)
+    kn = m['knauf'] * 1.1
+    ku = -(pd * 1.1 + glen + 0.4) - kn * 0.6
+    block(img, ox, oy, ku, kn * 0.7, kn * 0.8, ('stein_hell', 'stein', 'stein_dk', 'stahl_kante'))
+    speck(img, ox, oy, ku, 0.0, 'kristall_licht')
+    return ox, oy, L, halb, RUNENSTEIN
+
+
+def coral(img, stufe):
+    """Korallenschwert: rosa Klinge mit gewellter Schneide, Muschel als
+    Parier, Perlenknauf, Seegras statt Troddel."""
+    m = masse(stufe, 'coral')
+    L, halb = m['laenge'], m['halb'] * 1.05
+    ox, oy = ursprung(img, L, stufe)
+    scharten = tuple(m['ricasso'] + 2.0 + i * 2.6 for i in range(10) if m['ricasso'] + 2.0 + i * 2.6 < L - 3.0)
+    klinge(img, ox, oy, L, halb, KORALLE, spitze=m['spitze'] * 1.2,
+           ricasso=m['ricasso'], rinne_bis=0.7, scharten=scharten,
+           glanz=(L * 0.35, L * 0.7), stumpf=False, scharte=0.4)
+    # Poren: dunkle Punkte versetzt
+    for i in range(int(m['ricasso']) + 2, int(L) - 3, 3):
+        speck(img, ox, oy, float(i), halb * 0.35, 'koralle_tief')
+        if stufe >= 3:
+            speck(img, ox, oy, i + 1.5, -halb * 0.3, 'koralle_tief')
+    pd = m['pd']
+    schlagschatten(img, ox, oy, KORALLE, 0.0, 0.8 + 0.3 * stufe, halb)
+    # Muschel: halbe Kugel mit Rillen als Parier
+    cx, cy = to_xy(-pd * 0.7, 0.0, ox, oy)
+    r = 1.6 + stufe * 0.6
+    kugel(img, cx, cy, r, PERLE_TON)
+    for k in range(-1, 2):
+        put(img, int(cx + k), int(cy - r * 0.5), C('knochen_fase'))
+        put(img, int(cx + k * 2), int(cy + r * 0.3), C('knochen_fase'))
+    glen = m['glen'] * 1.15
+    griff(img, ox, oy, -(pd * 1.1 + glen + 0.4), -(pd * 0.7 + 0.6),
+          0.45 + stufe * 0.07, *('koralle', 'koralle_dk', 'koralle_tief', 'feuer_tief'))
+    kn = m['knauf'] * 1.2
+    kx, ky = to_xy(-(pd * 1.1 + glen + 0.4) - kn * 0.6, 0.0, ox, oy)
+    kugel(img, kx, ky, kn, PERLE_TON, glanz='weiss')
+    # Seegras: gruene Strang haengt
+    for i in range(2 + stufe * 2):
+        put(img, kx - i // 2, ky + int(kn) + i, C('gruen' if i % 2 else 'gruen_dk'))
+    return ox, oy, L, halb, KORALLE
+
+
+def dragon(img, stufe):
+    """Drachenschwert: rote Schuppenklinge, Hornzaehne als Parier, Klaue
+    haelt den Knauf, Goldschneide."""
+    m = masse(stufe, 'dragon')
+    L, halb = m['laenge'], m['halb'] * 1.1
+    ox, oy = ursprung(img, L, stufe)
+    klinge(img, ox, oy, L, halb, DRACHE, spitze=m['spitze'] * 1.3,
+           ricasso=m['ricasso'], rinne_bis=0.0, kruemmung=0.25 * stufe,
+           glanz=(L * 0.3, L * 0.6), stumpf=False)
+    if stufe >= 2:
+        schuppen(img, ox, oy, L, halb, stufe, DRACHE)
+    pd = m['pd']
+    schlagschatten(img, ox, oy, DRACHE, 0.0, 0.8 + 0.3 * stufe, halb)
+    cx, cy = to_xy(-pd * 0.7, 0.0, ox, oy)
+    zl = 2.5 + stufe * 1.3
+    keil(img, cx, cy, -1.0, -0.5, zl, 0.8 + stufe * 0.3, HORN_TON, kruemmung=-1.0)
+    keil(img, cx, cy, 0.5, 1.0, zl, 0.8 + stufe * 0.3, HORN_TON, kruemmung=1.0)
+    block(img, ox, oy, -pd * 0.7, 0.5 + stufe * 0.12, 1.0 + stufe * 0.25, DRACHE_TON)
+    glen = m['glen'] * 1.2
+    griff(img, ox, oy, -(pd * 1.1 + glen + 0.4), -(pd * 0.7 + 0.6),
+          0.45 + stufe * 0.07, *('drache', 'drache_dk', 'feuer_tief', 'schatten_dk'))
+    kn = m['knauf'] * 1.2
+    kx, ky = to_xy(-(pd * 1.1 + glen + 0.4) - kn * 0.6, 0.0, ox, oy)
+    kugel(img, kx, ky, kn, ('gold', 'gold_mitte', 'gold_dunkel', 'rost_dk'), glanz='gold_hell')
+    for sgn in (-1, 1):                                # Klauen um den Knauf
+        keil(img, kx + sgn * kn * 0.6, ky - kn * 0.4, sgn * 0.6, 1.0, kn + 1.0, 0.6, HORN_TON, kruemmung=-sgn * 0.8)
+    return ox, oy, L, halb, DRACHE
+
+
 NAMEN_TYP = {
     'axe': ('%s_axe', '%s_broadaxe', 'giant_%s_axe', 'great_%s_axe'),
     'spear': ('%s_spear', '%s_pike', 'giant_%s_spear', 'great_%s_spear'),
@@ -1064,6 +1196,9 @@ FAMILIEN = {
     'RoyalSword': ('royal', royal),
     'BattleAxe': ('iron', axe),
     'Spear': ('iron', spear),
+    'RuneSword': ('rune', rune),
+    'CoralSword': ('coral', coral),
+    'DragonSword': ('dragon', dragon),
 }
 STUFEN_NAMEN = ('%s_sword', '%s_broadsword', 'giant_%s_sword', 'great_%s_sword')
 
