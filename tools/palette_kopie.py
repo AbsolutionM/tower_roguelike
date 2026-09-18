@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Kopiert die Sprites des Nutzers in die Duel-Palette - in einen eigenen
+"""Kopiert die Sprites des Nutzers in die aktive Palette (Splendor128) - in einen eigenen
 Ordner, die Originale bleiben unberuehrt.
 
-    Sprites/<pfad>.png       -> Sprites/claude/duel/<pfad>.png
-    Sprites/<pfad>.aseprite  -> Sprites/claude/duel/<pfad>.png  (erste Ebene)
+    Sprites/<pfad>.png       -> Sprites/claude/splendor/<pfad>.png
+    Sprites/<pfad>.aseprite  -> Sprites/claude/splendor/<pfad>.png  (erste Ebene)
 
-Jede AAP-64-Farbe wird nach AAP_ZU_DUEL (duel.py) umgesetzt, alles andere
-auf die naechste Duel-Farbe gerueckt.
+Jede AAP-64-Farbe wird nach AAP_ZU_SPLENDOR (palette.py) umgesetzt, alles andere
+auf die naechste Palettenfarbe gerueckt.
 
     python tools/duel_kopie.py --quelle C:/Users/maxst/Desktop/Sprites
 """
@@ -20,7 +20,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from duel import duel_anpassen
+from palette import duel_anpassen
 
 
 def aseprite_ebene(pfad):
@@ -52,7 +52,7 @@ def main():
     ap.add_argument('--quelle', required=True)
     args = ap.parse_args()
     quelle = Path(args.quelle)
-    ziel = quelle / 'claude' / 'duel'
+    ziel = quelle / 'claude' / 'splendor'
     n = 0
     for pfad in sorted(quelle.rglob('*')):
         if 'claude' in pfad.parts or not pfad.is_file():

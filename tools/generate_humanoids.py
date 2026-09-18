@@ -33,7 +33,7 @@ from PIL import Image
 import generate_characters as gc
 from generate_characters import (C, fuss_spec, gesicht, guertel, helm, hose, kapuze,
                                  put, rumpf, stiefel, stiefel_paar)
-from duel import duel_anpassen
+from palette import duel_anpassen
 
 # Duel-Toene direkt in die Namensliste der Figuren haengen
 gc.AAP.update({

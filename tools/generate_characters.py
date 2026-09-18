@@ -31,7 +31,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from duel import duel_anpassen
+from palette import duel_anpassen
 
 
 AAP = {

@@ -33,7 +33,7 @@ from generate_weapons_aap import (
     pruefen, put, schlagschatten, speck, to_uv, to_xy, troddel, zuschneiden,
 )
 from pixelregeln import entflechten
-from duel import duel_anpassen
+from palette import duel_anpassen
 
 
 LICHT = (-0.707, -0.707)        # Licht von oben links, wie bei allen Waffen

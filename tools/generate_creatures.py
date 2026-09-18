@@ -34,7 +34,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from duel import duel_anpassen
+from palette import duel_anpassen
 
 SCHWARZ = (6, 6, 8, 255)
 WEISS = (255, 255, 255, 255)

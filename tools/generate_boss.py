@@ -23,7 +23,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from duel import duel_anpassen
+from palette import duel_anpassen
 
 # Duel-Palette, gedaempfte Moosreihe: Kante .. Glanz
 RAMPE = ('1a332c', '325c40', '417455', '498960', '55b67d', '91daa1', 'e0faeb')
