@@ -1,33 +1,33 @@
 #!/usr/bin/env python3
-"""Menschliche und untote Gegner - Bewegung nach Sprites/Character/template,
-Koerper groesser und rund gebaut.
+"""Menschliche und untote Gegner nach der Vorlage Sprites/Character/template.
 
-Aus der Vorlage (Strichmaennchen in drei Farben, 32x32, zehn Frames je
-Richtung) kommen nur Hub und Beinstellung je Frame:
-    Back      Front und Back (gleich): Huepf-Zyklus
+Die Vorlage ist ein Strichmaennchen in drei Farben: Kopf (f8c53a), Rumpf
+(d5dc1d), Beine (494182), 32x32, zehn Frames je Richtung:
+    Back      Front und Back (gleich): Huepf-Zyklus, Beine als Block plus
+              zwei duenne Striche
     TFSide    vorne + seitlich (Laufrichtung unten rechts/links)
     TBSide    hinten + seitlich (Laufrichtung oben rechts/links)
-Die Beine werden mit 4/3 (breit) und 3/2 (hoch) umgesetzt: der Block wird
-zur Hose, die duennen Striche werden zwei Pixel breite Beine mit Stiefeln.
+Masse: Kopf 10x7, Rumpf 8x4 + Hueften 6x2, Beinblock 6x2, Fuesse 1 px.
 
-Kopf und Rumpf sind eigene Formen (Kopf 12x9 mit runden Ecken, Rumpf 10x7
-mit Schultern und Taille, Hueften 8x3) und werden als Koerper beleuchtet:
-Kopf als Ellipsoid, Rumpf als Zylinder mit Schulterlicht und dem Schatten
-des Kopfes, Licht von oben links vorne. Darauf die Merkmale, jedes mit
-eigener Licht- und Schattenseite:
+Die Masken werden je Frame eingelesen; Proportionen und Bewegung bleiben
+die der Vorlage, nur die Ecken werden gerundet (Kopf, Schultern, Kiefer,
+Kapuze). Gemalt wird als Koerper, nicht als Flaeche: der Kopf als
+Ellipsoid, Rumpf und Hueften als Zylinder mit Schulterlicht und dem
+Schatten des Kopfes, Licht von oben links vorne; die Hose als zwei Roehren,
+die Fuesse mit Stiefelspitze wie beim Cowboy. Darauf die Merkmale:
 
     zombie            graugruene Haut, Haarbueschel, hohle Augen, offener Mund,
                       zerrissenes Hemd mit Naht und Loechern
     skeleton_warrior  Schaedel mit Kiefer und Rostkappe, Brustkorb, Becken
     ghoul             lila-graue Haut, Ohren, Glutaugen, Zahnreihe, Rippen,
-                      lange Krallenarme
+                      lange Krallenarme neben dem Rumpf
     cultist           spitze Kapuze, Gesicht im Schatten, Robe mit Falten,
                       Strickguertel, Augensymbol
     mummy             Bandagen in Lagen, Augenschlitz, lose Enden
     bandit            Kopftuch, Augenklappe, Halstuch, Lederweste, Dolch
 
 Ausgabe je Gegner: Front1-10, FSide1-10, BSide1-10, Back1-10, dazu
-attack (6), hurt (4), death (6).
+attack (6), hurt (4), death (6) aus den Vorlagenposen abgeleitet.
 
     python tools/generate_humanoids.py --out C:/Users/maxst/Desktop/Sprites/claude/Enemies --sheet
 """
@@ -69,9 +69,6 @@ NACHT = '171516'
 SCHWARZ = '0e0c0c'
 GLUT, GLUT_DK, KRALLE, AUGE = 'fff089', 'e88a36', 'f1f2ff', '36282b'
 
-CX = 15.5                      # Figurenmitte
-BODEN = 30                     # unterste Fussreihe
-
 
 def rgb(h):
     return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16), 255)
@@ -82,105 +79,30 @@ def ton(name):
 
 
 def put(px, x, y, col):
-    if 0 <= x < 32 and 0 <= y < 40:
+    if 0 <= x < 32 and 0 <= y < 32:
         px[x, y] = col
 
 
 # --- Vorlage lesen ---------------------------------------------------------------
 
-def vorlage(richtung, nr):
-    """Hub (0-2) und Beinpixel eines Vorlagenframes."""
+def maske(richtung, nr):
+    """Kopf-, Rumpf- und Beinpixel eines Vorlagenframes."""
     datei = {'Front': 'Back', 'Back': 'Back', 'FSide': 'TFSide', 'BSide': 'TBSide'}[richtung]
     im = Image.open(VORLAGE / ('%s%d.png' % (datei, nr))).convert('RGBA')
     px = im.load()
-    kopf_y = 32
-    beine = set()
+    teile = {'kopf': set(), 'rumpf': set(), 'beine': set()}
     for y in range(32):
         for x in range(32):
             c = px[x, y]
             if not c[3]:
                 continue
             if c[:3] == KOPF_M:
-                kopf_y = min(kopf_y, y)
+                teile['kopf'].add((x, y))
+            elif c[:3] == RUMPF_M:
+                teile['rumpf'].add((x, y))
             elif c[:3] == BEIN_M:
-                beine.add((x, y))
-    return 12 - kopf_y, beine
-
-
-def ty(y):
-    """Vorlagenzeile -> eigene Zeile: Boden bleibt, darueber 3/2."""
-    return BODEN - int((29 - y) * 1.5 + 0.5)
-
-
-def tx(x):
-    return CX + (x - CX) * 4 / 3
-
-
-def beine_umsetzen(beine):
-    """Aus den Vorlagenbeinen: Hosenzeilen (y, x0, x1) und je Bein eine
-    Punktliste (linke Spalte, y) fuer den Strich, in eigenen Koordinaten."""
-    zeilen = {}
-    for x, y in beine:
-        zeilen.setdefault(y, []).append(x)
-    hose = []
-    striche = {'l': [], 'r': []}
-    ys = sorted(zeilen)
-    for i, y in enumerate(ys):
-        xs = sorted(zeilen[y])
-        if len(xs) >= 5:                                    # Block: Hose
-            y0 = ty(y)
-            if i + 1 < len(ys) and len(zeilen[ys[i + 1]]) >= 5:
-                y1 = ty(ys[i + 1]) - 1
-            else:
-                y1 = ty(y + 1) - 1 if y < 29 else y0
-            for yy in range(y0, max(y0, y1) + 1):
-                hose.append((yy, int(math.floor(tx(xs[0]))), int(math.ceil(tx(xs[-1])))))
-        else:
-            for x in xs:
-                seite = 'l' if x < CX else 'r'
-                sx = int(math.floor(tx(x) + 0.5)) - (1 if x >= CX else 0)
-                striche[seite].append((sx, ty(y)))
-    if hose:
-        boden = max(z[0] for z in hose)
-        for seite, pts in striche.items():
-            if pts:
-                pts.sort(key=lambda p: p[1])
-                pts.insert(0, (pts[0][0], boden + 1))
-    return hose, striche
-
-
-# --- Koerperformen ------------------------------------------------------------------
-
-def maske(x0, y0, breite, einrueck):
-    punkte = set()
-    for j, e in enumerate(einrueck):
-        li, re = (e, e) if isinstance(e, int) else e
-        for x in range(x0 + li, x0 + breite - re):
-            punkte.add((x, y0 + j))
-    return punkte
-
-
-KOPF_B, KOPF_H = 12, 9
-RUMPF_B, RUMPF_H = 10, 7
-HUEFT_B, HUEFT_H = 8, 3
-
-KOPF_RUND = (2, 1, 0, 0, 0, 0, 0, 1, 2)
-KOPF_SCHAEDEL = (2, 1, 0, 0, 0, 0, 1, 2, 3)
-KOPF_KAPUZE = (4, 3, 2, 1, 0, 0, 0, 0, 0)
-RUMPF_NORMAL = (1, 0, 0, 0, 0, 0, 1)
-RUMPF_BREIT = (1, 0, 0, 0, 0, 0, 0)
-RUMPF_ROBE = (1, 0, 0, 0, 0, 0, 0)
-
-
-def koerper(kopf_form, rumpf_form, hose_oben):
-    """Kopf, Rumpf, Hueften uebereinander auf der Hose."""
-    hy1 = hose_oben - 1
-    hueft = maske(int(CX - HUEFT_B / 2 + 0.5), hy1 - HUEFT_H + 1, HUEFT_B, (0, 0, 0))
-    ry0 = hy1 - HUEFT_H + 1 - RUMPF_H
-    rumpf = maske(int(CX - RUMPF_B / 2 + 0.5), ry0, RUMPF_B, rumpf_form)
-    ky0 = ry0 - KOPF_H + 1                                # Kopf sitzt eine Zeile in den Schultern
-    kopf = maske(int(CX - KOPF_B / 2 + 0.5), ky0, KOPF_B, kopf_form)
-    return kopf, rumpf, hueft
+                teile['beine'].add((x, y))
+    return teile
 
 
 def kasten(punkte):
@@ -189,12 +111,43 @@ def kasten(punkte):
     return min(xs), min(ys), max(xs), max(ys)
 
 
+def ecken(punkte, oben=1, unten=1):
+    """Ecken der Kastenform abrunden: je Ecke `oben`/`unten` Pixel weg."""
+    x0, y0, x1, y1 = kasten(punkte)
+    weg = set()
+    for i in range(oben):
+        for j in range(oben - i):
+            weg.add((x0 + i, y0 + j)); weg.add((x1 - i, y0 + j))
+    for i in range(unten):
+        for j in range(unten - i):
+            weg.add((x0 + i, y1 - j)); weg.add((x1 - i, y1 - j))
+    return punkte - weg
+
+
+def kapuze(punkte):
+    """Kopfmaske als Kapuze: oben spitz zulaufend, unten breit."""
+    x0, y0, x1, y1 = kasten(punkte)
+    aus = set()
+    for x, y in punkte:
+        j = y - y0
+        e = max(0, 3 - j)                                    # Zeile 0: 3 weg, 1: 2, 2: 1
+        if x0 + e <= x <= x1 - e:
+            aus.add((x, y))
+    return aus
+
+
+def schultern(punkte):
+    """Rumpf: obere Ecken weg (Schultern), Hueften bleiben."""
+    x0, y0, x1, y1 = kasten(punkte)
+    return punkte - {(x0, y0), (x1, y0)}
+
+
 # --- Beleuchtung --------------------------------------------------------------------
 
 LICHT = (-0.55, -0.55, 0.62)          # von links oben vorne
 
 
-def stufe(lit, toene, grenzen=(0.52, 0.18, -0.2)):
+def stufe(lit, toene, grenzen):
     hell, mitte, dunkel, kante = toene
     if lit > grenzen[0]:
         return hell
@@ -205,7 +158,7 @@ def stufe(lit, toene, grenzen=(0.52, 0.18, -0.2)):
     return kante
 
 
-def ellipsoid(px, punkte, toene, grenzen=(0.52, 0.18, -0.2), glanz=None):
+def ellipsoid(px, punkte, toene, grenzen=(0.5, 0.15, -0.22), glanz=None):
     """Kugelbeleuchtung ueber die Maske: Normale aus der Ellipse der Maske."""
     x0, y0, x1, y1 = kasten(punkte)
     cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
@@ -216,128 +169,105 @@ def ellipsoid(px, punkte, toene, grenzen=(0.52, 0.18, -0.2), glanz=None):
         lit = nx * LICHT[0] + ny * LICHT[1] + nz * LICHT[2]
         put(px, x, y, stufe(lit, toene, grenzen))
     if glanz:
-        gx, gy = int(cx - rx * 0.45), int(cy - ry * 0.5)
-        for dx, dy in ((0, 0), (1, 0), (0, 1)):
+        gx, gy = int(cx - rx * 0.4), int(cy - ry * 0.45)
+        for dx, dy in ((0, 0), (1, 0)):
             if (gx + dx, gy + dy) in punkte:
                 put(px, gx + dx, gy + dy, glanz)
 
 
-def zylinder(px, punkte, toene, kopfschatten=True, grenzen=(0.5, 0.15, -0.22)):
-    """Rumpf: Zylinder um die Hochachse, Schultern nach oben beleuchtet,
-    Kopfschatten ueber die Brust, unterster Rand im Schatten."""
+def zylinder(px, punkte, toene, kopfschatten=True, grenzen=(0.48, 0.12, -0.22)):
+    """Rumpf mit Hueften: Zylinder um die Hochachse je Zeile, Schultern
+    nach oben beleuchtet, Kopfschatten ueber die Brust, Saum im Schatten."""
     x0, y0, x1, y1 = kasten(punkte)
-    cx = (x0 + x1) / 2
-    rx = (x1 - x0 + 1) / 2
+    zeilen = {}
     for x, y in punkte:
+        zeilen.setdefault(y, []).append(x)
+    for x, y in punkte:
+        zx0, zx1 = min(zeilen[y]), max(zeilen[y])
+        cx = (zx0 + zx1) / 2
+        rx = (zx1 - zx0 + 1) / 2
         nx = (x - cx) / rx
         nz = math.sqrt(max(0.0, 1 - nx * nx))
         ny = -0.5 if (x, y - 1) not in punkte else 0.0
         if (x, y + 1) not in punkte:
             ny = 0.5
         lit = nx * LICHT[0] + ny * LICHT[1] + nz * LICHT[2]
-        if kopfschatten and y - y0 < 2 and abs(x - cx) < 3.5:
-            lit -= 0.45
+        if kopfschatten and y == y0 and abs(x - cx) < 2.5:
+            lit -= 0.5
         put(px, x, y, stufe(lit, toene, grenzen))
 
 
-def hose_malen(px, hose, toene):
-    """Hosenblock: zwei Roehren nebeneinander, Schritt in der Mitte."""
-    hh, hm, hd, hk = toene
-    oben = min(z[0] for z in hose)
-    for y, x0, x1 in hose:
-        w = x1 - x0 + 1
-        cx = (x0 + x1) / 2
-        for x in range(x0, x1 + 1):
-            if x == x1:
-                col = hk
-            elif x == x0:
-                col = hd
-            elif w > 10:                                    # ausgestrecktes Bein: eine Roehre
-                col = hm if y == oben else hd
-            elif abs(x - cx) < 0.6:
-                col = hk
-            else:
-                seite = x < cx
-                u = (x - x0) / (cx - x0) if seite else (x1 - x) / (x1 - cx)   # 0 aussen .. 1 innen
-                col = hh if (seite and y == oben and u > 0.3) else (hm if (seite or u > 0.6) else hd)
-            put(px, x, y, col)
-
-
-def bein_strich(px, pts, hose, stiefel):
-    """Ein Bein als Linie aus zwei Pixel breiten Punkten; die untersten zwei
-    Zeilen als Stiefel."""
+def beine_malen(px, punkte, hose, stiefel):
+    """Beinblock als zwei Roehren mit Schritt in der Mitte, die duennen
+    Striche als Bein, die unterste Zeile als Stiefel mit Spitze nach aussen
+    (wie beim Cowboy)."""
+    if not punkte:                                          # Tod: im Boden versunken
+        return
     hh, hm, hd, hk = hose
     sh, sm, sd, sk = stiefel
-    if not pts:
-        return
-    zellen = set()
-    if len(pts) == 1:
-        zellen.add(pts[0])
-    for (xa, ya), (xb, yb) in zip(pts, pts[1:]):
-        n = max(abs(xb - xa), abs(yb - ya), 1)
-        for i in range(n + 1):
-            zellen.add((round(xa + (xb - xa) * i / n), round(ya + (yb - ya) * i / n)))
-    unten = max(p[1] for p in zellen)
-    for x, y in zellen:
-        fuss = y >= unten - 1
-        if fuss:
-            put(px, x, y, sm if y == unten - 1 else sd)
-            put(px, x + 1, y, sk)
-            if y == unten:
-                put(px, x + 2, y, sk)                       # Fussspitze
-        else:
-            put(px, x, y, hm)
-            put(px, x + 1, y, hd)
-
-
-def beine_malen(px, hose, striche, hosen, stiefel):
-    if hose:
-        hose_malen(px, hose, hosen)
-    for pts in striche.values():
-        bein_strich(px, pts, hosen, stiefel)
+    x0, y0, x1, y1 = kasten(punkte)
+    zeilen = {}
+    for x, y in punkte:
+        zeilen.setdefault(y, []).append(x)
+    for x, y in punkte:
+        xs = zeilen[y]
+        if len(xs) >= 5:                                    # Block: Hose
+            bx0, bx1 = min(xs), max(xs)
+            cx = (bx0 + bx1) / 2
+            w = bx1 - bx0 + 1
+            oben = (x, y - 1) not in punkte
+            if x == bx1:
+                col = hk
+            elif x == bx0:
+                col = hd
+            elif w > 7:                                     # ausgestrecktes Bein: eine Roehre
+                col = hm if oben else hd
+            elif abs(x - cx) < 0.6:
+                col = hk
+            elif x < cx:
+                col = hh if (oben and x > bx0 + 1) else hm
+            else:
+                col = hm if (x - cx) < 1.6 else hd
+            put(px, x, y, col)
+        else:                                               # Strich: Bein, unten Stiefel
+            unten = (x, y + 1) not in punkte
+            links = x < (x0 + x1) / 2
+            if unten:
+                put(px, x, y, sd)
+                put(px, x + (-1 if links else 1), y, sk)    # Stiefelspitze nach aussen
+            else:
+                put(px, x, y, hm if links else hd)
 
 
 # --- Merkmale ------------------------------------------------------------------------
 
-def tupfen(px, punkte, stellen, col):
-    x0, y0, _, _ = kasten(punkte)
+def tupfen(px, punkte, stellen, col, x0=None, y0=None):
+    if x0 is None:
+        x0, y0, _, _ = kasten(punkte)
     for dx, dy in stellen:
         if (x0 + dx, y0 + dy) in punkte:
             put(px, x0 + dx, y0 + dy, col)
 
 
-def augen(px, kopf, seitlich, farbe, hoehe=2, breite=2, zeile=4):
-    """Zwei Augen im Kopf; seitlich rueckt beide nach rechts, das hintere
-    wird schmaler. Gibt die linken Spalten zurueck."""
+def augen(px, kopf, seitlich, farbe, hoehe=2, zeile=3):
+    """Zwei Augen 2 px breit; seitlich rueckt beide nach rechts, das hintere
+    wird 1 px schmal. Gibt die linken Spalten zurueck."""
     x0, y0, x1, y1 = kasten(kopf)
-    cx = (x0 + x1 + 1) // 2
-    li = cx - 3 + seitlich
-    re = cx + 1 + seitlich
-    pos = []
+    li = x0 + 2 + seitlich
+    re = x0 + 6 + seitlich
     for ex, hinteres in ((li, seitlich > 0), (re, False)):
-        b = breite - (1 if hinteres else 0)
-        for dx in range(b):
+        for dx in range(1 if hinteres else 2):
             for dy in range(hoehe):
-                if (ex + dx, y0 + zeile + dy) in kopf:
-                    put(px, ex + dx, y0 + zeile + dy, farbe)
-        pos.append(ex)
-    return pos
-
-
-def mund(px, kopf, seitlich, col, breite=2, zeile=6):
-    x0, y0, x1, y1 = kasten(kopf)
-    cx = (x0 + x1 + 1) // 2
-    for dx in range(breite):
-        put(px, cx - breite // 2 + dx + seitlich, y0 + zeile, col)
+                if (ex + dx + (1 if hinteres else 0), y0 + zeile + dy) in kopf:
+                    put(px, ex + dx + (1 if hinteres else 0), y0 + zeile + dy, farbe)
+    return li, re
 
 
 def haar_hinten(px, kopf, toene):
-    """Hinterkopf voll Haar: Kugel in den Haartoenen, Straehnen als helle
-    Bogenstuecke, Spitzen am Nacken."""
     hh, hm, hd, hk = toene
-    ellipsoid(px, kopf, toene, grenzen=(0.6, 0.25, -0.15))
-    tupfen(px, kopf, ((3, 1), (4, 2), (5, 3), (7, 2), (8, 3), (2, 4), (6, 5), (4, 6)), hh)
-    tupfen(px, kopf, ((2, 8), (5, 8), (8, 8), (3, 7), (7, 7)), hk)
+    ellipsoid(px, kopf, toene, grenzen=(0.58, 0.22, -0.15))
+    tupfen(px, kopf, ((2, 1), (3, 2), (5, 1), (6, 2), (2, 4), (7, 4), (4, 5)), hh)
+    tupfen(px, kopf, ((1, 6), (3, 6), (6, 6), (8, 6)), hk)
 
 
 def haut_kopf(px, kopf, haut, seitlich, hinten, haar=None, glanz=True):
@@ -350,299 +280,281 @@ def haut_kopf(px, kopf, haut, seitlich, hinten, haar=None, glanz=True):
         return
     ellipsoid(px, kopf, haut, glanz=hh if glanz else None)
     x0, y0, x1, y1 = kasten(kopf)
-    for dx, dy in ((7, 5), (8, 5), (9, 6), (8, 6), (9, 4)):           # Wangenschatten rechts
+    for dx, dy in ((7, 4), (8, 4), (8, 3), (7, 5)):                 # Wangenschatten rechts
         if (x0 + dx + seitlich, y0 + dy) in kopf:
             put(px, x0 + dx + seitlich, y0 + dy, hd)
-    for dx, dy in ((3, 3), (4, 3), (7, 3), (8, 3)):                   # Brauen
-        if (x0 + dx + seitlich, y0 + dy) in kopf:
-            put(px, x0 + dx + seitlich, y0 + dy, hd)
-    put(px, x0 + 6 + seitlich, y0 + 5, hd)                            # Nasenschatten
-    put(px, x0 + 5 + seitlich, y0 + 5, hh)                            # Nasenlicht
+    for dx in (2, 3, 6, 7):                                         # Brauen
+        if (x0 + dx + seitlich, y0 + 2) in kopf:
+            put(px, x0 + dx + seitlich, y0 + 2, hd)
+    put(px, x0 + 5 + seitlich, y0 + 4, hd)                          # Nasenschatten
+    put(px, x0 + 4 + seitlich, y0 + 4, hh)
 
 
-# --- Gegner --------------------------------------------------------------------------
+# --- Gegner: Kopf, Rumpf, Extras ------------------------------------------------------
 
-def zombie(px, k, r, h, hose, striche, seitlich, hinten, frame):
+def zombie(px, m, seitlich, hinten, frame):
     haut = ton('moder')
     lumpen = ton('lumpen')
     lh, lm, ld, lk = lumpen
-    beine_malen(px, hose, striche, ton('hosen'), ton('stiefel'))
-    zylinder(px, h, lumpen, kopfschatten=False)
+    beine_malen(px, m['beine'], ton('hosen'), ton('stiefel'))
+    r = schultern(m['rumpf'])
     zylinder(px, r, lumpen)
     x0, y0, x1, y1 = kasten(r)
-    for dx, dy in ((1, 2), (2, 3), (3, 4), (7, 1), (6, 2), (5, 3)):    # Falten zur Mitte
-        if (x0 + dx, y0 + dy) in r:
-            put(px, x0 + dx, y0 + dy, ld)
-    for dx, dy in ((2, 2), (7, 0), (6, 1)):
-        if (x0 + dx, y0 + dy) in r:
-            put(px, x0 + dx, y0 + dy, lh)
-    tupfen(px, r, ((6, 4), (7, 4), (7, 5)), haut[2])                   # Loch mit Haut
-    tupfen(px, r, ((6, 5), (8, 5)), haut[3])
-    tupfen(px, r, ((2, 5), (2, 6)), haut[2])
-    tupfen(px, r, ((4, 0), (4, 1), (4, 2)), lk)                        # offene Naht
-    tupfen(px, r, ((3, 1), (5, 2)), lh)
-    hx0, hy0, hx1, hy1 = kasten(h)
-    for x in range(hx0, hx1 + 1):                                      # zerfetzter Saum
-        if (x, hy1) in h and x % 2 == 0:
-            put(px, x, hy1, lk)
+    tupfen(px, r, ((1, 2), (2, 3), (6, 1), (5, 2)), ld, x0, y0)       # Falten zur Mitte
+    tupfen(px, r, ((2, 1), (6, 0)), lh, x0, y0)
+    tupfen(px, r, ((5, 3), (6, 3)), haut[2], x0, y0)                  # Loch mit Haut
+    tupfen(px, r, ((6, 4),), haut[3], x0, y0)
+    tupfen(px, r, ((2, 4),), haut[2], x0, y0)
+    tupfen(px, r, ((3, 0), (3, 1)), lk, x0, y0)                       # offene Naht
+    tupfen(px, r, ((4, 1),), lh, x0, y0)
+    for x in range(x0, x1 + 1):                                       # zerfetzter Saum
+        if (x, y1) in r and x % 2 == 0:
+            put(px, x, y1, lk)
+    k = ecken(m['kopf'])
     haut_kopf(px, k, haut, seitlich, hinten, haar=ton('haar'))
     kx0, ky0, kx1, ky1 = kasten(k)
     bh, bm, bd, bk = ton('haar')
     if hinten:
-        for dx, dy in ((3, 4), (4, 4), (4, 5), (8, 5), (9, 5)):                          # kahle Stellen
-            if (kx0 + dx, ky0 + dy) in k:
-                put(px, kx0 + dx, ky0 + dy, haut[3])
+        tupfen(px, k, ((3, 3), (4, 3), (7, 4)), haut[3], kx0, ky0)    # kahle Stellen
     else:
-        tupfen(px, k, ((2, 5), (1, 4), (10, 3), (9, 2)), haut[2])       # Flecken
-        tupfen(px, k, ((2, 6), (10, 4)), rgb('654956'))                # Bluterguss
-        li, re = augen(px, k, seitlich, rgb(NACHT), hoehe=2, breite=2, zeile=4)
-        put(px, li, ky0 + 6, haut[3]); put(px, li + 1, ky0 + 6, haut[3])          # Traenensaecke
-        put(px, re, ky0 + 5, rgb(NACHT)); put(px, re, ky0 + 6, haut[3])          # rechtes Auge haengt
-        put(px, re, ky0 + 4, haut[2])
-        mund(px, k, seitlich, rgb(NACHT), breite=4, zeile=7)
-        put(px, kx0 + 5 + seitlich, ky0 + 7, rgb('ddcebf'))                       # Zahn
-        put(px, kx0 + 8 + seitlich, ky0 + 8, haut[3])                             # haengender Winkel
+        tupfen(px, k, ((1, 4), (8, 2)), haut[2], kx0, ky0)            # Flecken
+        tupfen(px, k, ((1, 5),), rgb('654956'), kx0, ky0)             # Bluterguss
+        li, re = augen(px, k, seitlich, rgb(NACHT), hoehe=2, zeile=3)
+        put(px, re, ky0 + 4, rgb(NACHT)); put(px, re + 1, ky0 + 3, haut[2])   # rechtes Auge haengt
+        put(px, re, ky0 + 5, haut[3]); put(px, li, ky0 + 5, haut[3])          # Traenensaecke
+        for dx in range(3):                                           # offener Mund, ein Zahn
+            put(px, kx0 + 3 + dx + seitlich, ky0 + 5 + (1 if dx == 2 else 0), rgb(NACHT))
+        put(px, kx0 + 4 + seitlich, ky0 + 5, rgb('ddcebf'))
+        put(px, kx0 + 6 + seitlich, ky0 + 6, haut[3])                 # haengender Winkel
     for dx, dy, t in ((1, 1, 1), (2, 0, 0), (3, 1, 1), (4, -1, 0), (5, 0, 1), (6, -1, 0),
-                      (7, 0, 1), (8, -1, 1), (9, 0, 2), (10, 1, 2), (0, 2, 2), (11, 2, 2),
-                      (2, 1, 2), (5, 1, 1), (8, 1, 2), (3, 0, 0)):
+                      (7, 0, 1), (8, 1, 2), (0, 2, 2), (9, 2, 2), (3, 0, 0), (6, 0, 2), (1, 0, 2)):
         put(px, kx0 + dx, ky0 + dy, (bh, bm, bd, bk)[t])
 
 
-def skeleton(px, k, r, h, hose, striche, seitlich, hinten, frame):
+def skeleton(px, m, seitlich, hinten, frame):
     bein = ton('bein')
-    beine_malen(px, hose, striche, ton('beinhose'), ton('beinstiefel'))
-    zylinder(px, h, ton('beinhose'), kopfschatten=False)               # Becken
-    tupfen(px, h, ((3, 0), (4, 0), (2, 1), (5, 1), (3, 2), (4, 2)), bein[3])
-    tupfen(px, h, ((1, 0), (6, 0)), bein[0])
+    beine_malen(px, m['beine'], ton('beinhose'), ton('beinstiefel'))
+    if m['beine']:                                                    # Becken: Kerben oben
+        bx0, by0, bx1, by1 = kasten(m['beine'])
+        tupfen(px, m['beine'], ((1, 0), (4, 0)), bein[3], bx0, by0)
+        tupfen(px, m['beine'], ((2, 0), (3, 0)), bein[0], bx0, by0)
+    r = schultern(m['rumpf'])
     x0, y0, x1, y1 = kasten(r)
-    cx = (x0 + x1 + 1) // 2
+    cx = (x0 + x1 + 1) // 2                                           # 16
     if hinten:
         zylinder(px, r, bein)
-        for y in range(y0, y1 + 1):                                    # Wirbelsaeule
-            put(px, cx - 1, y, bein[2] if y % 2 else bein[1])
-            put(px, cx, y, bein[3] if y % 2 else bein[2])
-        for j in (1, 3, 5):                                            # Rippen von hinten
-            for dx in (2, 3, 4):
+        for y in range(y0, y1 + 1):                                   # Wirbelsaeule
+            put(px, cx - 1, y, bein[3] if y % 2 else bein[2])
+            put(px, cx, y, bein[2] if y % 2 else bein[1])
+        for j in (1, 3):                                              # Rippen von hinten
+            for dx in (2, 3):
                 if (cx - dx, y0 + j) in r:
                     put(px, cx - dx, y0 + j, bein[2])
                 if (cx + dx - 1, y0 + j) in r:
                     put(px, cx + dx - 1, y0 + j, bein[3])
     else:
-        for x, y in r:                                                 # dunkler Brustraum
+        for x, y in r:                                                # dunkler Brustraum
             rand_ = (x - 1, y) not in r or (x + 1, y) not in r
             put(px, x, y, bein[3] if rand_ else rgb(NACHT))
-        for y in range(y0, y1 + 1):                                    # Brustbein
+        for y in range(y0, y1 + 1):                                   # Brustbein
             put(px, cx - 1, y, bein[1] if y % 2 else bein[0])
             put(px, cx, y, bein[2] if y % 2 else bein[1])
-        for j in (1, 3, 5):                                            # Rippenboegen
-            for dx in (2, 3, 4):
-                yy = y0 + j + (1 if dx == 4 else 0)
+        for j in (0, 2, 4):                                           # Rippenboegen
+            for dx in (2, 3):
+                yy = y0 + j + (1 if dx == 3 else 0)
                 if (cx - dx, yy) in r:
-                    put(px, cx - dx, yy, bein[0] if dx < 4 else bein[1])
+                    put(px, cx - dx, yy, bein[0] if dx < 3 else bein[1])
                 if (cx + dx - 1, yy) in r:
-                    put(px, cx + dx - 1, yy, bein[1] if dx < 4 else bein[2])
-        for dx in (-3, -2, 1, 2):                                      # Schluesselbeine
-            put(px, cx + dx, y0, bein[0] if dx < 0 else bein[1])
-    ellipsoid(px, k, bein, grenzen=(0.45, 0.1, -0.25))
+                    put(px, cx + dx - 1, yy, bein[1] if dx < 3 else bein[2])
+        put(px, cx - 2, y0, bein[0]); put(px, cx + 1, y0, bein[1])   # Schluesselbeine
+    k = ecken(m['kopf'], oben=1, unten=2)                             # Schaedel: schmaler Kiefer
+    ellipsoid(px, k, bein, grenzen=(0.42, 0.08, -0.25))
     kx0, ky0, kx1, ky1 = kasten(k)
     if not hinten:
-        li, re = augen(px, k, seitlich, rgb(SCHWARZ), hoehe=2, breite=3, zeile=3)
-        put(px, li + 2, ky0 + 3, rgb(NACHT)); put(px, li + 2, ky0 + 4, rgb(NACHT))
-        put(px, re + 2, ky0 + 3, rgb(NACHT)); put(px, re + 2, ky0 + 4, rgb(NACHT))
-        put(px, li + 1, ky0 + 4, rgb('b25266')); put(px, re + 1, ky0 + 4, rgb('b25266'))   # Glimmen
-        for ex in (li, re):                                            # Wangenknochen
-            put(px, ex, ky0 + 5, bein[2]); put(px, ex + 1, ky0 + 5, bein[0]); put(px, ex + 2, ky0 + 5, bein[2])
-        put(px, kx0 + 5 + seitlich, ky0 + 5, bein[3]); put(px, kx0 + 6 + seitlich, ky0 + 6, bein[3])   # Nasenloch
-        for x in range(kx0 + 3, kx0 + 9):                              # Zahnreihe
-            put(px, x + seitlich, ky0 + 7, bein[3] if x % 2 else bein[0])
-            if (x + seitlich, ky0 + 8) in k:
-                put(px, x + seitlich, ky0 + 8, bein[2] if x % 2 else bein[1])
-        put(px, kx0 + 2 + seitlich, ky0 + 7, bein[2]); put(px, kx0 + 9 + seitlich, ky0 + 7, bein[3])
+        li, re = augen(px, k, seitlich, rgb(SCHWARZ), hoehe=2, zeile=2)
+        put(px, li + 1, ky0 + 3, rgb('b25266')); put(px, re + 1, ky0 + 3, rgb('b25266'))   # Glimmen
+        put(px, li, ky0 + 4, bein[2]); put(px, li + 1, ky0 + 4, bein[0])    # Wangenknochen
+        put(px, re, ky0 + 4, bein[2]); put(px, re + 1, ky0 + 4, bein[0])
+        put(px, kx0 + 4 + seitlich, ky0 + 4, bein[3])                 # Nasenloch
+        for x in range(kx0 + 2, kx0 + 8):                             # Zahnreihe
+            put(px, x + seitlich, ky0 + 5, bein[3] if x % 2 else bein[0])
+            if (x + seitlich, ky0 + 6) in k:
+                put(px, x + seitlich, ky0 + 6, bein[2] if x % 2 else bein[1])
     else:
-        tupfen(px, k, ((4, 3), (5, 4), (6, 5), (7, 4), (8, 5), (3, 6), (6, 7)), bein[3])    # Naehte
-        tupfen(px, k, ((4, 4), (7, 5), (5, 6)), bein[0])
-    tupfen(px, k, ((1, 3), (2, 4), (2, 5)), bein[3])                   # Riss links
-    tupfen(px, k, ((3, 2), (4, 2)), bein[0])                           # Stirnwoelbung
+        tupfen(px, k, ((3, 2), (4, 3), (5, 4), (6, 3), (2, 5)), bein[3], kx0, ky0)    # Naehte
+        tupfen(px, k, ((3, 3), (6, 4)), bein[0], kx0, ky0)
+    tupfen(px, k, ((1, 2), (1, 3), (2, 4)), bein[3], kx0, ky0)        # Riss links
+    tupfen(px, k, ((3, 1), (4, 1)), bein[0], kx0, ky0)                # Stirnwoelbung
     rost = ton('rost')
-    for x, y in k:                                                     # Kappe: oberste zwei Zeilen, Rand
+    for x, y in k:                                                    # Kappe: obere zwei Zeilen
         if y <= ky0 + 1:
             u = (x - kx0) / (kx1 - kx0)
             put(px, x, y, rost[0] if (u < 0.45 and y == ky0) else (rost[1] if u < 0.65 else rost[2]))
-        if y == ky0 + 2:
-            put(px, x, y, rost[3] if x > kx0 + 4 else rost[2])
-    tupfen(px, k, ((4, 1), (9, 1), (10, 0), (7, 2)), rgb('b47538'))    # Rost
-    tupfen(px, k, ((6, 0), (3, 1)), rgb('e6e7f0'))                     # Nieten
-    put(px, kx0 + 2, ky0, rost[3]); put(px, kx0 + 9, ky0, rost[3])
+    tupfen(px, k, ((3, 1), (7, 1), (8, 0)), rgb('b47538'), kx0, ky0)  # Rost
+    tupfen(px, k, ((5, 0),), rgb('e6e7f0'), kx0, ky0)                 # Niete
+    put(px, kx0 + 1, ky0 + 1, rost[3]); put(px, kx1 - 1, ky0 + 1, rost[3])
 
 
-def ghoul(px, k, r, h, hose, striche, seitlich, hinten, frame):
+def ghoul(px, m, seitlich, hinten, frame):
     haut = ton('ghul')
     hh, hm, hd, hk = haut
-    beine_malen(px, hose, striche, ton('ghulhose'), ton('stiefel'))
-    zylinder(px, h, ton('ghulhose'), kopfschatten=False)
+    beine_malen(px, m['beine'], ton('ghulhose'), ton('stiefel'))
+    r = schultern(m['rumpf'])
     zylinder(px, r, haut)
     x0, y0, x1, y1 = kasten(r)
     cx = (x0 + x1 + 1) // 2
-    if hinten:                                                         # Wirbelhoecker, Schulterblaetter
+    if hinten:                                                        # Wirbelhoecker
         for y in range(y0, y1 + 1):
             put(px, cx - 1, y, hk if y % 2 else hd)
             put(px, cx, y, hd if y % 2 else hm)
-        tupfen(px, r, ((2, 1), (3, 2), (7, 1), (6, 2)), hd)
-    else:                                                              # Rippen, eingefallener Bauch
-        for j in (2, 4):
-            for dx in (1, 2, 3):
+        tupfen(px, r, ((1, 1), (6, 1)), hd, x0, y0)
+    else:                                                             # Rippen, Bauch
+        for j in (1, 3):
+            for dx in (1, 2):
                 if (cx - dx - 1, y0 + j) in r:
                     put(px, cx - dx - 1, y0 + j, hd)
                 if (cx + dx, y0 + j) in r:
                     put(px, cx + dx, y0 + j, hk)
-        tupfen(px, r, ((4, 5), (5, 5), (4, 6), (5, 6)), hd)
-        tupfen(px, r, ((3, 6), (6, 6)), hk)
-    tupfen(px, r, ((1, 3), (8, 2), (2, 5)), hk)                        # Flecken
-    haut_kopf(px, k, haut, seitlich, hinten, haar=None, glanz=True)
+        tupfen(px, r, ((3, 4), (4, 4)), hd, x0, y0)
+        tupfen(px, r, ((2, 5), (5, 5)), hk, x0, y0)
+    tupfen(px, r, ((1, 3), (6, 2)), hk, x0, y0)                       # Flecken
+    k = ecken(m['kopf'])
+    haut_kopf(px, k, haut, seitlich, hinten, haar=None)
     kx0, ky0, kx1, ky1 = kasten(k)
-    tupfen(px, k, ((1, 2), (10, 2), (2, 7), (9, 7), (5, 0), (4, 8)), hk)   # fleckige Haut
+    tupfen(px, k, ((1, 1), (8, 1), (2, 5), (4, 0)), hk, kx0, ky0)     # fleckige Haut
     if hinten:
-        tupfen(px, k, ((5, 4), (6, 5), (4, 6)), hd)
+        tupfen(px, k, ((4, 3), (5, 4), (3, 5)), hd, kx0, ky0)
     else:
-        li, re = augen(px, k, seitlich, rgb(NACHT), hoehe=2, breite=3, zeile=3)
-        put(px, li + 1, ky0 + 3, rgb(GLUT)); put(px, re + 1, ky0 + 3, rgb(GLUT))
-        put(px, li + 1, ky0 + 4, rgb(GLUT_DK)); put(px, re + 1, ky0 + 4, rgb(GLUT_DK))
-        put(px, li, ky0 + 5, hk); put(px, re + 2, ky0 + 5, hk)         # Augenhoehlen unten
-        for x in range(kx0 + 2, kx0 + 10):                             # breites Maul
-            put(px, x + seitlich, ky0 + 7, rgb(KRALLE) if x % 2 else rgb(NACHT))
-            if (x + seitlich, ky0 + 8) in k:
-                put(px, x + seitlich, ky0 + 8, rgb(NACHT) if x % 2 else hk)
-        put(px, kx0 + 1 + seitlich, ky0 + 7, rgb(NACHT)); put(px, kx0 + 10 + seitlich, ky0 + 7, rgb(NACHT))
-    for sgn, ex in ((-1, kx0 - 1), (1, kx1 + 1)):                      # spitze Ohren
-        put(px, ex, ky0 + 3, hm if sgn < 0 else hd)
-        put(px, ex, ky0 + 2, hh if sgn < 0 else hm)
-        put(px, ex + sgn, ky0 + 1, hm if sgn < 0 else hd)
-        put(px, ex + sgn, ky0 + 2, hd if sgn < 0 else hk)
-        put(px, ex, ky0 + 4, hd if sgn < 0 else hk)
+        li, re = augen(px, k, seitlich, rgb(NACHT), hoehe=2, zeile=2)
+        put(px, li + 1, ky0 + 2, rgb(GLUT)); put(px, re + 1, ky0 + 2, rgb(GLUT))
+        put(px, li + 1, ky0 + 3, rgb(GLUT_DK)); put(px, re + 1, ky0 + 3, rgb(GLUT_DK))
+        put(px, li, ky0 + 4, hk); put(px, re + 1, ky0 + 4, hk)        # Augenhoehlen
+        for x in range(kx0 + 2, kx0 + 8):                             # breites Maul
+            put(px, x + seitlich, ky0 + 5, rgb(KRALLE) if x % 2 else rgb(NACHT))
+            if (x + seitlich, ky0 + 6) in k:
+                put(px, x + seitlich, ky0 + 6, rgb(NACHT) if x % 2 else hk)
+        put(px, kx0 + 1 + seitlich, ky0 + 5, rgb(NACHT)); put(px, kx0 + 8 + seitlich, ky0 + 5, rgb(NACHT))
+    for sgn, ex in ((-1, kx0 - 1), (1, kx1 + 1)):                     # spitze Ohren
+        put(px, ex, ky0 + 2, hm if sgn < 0 else hd)
+        put(px, ex, ky0 + 1, hh if sgn < 0 else hm)
+        put(px, ex + sgn, ky0 + 1, hd if sgn < 0 else hk)
+        put(px, ex, ky0 + 3, hd if sgn < 0 else hk)
     # lange Arme neben dem Rumpf, Sehnen, Krallen; im Schritt schwingt einer
     schwung = 1 if frame in (2, 3, 8, 9) else 0
-    for sgn, ax in ((-1, x0 - 2), (1, x1 + 1)):
-        laenge = (y1 - y0) + 4 + (schwung if sgn > 0 else 0)
+    for sgn, ax in ((-1, x0 - 2), (1, x1 + 2)):
+        laenge = (y1 - y0) + 3 + (schwung if sgn > 0 else 0)
         for j in range(laenge):
             put(px, ax, y0 + 1 + j, hm if sgn < 0 else hd)
             put(px, ax + sgn, y0 + 1 + j, hd if sgn < 0 else hk)
             if j % 3 == 2:
                 put(px, ax, y0 + 1 + j, hd if sgn < 0 else hk)
         put(px, ax, y0 + 1, hh if sgn < 0 else hm)
-        put(px, ax - sgn, y0 + 1, hm if sgn < 0 else hd)               # Schulter
         hy = y0 + 1 + laenge
         for kk in range(3):
             put(px, ax + sgn * (kk - 1), hy + (1 if kk == 1 else 0), rgb(KRALLE))
         put(px, ax + sgn, hy + 1, hk)
 
 
-def cultist(px, k, r, h, hose, striche, seitlich, hinten, frame):
+def cultist(px, m, seitlich, hinten, frame):
     robe = ton('robe')
     rh, rm, rd, rk = robe
-    beine_malen(px, hose, striche, robe, ton('stiefel'))
-    if hose:                                                           # Robensaum: Falten
-        for y, x0, x1 in hose:
-            for x in range(x0 + 1, x1):
-                if (x - x0) % 3 == 1:
-                    put(px, x, y, rd)
-    zylinder(px, h, robe, kopfschatten=False)
+    beine_malen(px, m['beine'], robe, ton('stiefel'))
+    for x, y in m['beine']:                                           # Robensaum: Falten
+        if (x - 1, y) in m['beine'] and (x + 1, y) in m['beine'] and x % 3 == 1:
+            put(px, x, y, rd)
+    r = schultern(m['rumpf'])
     zylinder(px, r, robe)
     x0, y0, x1, y1 = kasten(r)
     cx = (x0 + x1 + 1) // 2
-    rh_ = r | h
-    for x, y in rh_:                                                   # haengende Falten
-        if y > y0 + 1 and (x - 1, y) in rh_ and (x + 1, y) in rh_:
+    for x, y in r:                                                    # haengende Falten
+        if y > y0 and (x - 1, y) in r and (x + 1, y) in r:
             d = x - x0
-            if d in (2, 7):
+            if d in (2, 5):
                 put(px, x, y, rd if y < y1 else rk)
-            elif d in (1, 6):
-                put(px, x, y, rh if (y < y0 + 4 and d == 1) else rm)
+            elif d == 1:
+                put(px, x, y, rh if y < y0 + 3 else rm)
     lh, lm, ld, lk = ton('leder')
-    hx0, hy0, hx1, hy1 = kasten(h)
-    for x in range(hx0, hx1 + 1):                                      # Strick
-        put(px, x, hy0, lm if x % 2 else ld)
-    put(px, cx - 1, hy0, lh); put(px, cx, hy0, ld)
-    put(px, cx, hy0 + 1, ld); put(px, cx, hy0 + 2, lk); put(px, cx + 1, hy0 + 2, lk)   # Knoten, Ende
-    if not hinten:                                                     # Augensymbol
-        for dx in range(-2, 3):
-            put(px, cx + dx, y0 + 2, rk)
-            put(px, cx + dx, y0 + 4, rk)
-        put(px, cx - 2, y0 + 3, rk); put(px, cx + 2, y0 + 3, rk)
-        put(px, cx - 1, y0 + 3, rgb(GLUT_DK)); put(px, cx, y0 + 3, rgb(GLUT)); put(px, cx + 1, y0 + 3, rgb(GLUT_DK))
-    ellipsoid(px, k, robe, grenzen=(0.55, 0.2, -0.2))                  # Kapuze
+    for x in range(x0 + 1, x1):                                       # Strick
+        if (x, y0 + 4) in r:
+            put(px, x, y0 + 4, lm if x % 2 else ld)
+    put(px, cx - 1, y0 + 4, lh); put(px, cx, y0 + 5, ld); put(px, cx, y0 + 6, lk)   # Knoten, Ende
+    if not hinten:                                                    # Augensymbol
+        for dx in range(-2, 2):
+            put(px, cx + dx, y0 + 1, rk)
+            put(px, cx + dx, y0 + 3, rk)
+        put(px, cx - 2, y0 + 2, rk); put(px, cx + 1, y0 + 2, rk)
+        put(px, cx - 1, y0 + 2, rgb(GLUT)); put(px, cx, y0 + 2, rgb(GLUT_DK))
+    k = kapuze(m['kopf'])
+    ellipsoid(px, k, robe, grenzen=(0.55, 0.2, -0.2))
     kx0, ky0, kx1, ky1 = kasten(k)
     if not hinten:
-        for x, y in k:
-            if kx0 + 2 <= x <= kx1 - 2 and ky0 + 4 <= y <= ky1 - 1:
-                tief = (x > kx0 + 3) or (y > ky0 + 5)
+        for x, y in k:                                                # Gesicht im Schatten
+            if kx0 + 2 <= x <= kx1 - 2 and ky0 + 3 <= y <= ky1 - 1:
+                tief = (x > kx0 + 3) or (y > ky0 + 4)
                 put(px, x, y, rgb(NACHT) if tief else rgb('2d1b1e'))
-        for x in range(kx0 + 1, kx1):                                  # Kapuzenrand: oben Licht
-            if (x, ky0 + 3) in k:
-                put(px, x, ky0 + 3, rh if x < kx0 + 6 else rm)
-        for y in range(ky0 + 4, ky1):
+        for x in range(kx0 + 2, kx1 - 1):                             # Kapuzenrand oben: Licht
+            put(px, x, ky0 + 2, rh if x < kx0 + 5 else rm)
+        for y in range(ky0 + 3, ky1):
             put(px, kx0 + 1, y, rm)
             put(px, kx1 - 1, y, rk)
-        li, re = augen(px, k, seitlich, rgb(GLUT), hoehe=1, breite=2, zeile=5)
-        put(px, li, ky0 + 6, rgb(GLUT_DK)); put(px, re, ky0 + 6, rgb(GLUT_DK))
+        li, re = augen(px, k, seitlich, rgb(GLUT), hoehe=1, zeile=4)
+        put(px, li + (1 if seitlich else 0), ky0 + 5, rgb(GLUT_DK)); put(px, re, ky0 + 5, rgb(GLUT_DK))
     else:
-        tupfen(px, k, ((3, 4), (3, 5), (3, 6), (3, 7), (8, 4), (8, 5), (8, 6), (8, 7)), rd)
-        tupfen(px, k, ((2, 4), (2, 5), (2, 6)), rh)
-    tupfen(px, k, ((5, 1), (6, 2), (5, 3), (7, 3)), rk)                # Falte zur Spitze
-    tupfen(px, k, ((4, 2), (4, 3)), rh)
-    put(px, kx0 + 5, ky0 - 1, rm); put(px, kx0 + 6, ky0 - 1, rd)       # Spitze
-    put(px, kx0 + 6, ky0 - 2, rd); put(px, kx0 + 7, ky0 - 3, rk)
+        tupfen(px, k, ((2, 3), (2, 4), (2, 5), (7, 3), (7, 4), (7, 5)), rd, kx0, ky0)
+        tupfen(px, k, ((1, 3), (1, 4)), rh, kx0, ky0)
+    tupfen(px, k, ((4, 0), (5, 1), (4, 2)), rk, kx0, ky0)             # Falte zur Spitze
+    tupfen(px, k, ((3, 1), (3, 2)), rh, kx0, ky0)
+    put(px, kx0 + 4, ky0 - 1, rm); put(px, kx0 + 5, ky0 - 1, rd)      # Spitze
+    put(px, kx0 + 5, ky0 - 2, rd); put(px, kx0 + 6, ky0 - 3, rk)
 
 
-def mummy(px, k, r, h, hose, striche, seitlich, hinten, frame):
+def mummy(px, m, seitlich, hinten, frame):
     binde = ton('binde')
     bh, bm, bd, bk = binde
     fleck = rgb('886e6a')
-    beine_malen(px, hose, striche, binde, ton('bindestiefel'))
-    zylinder(px, h, binde, kopfschatten=False)
+    beine_malen(px, m['beine'], binde, ton('bindestiefel'))
+    r = schultern(m['rumpf'])
+    k = ecken(m['kopf'])
     zylinder(px, r, binde)
     ellipsoid(px, k, binde, grenzen=(0.5, 0.15, -0.25))
-    alles = k | r | h | {(x, y) for y, x0, x1 in hose for x in range(x0, x1 + 1)}
-    for x, y in alles:                                                 # Wickellagen
+    alles = k | r | m['beine']
+    for x, y in alles:                                                # Wickellagen
         r_ = (y + x // 4) % 3
         if r_ == 0 and (x + 1, y) in alles and (x - 1, y) in alles:
             put(px, x, y, bk if (x + y) % 7 == 0 else bd)
         elif r_ == 1 and (x + y) % 3 == 0 and (x, y) in (k | r):
             put(px, x, y, bh)
-    tupfen(px, r, ((2, 2), (7, 1), (3, 5), (8, 5)), fleck)             # Flecken
-    tupfen(px, k, ((8, 1), (2, 6), (9, 7)), fleck)
-    kx0, ky0, kx1, ky1 = kasten(k)
-    cx = (kx0 + kx1 + 1) // 2
-    if not hinten:                                                     # Augenschlitz, ein Auge
-        for x in range(kx0 + 1 + max(0, seitlich), kx1):
-            put(px, x, ky0 + 4, rgb(NACHT))
-            put(px, x, ky0 + 3, bd)                                    # Lage haengt ueber
-            put(px, x, ky0 + 5, bm)
-        put(px, kx0 + 1 + max(0, seitlich), ky0 + 4, rgb('2d1b1e'))
-        put(px, cx + 1 + seitlich, ky0 + 4, rgb(AUGE)); put(px, cx + 2 + seitlich, ky0 + 4, rgb(AUGE))
-        put(px, cx + 1 + seitlich, ky0 + 5, rgb(AUGE))
-        put(px, cx + 2 + seitlich, ky0 + 3, bh)
-        put(px, cx - 2 + seitlich, ky0 + 5, rgb('2d1b1e'))
-        put(px, cx - 3 + seitlich, ky0 + 5, bd)
-    for j in range(4):                                                 # lose Enden
-        put(px, kx0 - 1, ky0 + 5 + j, bd if j < 2 else bk)
-    put(px, kx0 - 2, ky0 + 8, bk); put(px, kx0 - 2, ky0 + 7, bd)
     x0, y0, x1, y1 = kasten(r)
-    put(px, x1 + 1, y0 + 4, bd); put(px, x1 + 1, y0 + 5, bk); put(px, x1 + 2, y0 + 6, bk); put(px, x1 + 2, y0 + 7, bk)
+    tupfen(px, r, ((2, 1), (6, 0), (3, 4)), fleck, x0, y0)            # Flecken
+    kx0, ky0, kx1, ky1 = kasten(k)
+    tupfen(px, k, ((7, 1), (2, 5)), fleck, kx0, ky0)
+    if not hinten:                                                    # Augenschlitz, ein Auge
+        for x in range(kx0 + 1 + max(0, seitlich), kx1):
+            put(px, x, ky0 + 3, rgb(NACHT))
+            put(px, x, ky0 + 2, bd)                                   # Lage haengt ueber
+            put(px, x, ky0 + 4, bm)
+        put(px, kx0 + 1 + max(0, seitlich), ky0 + 3, rgb('2d1b1e'))
+        put(px, kx0 + 6 + seitlich, ky0 + 3, rgb(AUGE)); put(px, kx0 + 7 + seitlich, ky0 + 3, rgb(AUGE))
+        put(px, kx0 + 6 + seitlich, ky0 + 4, rgb(AUGE))
+        put(px, kx0 + 7 + seitlich, ky0 + 2, bh)
+        put(px, kx0 + 3 + seitlich, ky0 + 4, rgb('2d1b1e'))
+    for j in range(3):                                                # lose Enden
+        put(px, kx0 - 1, ky0 + 4 + j, bd if j < 2 else bk)
+    put(px, kx0 - 2, ky0 + 6, bk)
+    put(px, x1 + 1, y0 + 3, bd); put(px, x1 + 1, y0 + 4, bk); put(px, x1 + 2, y0 + 5, bk)
 
 
-def bandit(px, k, r, h, hose, striche, seitlich, hinten, frame):
+def bandit(px, m, seitlich, hinten, frame):
     lumpen = ton('lumpen')
     lh, lm, ld, lk = ton('leder')
-    beine_malen(px, hose, striche, ton('hosen'), ton('leder'))
-    zylinder(px, h, ton('hosen'), kopfschatten=False)
+    beine_malen(px, m['beine'], ton('hosen'), ton('leder'))
+    r = schultern(m['rumpf'])
     zylinder(px, r, lumpen)
     x0, y0, x1, y1 = kasten(r)
     cx = (x0 + x1 + 1) // 2
-    for dx, dy in ((1, 2), (1, 3), (8, 2), (8, 3), (2, 5)):            # Aermelfalten
-        if (x0 + dx, y0 + dy) in r:
-            put(px, x0 + dx, y0 + dy, lumpen[2])
-    tupfen(px, r, ((1, 1), (2, 4)), lumpen[0])
-    for y in range(y0, y1):                                            # Lederweste, Naht, Stiche
+    tupfen(px, r, ((0, 2), (7, 2), (1, 3)), lumpen[2], x0, y0)        # Aermelfalten
+    tupfen(px, r, ((1, 1),), lumpen[0], x0, y0)
+    for y in range(y0, y0 + 4):                                       # Lederweste, Naht, Stiche
         for dx in (-3, -2, -1, 0, 1, 2):
             if (cx + dx, y) in r:
                 if hinten:
@@ -652,55 +564,50 @@ def bandit(px, k, r, h, hose, striche, seitlich, hinten, frame):
                     if dx in (-3, 2) and y % 2:
                         col = lk
                 put(px, cx + dx, y, col)
-    put(px, cx - 3, y0, lh); put(px, cx - 2, y0, lh)                   # Schulterlicht
-    put(px, cx + 2, y0, lk)
-    hx0, hy0, hx1, hy1 = kasten(h)
-    for x in range(hx0, hx1 + 1):                                      # Guertel
-        put(px, x, hy0, lk if x > cx + 1 else ld)
-    put(px, cx - 1, hy0, rgb('f8c53a')); put(px, cx, hy0, rgb('e88a36'))
-    if not hinten:                                                     # Dolch
-        put(px, x1, y1, rgb('c5c7dd')); put(px, x1, y1 + 1, rgb('9a97b9')); put(px, x1, y1 + 2, rgb('696682'))
-        put(px, x1, y1 - 1, lk); put(px, x1 - 1, y1 - 1, lk)
+    put(px, cx - 3, y0, lh); put(px, cx - 2, y0, lh); put(px, cx + 2, y0, lk)   # Schulterlicht
+    for x in range(x0 + 1, x1):                                       # Guertel
+        if (x, y0 + 4) in r:
+            put(px, x, y0 + 4, lk if x > cx else ld)
+    put(px, cx - 1, y0 + 4, rgb('f8c53a')); put(px, cx, y0 + 4, rgb('e88a36'))
+    if not hinten:                                                    # Dolch
+        put(px, x1, y1, rgb('c5c7dd')); put(px, x1, y1 + 1, rgb('9a97b9')); put(px, x1, y1 - 1, lk)
+    k = ecken(m['kopf'])
     haut_kopf(px, k, ton('haut'), seitlich, hinten, haar=ton('haar'))
     kx0, ky0, kx1, ky1 = kasten(k)
     th, tm, td, tk = ton('tuch')
     if not hinten:
-        li, re = augen(px, k, seitlich, rgb(AUGE), hoehe=2, breite=2, zeile=4)
-        put(px, li + 1, ky0 + 4, rgb('f1ebdb')); put(px, re + 1, ky0 + 4, rgb('f1ebdb'))
-        for x in range(kx0 + 1, kx1):                                  # Halstuch ueber Nase und Mund
-            for dy, col in ((6, th if x < kx0 + 5 else tm), (7, tm if x < kx0 + 7 else td), (8, td)):
+        li, re = augen(px, k, seitlich, rgb(AUGE), hoehe=2, zeile=3)
+        put(px, li + 1, ky0 + 3, rgb('f1ebdb')); put(px, re + 1, ky0 + 3, rgb('f1ebdb'))
+        for x in range(kx0 + 1, kx1):                                 # Halstuch ueber Nase und Mund
+            for dy, col in ((5, th if x < kx0 + 4 else tm), (6, tm if x < kx0 + 6 else td)):
                 if (x, ky0 + dy) in k:
                     put(px, x, ky0 + dy, col)
-        put(px, kx1 - 1, ky0 + 6, td); put(px, kx1 - 1, ky0 + 7, tk)
-        put(px, kx0 + 4, ky0 + 7, td); put(px, kx0 + 3, ky0 + 8, tk)    # Falten
-        put(px, kx0 + 6, ky0 + 8, tk)
-        if seitlich == 0:                                              # Augenklappe links, Band schraeg
-            for dx, dy in ((3, 4), (4, 4), (3, 5), (4, 5), (2, 3), (1, 2), (5, 3)):
+        put(px, kx1 - 1, ky0 + 5, td); put(px, kx0 + 3, ky0 + 6, tk)  # Schatten, Falte
+        if seitlich == 0:                                             # Augenklappe links, Band schraeg
+            for dx, dy in ((2, 3), (3, 3), (2, 4), (3, 4), (1, 2), (4, 2)):
                 put(px, kx0 + dx, ky0 + dy, rgb(NACHT))
-            put(px, kx0 + 4, ky0 + 4, rgb('2d1b1e'))
-        put(px, kx0 + 9, ky0 + 5, rgb('e27285'))                       # Narbe
-    for x, y in k:                                                     # Kopftuch: obere drei Zeilen
-        if y <= ky0 + 2:
+            put(px, kx0 + 3, ky0 + 3, rgb('2d1b1e'))
+        put(px, kx0 + 8, ky0 + 4, rgb('e27285'))                      # Narbe
+    for x, y in k:                                                    # Kopftuch: obere zwei Zeilen
+        if y <= ky0 + 1:
             u = (x - kx0) / (kx1 - kx0)
-            put(px, x, y, th if (u < 0.4 and y < ky0 + 2) else (tm if u < 0.7 else td))
-        if y == ky0 + 3:
-            put(px, x, y, tk if x > kx0 + 7 else td)
-    tupfen(px, k, ((3, 1), (6, 0), (8, 2)), td)                        # Falten im Tuch
-    put(px, kx1 + 1, ky0 + 1, td); put(px, kx1 + 1, ky0 + 2, tm)       # Knoten
-    put(px, kx1 + 2, ky0 + 2, tk); put(px, kx1 + 2, ky0 + 3, tk); put(px, kx1 + 1, ky0 + 3, td)
+            put(px, x, y, th if (u < 0.4 and y == ky0) else (tm if u < 0.7 else td))
+        if y == ky0 + 2:
+            put(px, x, y, tk if x > kx0 + 6 else td)
+    tupfen(px, k, ((3, 1), (6, 0)), td, kx0, ky0)                     # Falten im Tuch
+    put(px, kx1 + 1, ky0 + 1, td); put(px, kx1 + 1, ky0 + 2, tm)      # Knoten, Zipfel
+    put(px, kx1 + 2, ky0 + 2, tk); put(px, kx1 + 2, ky0 + 3, tk)
 
 
-GEGNER = {
-    'zombie': (zombie, KOPF_RUND, RUMPF_NORMAL),
-    'skeleton_warrior': (skeleton, KOPF_SCHAEDEL, RUMPF_NORMAL),
-    'ghoul': (ghoul, KOPF_RUND, RUMPF_BREIT),
-    'cultist': (cultist, KOPF_KAPUZE, RUMPF_ROBE),
-    'mummy': (mummy, KOPF_RUND, RUMPF_NORMAL),
-    'bandit': (bandit, KOPF_RUND, RUMPF_NORMAL),
-}
+GEGNER = {'zombie': zombie, 'skeleton_warrior': skeleton, 'ghoul': ghoul,
+          'cultist': cultist, 'mummy': mummy, 'bandit': bandit}
 
 
 # --- Frames ------------------------------------------------------------------------
+
+def verschieben(m, dx, dy):
+    return {k: {(x + dx, y + dy) for x, y in v if y + dy <= 29} for k, v in m.items()}
+
 
 # (Vorlagenframe, dx, dy): Angriff ducken/springen/vorschnellen, Treffer
 # zurueck, Tod sinkt in den Boden
@@ -711,30 +618,24 @@ EXTRA = {
 }
 
 
-def frame(name, richtung, nr, anim='walk'):
-    bauen, kopf_form, rumpf_form = GEGNER[name]
+def frame(bauen, richtung, nr, anim='walk'):
+    img = Image.new('RGBA', (32, 32), (0, 0, 0, 0))
+    px = img.load()
     if anim == 'walk':
-        vnr, dx, dy = nr, 0, 0
+        m = maske(richtung, nr)
     else:
         vnr, dx, dy = EXTRA[anim][nr - 1]
         if richtung in ('Front', 'Back'):
             dx = 0
-    hub, beine = vorlage(richtung, vnr)
-    hose, striche = beine_umsetzen(beine)
-    hose_oben = min(z[0] for z in hose) if hose else BODEN - 5 - int(hub * 1.5)
-    k, r, h = koerper(kopf_form, rumpf_form, hose_oben)
-    gross = Image.new('RGBA', (32, 40), (0, 0, 0, 0))
-    px = gross.load()
+        m = verschieben(maske(richtung, vnr), dx, dy)
     hinten = richtung in ('Back', 'BSide')
     seitlich = 1 if richtung in ('FSide', 'BSide') else 0
-    bauen(px, k, r, h, hose, striche, seitlich, hinten, nr if anim == 'walk' else 1)
-    img = Image.new('RGBA', (32, 32), (0, 0, 0, 0))
-    grenze = BODEN if anim == 'death' else 31             # Tod: unter dem Boden nichts mehr
-    for y in range(32):
-        for x in range(32):
-            sx, sy = x - dx, y - dy
-            if 0 <= sx < 32 and 0 <= sy < 40 and y <= grenze:
-                img.putpixel((x, y), gross.getpixel((sx, sy)))
+    if m['kopf'] and m['rumpf']:
+        bauen(px, m, seitlich, hinten, nr if anim == 'walk' else 1)
+    if anim == 'death':                                     # unter dem Boden nichts mehr
+        for y in range(30, 32):
+            for x in range(32):
+                px[x, y] = (0, 0, 0, 0)
     return duel_anpassen(img)
 
 
@@ -744,7 +645,7 @@ def main():
     ap.add_argument('--sheet', action='store_true')
     args = ap.parse_args()
     wurzel = Path(args.out)
-    for name in GEGNER:
+    for name, bauen in GEGNER.items():
         ziel = wurzel / name
         ziel.mkdir(parents=True, exist_ok=True)
         for alt in ziel.glob('*.png'):
@@ -754,7 +655,7 @@ def main():
         for richtung in ('Front', 'FSide', 'BSide', 'Back'):
             reihe = []
             for nr in range(1, 11):
-                img = frame(name, richtung, nr)
+                img = frame(bauen, richtung, nr)
                 img.save(ziel / ('%s%d.png' % (richtung, nr)))
                 reihe.append(img)
             zeilen.append(reihe)
@@ -762,7 +663,7 @@ def main():
             for anim, posen in EXTRA.items():
                 reihe = []
                 for nr in range(1, len(posen) + 1):
-                    img = frame(name, richtung, nr, anim)
+                    img = frame(bauen, richtung, nr, anim)
                     img.save(ziel / ('%s_%s%d.png' % (richtung, anim, nr)))
                     reihe.append(img)
                 zeilen.append(reihe)
