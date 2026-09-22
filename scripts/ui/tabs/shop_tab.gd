@@ -57,13 +57,13 @@ func _make_row(title: String, subtitle: String, detail: String, accent: Color, p
 	var info := UIKit.make_column(2)
 	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(info)
-	info.add_child(UIKit.make_label(title, 19, accent))
+	info.add_child(UIKit.make_flex_label(title, 19, accent))
 	info.add_child(UIKit.make_label(subtitle, 14, UIKit.TEXT_DIM))
 	if not detail.is_empty():
 		info.add_child(UIKit.make_label(detail, 14, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_LEFT, true))
 
 	var actions := UIKit.make_column(4)
-	actions.custom_minimum_size = Vector2(132.0, 0.0)
+	actions.custom_minimum_size = Vector2(150.0, 0.0)
 	row.add_child(actions)
 
 	if owned:
@@ -72,7 +72,7 @@ func _make_row(title: String, subtitle: String, detail: String, accent: Color, p
 
 	actions.add_child(UIKit.make_label("%d Gold" % price, 15, UIKit.ACCENT, HORIZONTAL_ALIGNMENT_CENTER))
 	var buy_button := UIKit.make_button("Kaufen", 17, UIKit.ACCENT)
-	buy_button.custom_minimum_size = Vector2(0.0, 44.0)
+	buy_button.custom_minimum_size = Vector2(0.0, UIKit.TOUCH_HEIGHT)
 	buy_button.disabled = not affordable
 	buy_button.pressed.connect(func() -> void:
 		if on_buy.call():

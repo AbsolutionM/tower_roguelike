@@ -23,8 +23,7 @@ func build() -> void:
 		return
 
 	var header := UIKit.make_row(8)
-	var name_label := UIKit.make_label(tower.tower_name, 30, tower.accent_color)
-	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var name_label := UIKit.make_flex_label(tower.tower_name, 30, tower.accent_color)
 	header.add_child(name_label)
 	header.add_child(UIKit.make_label("%d Etagen" % tower.floors, 16, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_RIGHT))
 	column.add_child(header)
@@ -55,7 +54,7 @@ func build() -> void:
 				continue
 			var button := UIKit.make_button(other.tower_name, 16, other.accent_color)
 			button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			button.custom_minimum_size = Vector2(0.0, 44.0)
+			button.custom_minimum_size = Vector2(0.0, UIKit.TOUCH_HEIGHT)
 			button.disabled = other == tower
 			button.pressed.connect(func() -> void:
 				RunState.set_selected_tower(other.tower_id)
@@ -65,6 +64,6 @@ func build() -> void:
 		column.add_child(switch_row)
 
 	var enter_button := UIKit.make_primary_button("Turm betreten", 26, tower.accent_color)
-	enter_button.custom_minimum_size = Vector2(0.0, 64.0)
+	enter_button.custom_minimum_size = Vector2(0.0, UIKit.TOUCH_HEIGHT + 16.0)
 	enter_button.pressed.connect(func() -> void: get_tree().change_scene_to_file(GAME_SCENE))
 	column.add_child(enter_button)

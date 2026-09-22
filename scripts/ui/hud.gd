@@ -20,6 +20,11 @@ class_name HUD
 @onready var floor_label: Label = get_node_or_null("TopBar/FloorLabel")
 @onready var special_bar: StatBar = get_node_or_null("TopBar/SpecialBar")
 @onready var control_band: ColorRect = get_node_or_null("ControlBand")
+@onready var control_band_edge: ColorRect = get_node_or_null("ControlBandEdge")
+@onready var top_bar: Control = get_node_or_null("TopBar")
+@onready var joystick: Control = get_node_or_null("Joystick")
+## Wird in _ready gebaut, siehe _create_pause_button.
+var pause_button: Button
 
 var _boss: Node = null
 var _pause_overlay: Control = null
@@ -41,10 +46,53 @@ func _ready() -> void:
 	_update_essence_label()
 	_update_bag_label()
 	# Erst nach dem Layout, dann steht die Leistenhöhe fest.
-	_reserve_control_band.call_deferred()
+	_create_pause_button()
+	_apply_safe_area.call_deferred()
 
-## Das Spielfeld endet an der Steuerleiste - die Daumen liegen dann auf
-## Stick und Knöpfen, nicht auf Gegnern.
+## Am Schreibtisch pausiert die Escape-Taste. Auf dem Handy gibt es keine -
+## ohne Knopf käme man aus einem Lauf nicht mehr heraus.
+func _create_pause_button() -> void:
+	pause_button = UIKit.make_button("II", 22, UIKit.TEXT_DIM)
+	pause_button.anchor_left = 1.0
+	pause_button.anchor_right = 1.0
+	pause_button.offset_left = -92.0
+	pause_button.offset_right = -16.0
+	pause_button.offset_top = 16.0
+	pause_button.offset_bottom = 92.0
+	pause_button.custom_minimum_size = Vector2.ZERO
+	pause_button.process_mode = Node.PROCESS_MODE_ALWAYS
+	pause_button.pressed.connect(_toggle_pause)
+	add_child(pause_button)
+
+## Kerbe und Home-Indikator freihalten, dann dem Spielfeld sagen, wie viel
+## Platz die Steuerleiste unten einnimmt.
+##
+## Das Spielfeld endet an der Leiste - die Daumen liegen dann auf Stick und
+## Knöpfen, nicht auf Gegnern.
+func _apply_safe_area() -> void:
+	var insets := UIKit.safe_insets(get_viewport())
+
+	if insets.x > 0.0:
+		if top_bar:
+			top_bar.position.y = insets.x
+		if pause_button:
+			pause_button.offset_top += insets.x
+			pause_button.offset_bottom += insets.x
+
+	# Die Leiste selbst reicht bis zum Bildschirmrand, damit darunter kein
+	# Spielfeld durchblitzt; ihr Inhalt rückt über den Home-Indikator.
+	if control_band and insets.y > 0.0:
+		control_band.offset_top -= insets.y
+		if control_band_edge:
+			control_band_edge.offset_top -= insets.y
+			control_band_edge.offset_bottom -= insets.y
+		for control in [joystick, ability_button, dash_button]:
+			if control:
+				control.offset_top -= insets.y
+				control.offset_bottom -= insets.y
+
+	_reserve_control_band()
+
 func _reserve_control_band() -> void:
 	if not control_band:
 		return

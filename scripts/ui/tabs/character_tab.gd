@@ -112,13 +112,23 @@ func _make_portrait(character: CharacterData) -> Control:
 	layer.add_child(portrait)
 
 	# Kraftstufe als Marke in der Ecke - wie das Level-Abzeichen in Brawl Stars.
+	# Die Marke rechnet ihre Breite erst nach dem Schriftwechsel aus - mit
+	# einem festen Versatz vom rechten Rand stand sie halb daneben. Der
+	# Randkasten richtet sie stattdessen aus.
+	var badge_box := MarginContainer.new()
+	badge_box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	badge_box.add_theme_constant_override("margin_right", 16)
+	badge_box.add_theme_constant_override("margin_top", 12)
+	badge_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(badge_box)
+
 	var badge := UIKit.make_chip(
 		"Kraftstufe %d" % RunState.get_character_level(character.character_id),
 		character.accent_color
 	)
-	badge.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_MINSIZE)
-	badge.position += Vector2(-16.0, 12.0)
-	layer.add_child(badge)
+	badge.size_flags_horizontal = Control.SIZE_SHRINK_END
+	badge.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	badge_box.add_child(badge)
 	return panel
 
 func _make_info(character: CharacterData) -> Control:
@@ -204,10 +214,10 @@ func _make_weapon_card(character: CharacterData, weapon: WeaponData, is_equipped
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(card)
 	var level := RunState.get_weapon_level(weapon.weapon_id)
-	card.add_child(UIKit.make_label(weapon.display_name(level), 17, UIKit.TEXT))
-	card.add_child(UIKit.make_label(weapon.get_category_name(), 14, UIKit.TEXT_DIM))
+	card.add_child(UIKit.make_flex_label(weapon.display_name(level), 17, UIKit.TEXT))
+	card.add_child(UIKit.make_flex_label(weapon.get_category_name(), 14, UIKit.TEXT_DIM))
 	# Der Schaden, den genau dieser Held mit genau dieser Schmiedestufe macht.
-	card.add_child(UIKit.make_label(
+	card.add_child(UIKit.make_flex_label(
 		"%s · %.2fs" % [weapon.describe_damage(character, level), weapon.cooldown],
 		14, UIKit.TEXT_DIM
 	))

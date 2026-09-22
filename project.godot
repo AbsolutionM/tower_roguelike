@@ -35,9 +35,12 @@ Audio="*res://scripts/autoload/audio.gd"
 window/size/viewport_width=720
 window/size/viewport_height=1280
 window/size/resizable=false
-window/size/window_width_override=360
-window/size/window_height_override=640
+window/size/window_width_override=390
+window/size/window_height_override=844
 window/stretch/mode="canvas_items"
+; Handys sind schmaler als 9:16. "expand" fuellt den ganzen Bildschirm und
+; gibt die zusaetzliche Hoehe dem Spielfeld, statt schwarze Balken zu malen.
+window/stretch/aspect="expand"
 window/handheld/orientation=1
 
 [input]

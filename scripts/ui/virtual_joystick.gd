@@ -37,11 +37,17 @@ func _gui_input(event: InputEvent) -> void:
 		if event.index == _touch_index:
 			_update_knob(event.position)
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		# Siehe ActionButton: das unechte Mausereignis der Berührung würde den
+		# Stick ein zweites Mal greifen und den Finger verlieren.
+		if DisplayServer.is_touchscreen_available():
+			return
 		if event.pressed:
 			_begin(event.position, -2)
 		elif _touch_index == -2:
 			_end()
 	elif event is InputEventMouseMotion and _active and _touch_index == -2:
+		if DisplayServer.is_touchscreen_available():
+			return
 		_update_knob(event.position)
 
 func _begin(local_position: Vector2, index: int) -> void:

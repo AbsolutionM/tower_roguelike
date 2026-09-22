@@ -35,7 +35,7 @@ func _make_mode_button(text: String, mode: Mode, accent: Color) -> Button:
 	var is_active: bool = _mode == mode
 	var button := UIKit.make_button(text, 18, accent)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button.custom_minimum_size = Vector2(0.0, 52.0)
+	button.custom_minimum_size = Vector2(0.0, UIKit.TOUCH_HEIGHT)
 
 	if is_active:
 		button.add_theme_stylebox_override("normal", UIKit.panel_style(Color(accent, 0.24), 0, accent))
@@ -105,12 +105,12 @@ func _make_weapon_card(weapon: WeaponData, character: CharacterData, is_equipped
 	var title := UIKit.make_column(2)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
-	title.add_child(UIKit.make_label(weapon.display_name(level), 19, UIKit.TEXT))
+	title.add_child(UIKit.make_flex_label(weapon.display_name(level), 19, UIKit.TEXT))
 
 	var subtitle := weapon.get_category_name()
 	if is_equipped:
 		subtitle += "  ·  ausgerüstet"
-	title.add_child(UIKit.make_label(subtitle, 14, UIKit.TEXT_DIM))
+	title.add_child(UIKit.make_flex_label(subtitle, 14, UIKit.TEXT_DIM))
 
 	header.add_child(UIKit.make_label(
 		weapon.describe_damage(character, level),
@@ -190,7 +190,7 @@ func _make_tier_section(weapon: WeaponData, character: CharacterData, level: int
 		column.add_child(material_row)
 
 	var button := UIKit.make_primary_button("Aufwerten", 20, Palette.GOLD)
-	button.custom_minimum_size = Vector2(0.0, 50.0)
+	button.custom_minimum_size = Vector2(0.0, UIKit.TOUCH_HEIGHT)
 	button.disabled = not can_advance
 	button.pressed.connect(func() -> void:
 		if RunState.advance_weapon_tier(weapon):
@@ -279,7 +279,7 @@ func _make_forge_section(weapon: WeaponData, character: CharacterData, level: in
 	column.add_child(material_row)
 
 	var forge_button := UIKit.make_primary_button("Schmieden", 20, UIKit.COOL)
-	forge_button.custom_minimum_size = Vector2(0.0, 50.0)
+	forge_button.custom_minimum_size = Vector2(0.0, UIKit.TOUCH_HEIGHT)
 	forge_button.disabled = not can_forge
 	forge_button.pressed.connect(func() -> void:
 		if RunState.reinforce_weapon(weapon):
@@ -356,7 +356,7 @@ func _make_character_card(character: CharacterData, is_selected: bool) -> Contro
 		column.add_child(UIKit.make_label("Aktuell gewählt", 14, UIKit.GOOD))
 	else:
 		var select_button := UIKit.make_button("Auswählen", 17, accent)
-		select_button.custom_minimum_size = Vector2(0.0, 44.0)
+		select_button.custom_minimum_size = Vector2(0.0, UIKit.TOUCH_HEIGHT)
 		select_button.pressed.connect(func() -> void:
 			RunState.set_selected_character(character.character_id)
 			refresh()
@@ -420,7 +420,7 @@ func _make_level_section(character: CharacterData, level: int, is_max: bool, can
 	))
 
 	var level_button := UIKit.make_primary_button("Aufsteigen", 20, accent)
-	level_button.custom_minimum_size = Vector2(0.0, 50.0)
+	level_button.custom_minimum_size = Vector2(0.0, UIKit.TOUCH_HEIGHT)
 	level_button.disabled = not can_level
 	level_button.pressed.connect(func() -> void:
 		if RunState.level_up_character(character):

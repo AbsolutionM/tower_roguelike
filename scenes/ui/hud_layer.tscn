@@ -21,7 +21,7 @@ mouse_filter = 2
 [node name="HealthBar" type="Control" parent="HUD/TopBar"]
 offset_left = 24.0
 offset_top = 24.0
-offset_right = 360.0
+offset_right = 300.0
 offset_bottom = 54.0
 mouse_filter = 2
 script = ExtResource("2_bar")
@@ -37,7 +37,7 @@ mouse_filter = 2
 theme_override_colors/font_color = Color(0.949, 0.694, 0.204, 1)
 theme_override_colors/font_outline_color = Color(0.078, 0.071, 0.122, 1)
 theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 32
 text = "0"
 
 [node name="EssenceLabel" type="Label" parent="HUD/TopBar"]
@@ -49,7 +49,7 @@ mouse_filter = 2
 theme_override_colors/font_color = Color(0.247, 0.824, 0.78, 1)
 theme_override_colors/font_outline_color = Color(0.078, 0.071, 0.122, 1)
 theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 32
 text = "0"
 
 [node name="TimerBar" type="Control" parent="HUD/TopBar"]
@@ -74,15 +74,15 @@ fill_color = Color(0.545, 0.435, 0.831, 1)
 ghost_color = Color(0.271, 0.247, 0.361, 1)
 
 [node name="TimerLabel" type="Label" parent="HUD/TopBar"]
-offset_left = 528.0
+offset_left = 440.0
 offset_top = 96.0
-offset_right = 700.0
+offset_right = 612.0
 offset_bottom = 130.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.29, 0.565, 0.851, 1)
 theme_override_colors/font_outline_color = Color(0.078, 0.071, 0.122, 1)
 theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 30
 text = "30"
 horizontal_alignment = 2
 
@@ -94,14 +94,14 @@ mouse_filter = 2
 theme_override_colors/font_color = Color(0.847, 0.824, 0.878, 1)
 theme_override_colors/font_outline_color = Color(0.078, 0.071, 0.122, 1)
 theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 34
 text = "Raum"
 horizontal_alignment = 1
 
 [node name="FloorLabel" type="Label" parent="HUD/TopBar"]
-offset_left = 380.0
+offset_left = 316.0
 offset_top = 20.0
-offset_right = 700.0
+offset_right = 612.0
 offset_bottom = 52.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.42, 0.392, 0.518, 1)
@@ -112,15 +112,15 @@ text = "Etage 1"
 horizontal_alignment = 2
 
 [node name="BagLabel" type="Label" parent="HUD/TopBar"]
-offset_left = 420.0
+offset_left = 340.0
 offset_top = 62.0
-offset_right = 700.0
+offset_right = 612.0
 offset_bottom = 96.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.847, 0.824, 0.878, 1)
 theme_override_colors/font_outline_color = Color(0.078, 0.071, 0.122, 1)
 theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 30
 text = "Beutel 0/12"
 horizontal_alignment = 2
 
@@ -133,7 +133,7 @@ mouse_filter = 2
 theme_override_colors/font_color = Color(0.851, 0.31, 0.31, 1)
 theme_override_colors/font_outline_color = Color(0.078, 0.071, 0.122, 1)
 theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 32
 text = "Boss"
 horizontal_alignment = 1
 
@@ -166,30 +166,44 @@ mouse_filter = 2
 color = Color(0.271, 0.247, 0.361, 1)
 
 [node name="Joystick" type="Control" parent="HUD"]
-offset_left = 20.0
-offset_top = 930.0
-offset_right = 400.0
-offset_bottom = 1270.0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -348.0
+offset_right = 404.0
+offset_bottom = -16.0
 script = ExtResource("3_stick")
+base_radius = 96.0
+knob_radius = 42.0
 
 [node name="AbilityButton" type="Control" parent="HUD"]
-offset_left = 452.0
-offset_top = 960.0
-offset_right = 552.0
-offset_bottom = 1060.0
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -292.0
+offset_top = -300.0
+offset_right = -164.0
+offset_bottom = -172.0
 script = ExtResource("4_button")
 action = 2
 label_text = "Q"
+radius = 60.0
 button_color = Color(0.247, 0.824, 0.78, 1)
 
 [node name="DashButton" type="Control" parent="HUD"]
-offset_left = 580.0
-offset_top = 1100.0
-offset_right = 680.0
-offset_bottom = 1200.0
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -148.0
+offset_top = -172.0
+offset_right = -20.0
+offset_bottom = -44.0
 script = ExtResource("4_button")
 action = 1
 label_text = "»"
+radius = 60.0
 button_color = Color(0.949, 0.694, 0.204, 1)
 
 [node name="FadeOverlay" type="ColorRect" parent="HUD"]

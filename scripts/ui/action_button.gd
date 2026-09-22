@@ -37,6 +37,10 @@ func _gui_input(event: InputEvent) -> void:
 		elif not event.pressed and event.index == _touch_index:
 			_touch_index = -1
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		# Auf dem Handy kommt zu jeder Berührung ein zweites, unechtes
+		# Mausereignis - sonst löst jeder Tipper doppelt aus.
+		if DisplayServer.is_touchscreen_available():
+			return
 		if event.pressed and _inside(event.position):
 			_press()
 

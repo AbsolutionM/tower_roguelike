@@ -89,7 +89,7 @@ func _make_recipe_row(recipe: CraftingRecipe) -> Control:
 		info.add_child(material_row)
 
 	var actions := UIKit.make_column(4)
-	actions.custom_minimum_size = Vector2(132.0, 0.0)
+	actions.custom_minimum_size = Vector2(150.0, 0.0)
 	row.add_child(actions)
 
 	if owned:
@@ -98,7 +98,7 @@ func _make_recipe_row(recipe: CraftingRecipe) -> Control:
 
 	actions.add_child(UIKit.make_label("%d Gold" % recipe.gold_cost, 15, UIKit.ACCENT, HORIZONTAL_ALIGNMENT_CENTER))
 	var craft_button := UIKit.make_button("Bauen", 17, UIKit.ACCENT)
-	craft_button.custom_minimum_size = Vector2(0.0, 44.0)
+	craft_button.custom_minimum_size = Vector2(0.0, UIKit.TOUCH_HEIGHT)
 	craft_button.disabled = not can_craft
 	craft_button.pressed.connect(func() -> void:
 		if RunState.craft(recipe):
@@ -128,11 +128,11 @@ func _make_stash_row(item: ItemData, count: int) -> Control:
 	))
 
 	var actions := UIKit.make_row(6)
-	actions.custom_minimum_size = Vector2(180.0, 0.0)
+	actions.custom_minimum_size = Vector2(196.0, 0.0)
 	row.add_child(actions)
 
 	var sell_one := UIKit.make_button("1x", 16, UIKit.TEXT_DIM)
-	sell_one.custom_minimum_size = Vector2(60.0, 44.0)
+	sell_one.custom_minimum_size = Vector2(60.0, UIKit.TOUCH_HEIGHT)
 	sell_one.pressed.connect(func() -> void:
 		RunState.sell_stash_item(item, 1)
 		refresh()
@@ -141,7 +141,7 @@ func _make_stash_row(item: ItemData, count: int) -> Control:
 
 	var sell_all := UIKit.make_button("Alle", 16, UIKit.ACCENT)
 	sell_all.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	sell_all.custom_minimum_size = Vector2(0.0, 44.0)
+	sell_all.custom_minimum_size = Vector2(0.0, UIKit.TOUCH_HEIGHT)
 	sell_all.pressed.connect(func() -> void:
 		RunState.sell_stash_item(item, count)
 		refresh()

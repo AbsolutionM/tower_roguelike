@@ -39,6 +39,7 @@ func _build_layout() -> void:
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.add_theme_constant_override("separation", 0)
 	add_child(root)
+	# Wird unten um die sicheren Ränder verschoben.
 
 	root.add_child(_build_header())
 
@@ -49,6 +50,12 @@ func _build_layout() -> void:
 
 	root.add_child(_build_tab_bar())
 
+	# Kerbe oben, Home-Indikator unten: der Inhalt rückt hinein, der
+	# Hintergrund bleibt randlos.
+	var insets := UIKit.safe_insets(get_viewport())
+	root.offset_top = insets.x
+	root.offset_bottom = -insets.y
+
 func _build_header() -> Control:
 	var panel := PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", UIKit.panel_style(UIKit.BG_SOFT, 0, Color(1.0, 1.0, 1.0, 0.06), 0))
@@ -56,8 +63,7 @@ func _build_header() -> Control:
 	var row := UIKit.make_row(12)
 	panel.add_child(row)
 
-	_summary_label = UIKit.make_label("", 16, UIKit.TEXT_DIM)
-	_summary_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_summary_label = UIKit.make_flex_label("", 16, UIKit.TEXT_DIM)
 	_summary_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(_summary_label)
 
@@ -94,18 +100,23 @@ func _build_tab_bar() -> Control:
 	var panel := PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", UIKit.panel_style(UIKit.BG_SOFT, 0, Color(1.0, 1.0, 1.0, 0.08), 0))
 
-	var row := UIKit.make_row(6)
+	var row := UIKit.make_row(3)
 	panel.add_child(row)
 
 	_tab_buttons.clear()
 	for i in TAB_NAMES.size():
 		var is_start: bool = i == START_TAB
-		var button := UIKit.make_button(TAB_NAMES[i], 19 if is_start else 16, _tab_accent(i))
+		var button := UIKit.make_button(TAB_NAMES[i], 15 if is_start else 13, _tab_accent(i))
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.custom_minimum_size = Vector2(0.0, 74.0 if is_start else 62.0)
-		# Ein Fünftel der Breite ist knapp - ohne das schluckt der Innenrand
-		# den letzten Buchstaben von "Werkstatt" und "Upgrades".
+		button.custom_minimum_size = Vector2(0.0, 108.0 if is_start else 92.0)
+		# Ein Fünftel der Breite ist knapp: der Innenrand muss schmal bleiben,
+		# sonst passt "Werkstatt" nicht mehr hinein.
 		button.clip_text = false
+		for state in ["normal", "hover", "pressed", "disabled", "focus"]:
+			var box: StyleBoxFlat = button.get_theme_stylebox(state)
+			if box:
+				box.content_margin_left = 2.0
+				box.content_margin_right = 2.0
 		var index := i
 		button.pressed.connect(func() -> void: _select_tab(index))
 		row.add_child(button)
