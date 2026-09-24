@@ -38,8 +38,6 @@ window/size/resizable=false
 window/size/window_width_override=390
 window/size/window_height_override=844
 window/stretch/mode="canvas_items"
-; Handys sind schmaler als 9:16. "expand" fuellt den ganzen Bildschirm und
-; gibt die zusaetzliche Hoehe dem Spielfeld, statt schwarze Balken zu malen.
 window/stretch/aspect="expand"
 window/handheld/orientation=1
 
