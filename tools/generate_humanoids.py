@@ -25,6 +25,9 @@ die Fuesse mit Stiefelspitze wie beim Cowboy. Darauf die Merkmale:
                       Strickguertel, Augensymbol
     mummy             Bandagen in Lagen, Augenschlitz, lose Enden
     bandit            Kopftuch, Augenklappe, Halstuch, Lederweste, Dolch
+    wight             Topfhelm mit Sehschlitz, Brustpanzer, Umhang
+    hag               Spitzhut mit Krempe, Hakennase, Robe mit Beutel
+    brute             breiter Oberkoerper, Eisenmaske, Narben
 
 Ausgabe je Gegner: Front1-10, FSide1-10, BSide1-10, Back1-10, dazu
 attack (6), hurt (4), death (6) aus den Vorlagenposen abgeleitet.
@@ -64,6 +67,13 @@ T = {
     'leder': ('e1bf89', 'b47538', '724b2c', '4f342f'),
     'haar': ('4f342f', '36282b', '2a1e23', '171516'),
     'stiefel': ('594d4d', '36282b', '2a1e23', '171516'),
+    'ruestung': ('c9d4fd', '9a97b9', '696682', '2c3438'),
+    'umhang': ('7864c6', '494182', '282c3c', '14121d'),
+    'hexhaut': ('939446', '7f8e44', '586335', '333c24'),
+    'hexrobe': ('9c8bdb', '7864c6', '494182', '282c3c'),
+    'huene': ('e2b27e', 'c68556', '8c5b3e', '4f342f'),
+    'huenehose': ('724b2c', '4f342f', '2d1b1e', '171516'),
+    'narbe': ('e27285', 'b25266', '64364b', '2a1e23'),
 }
 NACHT = '171516'
 SCHWARZ = '0e0c0c'
@@ -599,8 +609,195 @@ def bandit(px, m, seitlich, hinten, frame):
     put(px, kx1 + 2, ky0 + 2, tk); put(px, kx1 + 2, ky0 + 3, tk)
 
 
+def breiter(punkte, um=1):
+    """Maske seitlich verbreitern - fuer schwere Gegner."""
+    aus = set(punkte)
+    x0, y0, x1, y1 = kasten(punkte)
+    for x, y in punkte:
+        if x == x0:
+            for d in range(1, um + 1):
+                aus.add((x - d, y))
+        if x == x1:
+            for d in range(1, um + 1):
+                aus.add((x + d, y))
+    return aus
+
+
+def wight(px, m, seitlich, hinten, frame):
+    """Gepanzerter Untoter: Topfhelm mit Sehschlitz und Glut dahinter,
+    Brustpanzer mit Nieten und Guertel, Umhang, Knochenbeine."""
+    stahl = ton('ruestung')
+    sh, sm, sd, sk = stahl
+    uh, um_, ud, uk = ton('umhang')
+    beine_malen(px, m['beine'], ton('beinhose'), ton('beinstiefel'))
+    r = schultern(m['rumpf'])
+    x0, y0, x1, y1 = kasten(r)
+    cx = (x0 + x1 + 1) // 2
+    for y in range(y0 + 1, y1 + 1):                               # Umhang schaut seitlich vor
+        put(px, x0 - 1, y, uh if hinten else um_)
+        put(px, x1 + 1, y, ud)
+    put(px, x0 - 1, y1 + 1, ud)
+    put(px, x1 + 1, y1 + 1, uk)
+    if hinten:
+        zylinder(px, r, ton('umhang'))
+        for y in range(y0, y1 + 1):                               # Umhangfalten
+            put(px, cx - 1, y, ud if y % 2 else uk)
+            put(px, cx + 1, y, um_ if y % 2 else uh)
+    else:
+        zylinder(px, r, stahl)
+        for y in range(y0, y1 + 1):                               # Mittelgrat
+            put(px, cx - 1, y, sh if y < y0 + 3 else sm)
+            put(px, cx, y, sd)
+        for dx, dy in ((0, 0), (7, 0), (1, 3), (6, 3)):           # Nieten
+            tupfen(px, r, ((dx, dy),), sh, x0, y0)
+        for x in range(x0 + 1, x1):                               # Guertel
+            if (x, y0 + 4) in r:
+                put(px, x, y0 + 4, sk if x > cx else sd)
+        tupfen(px, r, ((3, 4), (4, 4)), rgb('b47538'), x0, y0)    # Schnalle
+    k = ecken(m['kopf'])
+    kx0, ky0, kx1, ky1 = kasten(k)
+    ellipsoid(px, k, stahl, grenzen=(0.5, 0.15, -0.2))            # Topfhelm
+    for x, y in k:                                                # unten kantiger als eine Kugel
+        if y >= ky0 + 5:
+            put(px, x, y, sd if x > kx0 + 5 else sm)
+    for x in range(kx0, kx1 + 1):                                 # Helmrand
+        if (x, ky0 + 2) in k:
+            put(px, x, ky0 + 2, sk if x > kx0 + 5 else sd)
+    if not hinten:
+        for x in range(kx0 + 1, kx1):                             # Sehschlitz
+            if (x, ky0 + 3) in k:
+                put(px, x, ky0 + 3, rgb(SCHWARZ))
+        put(px, kx0 + 3 + seitlich, ky0 + 3, rgb(GLUT_DK))
+        put(px, kx0 + 6 + seitlich, ky0 + 3, rgb(GLUT))
+        for x in range(kx0 + 3, kx0 + 8):                         # Luftschlitze
+            if x % 2 and (x + seitlich, ky0 + 5) in k:
+                put(px, x + seitlich, ky0 + 5, sk)
+    put(px, kx0 + 4, ky0 - 1, sm)
+    put(px, kx0 + 5, ky0 - 1, sd)
+    put(px, kx0 + 5, ky0 - 2, uh)
+    put(px, kx0 + 4, ky0 - 2, um_)
+    tupfen(px, k, ((2, 1), (3, 0)), sh, kx0, ky0)                 # Glanz auf dem Helm
+    tupfen(px, k, ((8, 4), (8, 5)), sk, kx0, ky0)
+
+
+def hag(px, m, seitlich, hinten, frame):
+    """Hexe: breitkrempiger Spitzhut, fahle Haut, Hakennase, Robe mit
+    Guertel und Kraeuterbeutel."""
+    haut = ton('hexhaut')
+    robe = ton('hexrobe')
+    rh, rm, rd, rk = robe
+    beine_malen(px, m['beine'], robe, ton('stiefel'))
+    for x, y in m['beine']:                                       # Robensaum
+        if (x - 1, y) in m['beine'] and (x + 1, y) in m['beine'] and x % 3 == 0:
+            put(px, x, y, rd)
+    r = schultern(m['rumpf'])
+    zylinder(px, r, robe)
+    x0, y0, x1, y1 = kasten(r)
+    cx = (x0 + x1 + 1) // 2
+    for x, y in r:                                                # Faltenrinnen
+        if y > y0 and (x - 1, y) in r and (x + 1, y) in r and (x - x0) in (2, 5):
+            put(px, x, y, rd if y < y1 else rk)
+    for x in range(x0 + 1, x1):                                   # Guertelband
+        if (x, y0 + 4) in r:
+            put(px, x, y0 + 4, rk if x > cx else rd)
+    tupfen(px, r, ((5, 5), (6, 5), (5, 6)), ton('leder')[2], x0, y0)   # Beutel
+    tupfen(px, r, ((6, 6),), ton('leder')[3], x0, y0)
+    k = ecken(m['kopf'])
+    haut_kopf(px, k, haut, seitlich, hinten, haar=ton('haar'))
+    kx0, ky0, kx1, ky1 = kasten(k)
+    if not hinten:
+        li, re = augen(px, k, seitlich, rgb(NACHT), hoehe=1, zeile=3)
+        put(px, li + 1, ky0 + 3, rgb('f8c53a'))
+        put(px, re + 1, ky0 + 3, rgb('f8c53a'))
+        for j in range(3):                                        # Hakennase
+            put(px, kx0 + 4 + seitlich + (1 if j == 2 else 0), ky0 + 3 + j, haut[2])
+        for x in range(kx0 + 3, kx0 + 7):                         # zahnloser Mund
+            put(px, x + seitlich, ky0 + 5, rgb(NACHT))
+        put(px, kx0 + 4 + seitlich, ky0 + 5, ton('bein')[1])      # ein Zahn
+        tupfen(px, k, ((8, 4), (1, 5)), haut[3], kx0, ky0)        # Warzen
+    hh, hm, hd, hk = ton('haar')
+    for x in range(kx0 - 1, kx1 + 2):                             # Haar unter der Krempe
+        put(px, x, ky0 + 1, hm if x % 2 else hd)
+    for x, y in ((kx0 - 1, ky0 + 3), (kx0 - 1, ky0 + 4), (kx1 + 1, ky0 + 3), (kx1 + 1, ky0 + 4)):
+        put(px, x, y, hd)
+    for x in range(kx0 - 2, kx1 + 3):                             # Hutkrempe
+        put(px, x, ky0, rk if x > kx0 + 5 else rd)
+        put(px, x, ky0 - 1, rm if x < kx0 + 5 else rd)
+    for j, w in enumerate((3, 2, 2, 1)):                          # Spitzhut, geknickt
+        y = ky0 - 2 - j
+        vers = j // 2
+        for x in range(kx0 + 3 - w + vers, kx0 + 5 + w + vers):
+            put(px, x, y, rh if x < kx0 + 4 + vers else (rm if x < kx0 + 6 + vers else rd))
+    put(px, kx0 + 8, ky0 - 6, rk)
+
+
+def brute(px, m, seitlich, hinten, frame):
+    """Schlaeger: breiter Oberkoerper, kleiner Kopf in einer Eisenmaske,
+    nackte Brust mit Narben, schwere Hose."""
+    haut = ton('huene')
+    hh, hm, hd, hk = haut
+    beine_malen(px, m['beine'], ton('huenehose'), ton('stiefel'))
+    r = breiter(schultern(m['rumpf']), 1)
+    zylinder(px, r, haut)
+    x0, y0, x1, y1 = kasten(r)
+    cx = (x0 + x1 + 1) // 2
+    if hinten:
+        for y in range(y0, y1 + 1):                               # Rueckenrinne
+            put(px, cx - 1, y, hd)
+            put(px, cx, y, hm)
+        tupfen(px, r, ((1, 1), (8, 1)), hd, x0, y0)               # Schulterblaetter
+    else:
+        for dx in (-4, -3, 2, 3):                                 # Brustmuskeln
+            for y in range(y0 + 1, y0 + 3):
+                if (cx + dx, y) in r:
+                    put(px, cx + dx, y, hh if dx < 0 else hm)
+        for y in range(y0 + 1, y0 + 4):                           # Brustfurche
+            put(px, cx - 1, y, hk)
+            put(px, cx, y, hd)
+        for dx in range(-4, 4):                                   # Rippenbogen unter der Brust
+            if (cx + dx, y0 + 3) in r:
+                put(px, cx + dx, y0 + 3, hd)
+        for dx, dy in ((2, 5), (3, 5), (5, 5), (6, 5), (2, 6), (6, 6)):   # Bauchmuskeln
+            tupfen(px, r, ((dx, dy),), hd, x0, y0)
+        for dx, dy in ((3, 6), (5, 6)):
+            tupfen(px, r, ((dx, dy),), hh, x0, y0)
+        for dx, dy in ((1, 2), (2, 3), (3, 4)):                   # Narbe quer
+            tupfen(px, r, ((dx, dy),), ton('narbe')[1], x0, y0)
+    for y in range(y0 + 1, y1 + 1):                               # Schulterkanten
+        put(px, x0, y, hm if hinten else hd)
+        put(px, x1, y, hk)
+    for x in range(x0 + 1, x1):                                   # breiter Guertel
+        if (x, y1) in r:
+            put(px, x, y1, ton('leder')[2] if x < cx else ton('leder')[3])
+    tupfen(px, r, ((4, y1 - y0), (5, y1 - y0)), rgb('b47538'), x0, y0)
+    k = ecken(m['kopf'], oben=2, unten=1)                         # kleiner, eckiger Kopf
+    kx0, ky0, kx1, ky1 = kasten(k)
+    haut_kopf(px, k, haut, seitlich, hinten, haar=ton('haar'), glanz=False)
+    if not hinten:
+        eisen = ton('ruestung')
+        li, re = augen(px, k, seitlich, rgb(SCHWARZ), hoehe=2, zeile=2)
+        put(px, li + 1, ky0 + 2, rgb('b25266'))                   # kleine Augen unter der Stirn
+        put(px, re + 1, ky0 + 2, rgb('b25266'))
+        put(px, li, ky0 + 1, hk); put(px, re + 1, ky0 + 1, hk)    # schwere Brauen
+        for x, y in k:                                            # Maulkorb, untere Gesichtshaelfte
+            if ky0 + 4 <= y <= ky0 + 6 and kx0 + 1 <= x <= kx1 - 1:
+                put(px, x, y, eisen[1] if x < kx0 + 5 else eisen[2])
+        for x in range(kx0 + 1, kx1):                             # Gitterstaebe
+            if x % 2 and (x, ky0 + 5) in k:
+                put(px, x, ky0 + 5, eisen[3])
+        for x in range(kx0 + 1, kx1):                             # Nietenkante oben
+            if (x, ky0 + 4) in k and x % 3 == 0:
+                put(px, x, ky0 + 4, eisen[0])
+    else:
+        tupfen(px, k, ((3, 3), (5, 4)), ton('haar')[3], kx0, ky0)
+    put(px, kx0 - 1, ky0 + 3, ton('leder')[2])                    # Riemen der Maske
+    put(px, kx1 + 1, ky0 + 3, ton('leder')[3])
+
+
+
 GEGNER = {'zombie': zombie, 'skeleton_warrior': skeleton, 'ghoul': ghoul,
-          'cultist': cultist, 'mummy': mummy, 'bandit': bandit}
+          'cultist': cultist, 'mummy': mummy, 'bandit': bandit,
+          'wight': wight, 'hag': hag, 'brute': brute}
 
 
 # --- Frames ------------------------------------------------------------------------
