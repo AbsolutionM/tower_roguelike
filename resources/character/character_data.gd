@@ -20,8 +20,6 @@ class_name CharacterData
 @export_range(1, 10) var power: int = 5
 ## 1-10. Steigert Lauftempo und Angriffstempo.
 @export_range(1, 10) var agility: int = 5
-## 1-10. Steigert maximale Leben.
-@export_range(1, 10) var vitality: int = 5
 ## 1-10. Steigert Krit-Chance und Loot-Glück.
 @export_range(1, 10) var fortune: int = 5
 ## 1-10. Steigert Rüstung und senkt eingehenden Schaden.
@@ -31,7 +29,13 @@ class_name CharacterData
 
 @export_group("Basiswerte")
 @export var base_speed: float = 190.0
-@export var base_health: float = 90.0
+
+@export_group("Herzen")
+## Herzcontainer zu Beginn - rote Herzen, die leer stehen bleiben und
+## wieder aufgefüllt werden können.
+@export_range(0, 12) var red_hearts: int = 3
+## Seelenherzen zu Beginn - blaue Herzen, die weg sind, wenn sie verbraucht sind.
+@export_range(0, 12) var soul_hearts: int = 0
 
 @export_group("Dash")
 @export var dash_speed: float = 780.0

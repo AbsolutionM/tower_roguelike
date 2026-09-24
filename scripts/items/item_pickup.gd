@@ -95,6 +95,11 @@ func _update_magnet(delta: float) -> void:
 	if not player or not is_instance_valid(player):
 		return
 
+	# Herzen, für die gerade kein Platz ist, bleiben liegen statt am Helden zu kleben.
+	if not _has_room_for_hearts():
+		_magnet_speed_current = 0.0
+		return
+
 	var to_player := player.global_position - global_position
 	var distance := to_player.length()
 
@@ -132,11 +137,15 @@ func collect() -> void:
 			RunState.add_gold(item.value * count)
 		ItemData.ItemType.ESSENCE:
 			RunState.add_essence(item.essence_id, count)
-		ItemData.ItemType.CONSUMABLE:
-			if item.heal_amount > 0.0:
-				_consume()
-			elif not _store_in_bag():
+		ItemData.ItemType.HEART:
+			# Wie in Isaac: bei vollen roten Herzen bleibt das Herz liegen.
+			if not _apply_hearts(false):
 				return
+		ItemData.ItemType.SOUL_HEART:
+			if not _apply_hearts(true):
+				return
+		ItemData.ItemType.KEY:
+			RunState.add_keys(item.value * count)
 		_:
 			if not _store_in_bag():
 				return
@@ -146,12 +155,29 @@ func collect() -> void:
 	_collect_effect()
 	queue_free()
 
-func _consume() -> void:
-	if not player:
-		return
+func _has_room_for_hearts() -> bool:
+	if not item or not player:
+		return true
 	var health = player.get_node_or_null("PlayerHealth")
-	if health and health.has_method("heal"):
-		health.heal(item.heal_amount * count)
+	if not health:
+		return true
+	match item.item_type:
+		ItemData.ItemType.HEART:
+			return not health.is_red_full()
+		ItemData.ItemType.SOUL_HEART:
+			return health.can_add_soul()
+	return true
+
+## False = kein Platz für dieses Herz, es bleibt liegen.
+func _apply_hearts(soul: bool) -> bool:
+	if not player:
+		return false
+	var health = player.get_node_or_null("PlayerHealth")
+	if not health:
+		return false
+	var halves: int = item.value * count
+	var gained: int = health.add_soul_hearts(halves) if soul else health.heal_hearts(halves)
+	return gained > 0
 
 ## False = Beutel voll, das Item bleibt liegen.
 func _store_in_bag() -> bool:
@@ -161,6 +187,11 @@ func _store_in_bag() -> bool:
 	return false
 
 func _collect_effect() -> void:
-	var label_text := "+%d" % (item.value * count if item.item_type == ItemData.ItemType.CURRENCY else count)
-	FX.floating_text(global_position + Vector2(0.0, -18.0), label_text, item.color, 17, 34.0)
+	# Herzen melden sich selbst über PlayerHealth.
+	if item.item_type != ItemData.ItemType.HEART and item.item_type != ItemData.ItemType.SOUL_HEART:
+		var amount: int = item.value * count if item.item_type in [ItemData.ItemType.CURRENCY, ItemData.ItemType.KEY] else count
+		var label_text := "+%d" % amount
+		if item.item_type == ItemData.ItemType.KEY:
+			label_text += " Schlüssel"
+		FX.floating_text(global_position + Vector2(0.0, -18.0), label_text, item.color, 17, 34.0)
 	FX.ring_burst(global_position, item.color, 3.0, 26.0, 0.22, 3.0)

@@ -4,15 +4,14 @@
 
 [resource]
 script = ExtResource("1_script")
-item_id = "health_flask"
-item_name = "Heiltrank"
-description = "Heilt sofort beim Aufsammeln."
-item_type = 3
+item_id = "red_heart"
+item_name = "Rotes Herz"
+description = "Füllt einen leeren Herzcontainer wieder auf."
+item_type = 4
 rarity = 1
-max_stack = 10
-value = 8
-heal_amount = 28.0
-
-symbol = 4
+max_stack = 99
+value = 2
+
+symbol = 8
 color = Color(0.851, 0.31, 0.31, 1)
-pickup_scale = 1.1
+pickup_scale = 1.4

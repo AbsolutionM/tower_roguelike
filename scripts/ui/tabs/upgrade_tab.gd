@@ -5,7 +5,7 @@ extends TownTab
 ## Waffen  -> jede Waffe im Besitz einzeln schmieden (+0..+10, Elden Ring):
 ##            Material aus dem Lager plus Gold, Skalierungsnoten steigen mit.
 ## Helden  -> jeder Held einzeln auf Kraftstufe bringen (1..11, Brawl Stars):
-##            Gold plus Essenz, pauschal Leben und Schaden, plus Freischaltungen.
+##            Gold plus Essenz, pauschal Schaden, Herzcontainer, plus Freischaltungen.
 
 enum Mode { WEAPON, CHARACTER }
 
@@ -292,8 +292,9 @@ func _make_forge_section(weapon: WeaponData, character: CharacterData, level: in
 
 func _build_characters(content: VBoxContainer) -> void:
 	content.add_child(UIKit.make_label(
-		"Tippen öffnet einen Helden. Jede Kraftstufe gibt +%d%% Leben und Schaden, Stufe %d bringt das Gadget, Stufe %d die Sternenkraft." % [
+		"Tippen öffnet einen Helden. Jede Kraftstufe gibt +%d%% Schaden, Stufe %s je einen Herzcontainer, Stufe %d bringt das Gadget, Stufe %d die Sternenkraft." % [
 			int(Progression.POWER_LEVEL_BONUS * 100.0),
+			"/".join(Progression.HEART_LEVELS.map(func(heart_level): return str(heart_level))),
 			Progression.GADGET_LEVEL,
 			Progression.STAR_POWER_LEVEL
 		],
@@ -346,7 +347,7 @@ func _make_character_card(character: CharacterData, is_selected: bool) -> Contro
 	var factor := Progression.power_level_mult(level)
 	column.add_child(UIKit.make_section("Aktueller Bonus", accent))
 	column.add_child(UIKit.make_stat_sheet([
-		{"name": "Leben", "value": "+%.0f%%" % ((factor - 1.0) * 100.0)},
+		{"name": "Herzen", "value": "+%d" % Progression.bonus_hearts(level)},
 		{"name": "Schaden", "value": "+%.0f%%" % ((factor - 1.0) * 100.0)}
 	], 2))
 
@@ -405,6 +406,8 @@ func _make_level_section(character: CharacterData, level: int, is_max: bool, can
 	var unlock := Progression.unlocks_at(next_level)
 	if not unlock.is_empty():
 		column.add_child(UIKit.make_label("Schaltet %s frei" % unlock, 15, UIKit.GOOD))
+	if Progression.bonus_hearts(next_level) > Progression.bonus_hearts(level):
+		column.add_child(UIKit.make_label("+1 Herzcontainer", 15, UIKit.GOOD))
 
 	var need_gold: int = int(cost["gold"])
 	column.add_child(UIKit.make_label(

@@ -3,6 +3,9 @@
 [ext_resource type="Script" path="res://scripts/props/chest.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/props/item_pickup.tscn" id="2_pickup"]
 [ext_resource type="Resource" path="res://resources/loot/dt_chest.tres" id="3_drops"]
+[ext_resource type="Resource" path="res://resources/loot/dt_chest_gold.tres" id="4_gold_drops"]
+[ext_resource type="Resource" path="res://resources/loot/dt_chest_spiked.tres" id="5_spiked_drops"]
+[ext_resource type="Resource" path="res://resources/loot/dt_chest_red.tres" id="6_red_drops"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_chest"]
 size = Vector2(40, 32)
@@ -10,6 +13,9 @@ size = Vector2(40, 32)
 [node name="Chest" type="Area2D"]
 script = ExtResource("1_script")
 drop_table = ExtResource("3_drops")
+gold_drop_table = ExtResource("4_gold_drops")
+spiked_drop_table = ExtResource("5_spiked_drops")
+red_drop_table = ExtResource("6_red_drops")
 pickup_scene = ExtResource("2_pickup")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

@@ -6,6 +6,5 @@
 script = ExtResource("1_script")
 star_id = "templer_geweihte_ruestung"
 star_name = "Geweihte Rüstung"
-description = "Mehr Leben, mehr Rüstung, weniger Sorgen."
-stat_add = { "armor": 5.00 }
-stat_mult = { "max_health": 1.18 }
+description = "Zwei Seelenherzen, mehr Rüstung, weniger Sorgen."
+stat_add = { "armor": 5.00, "soul_hearts": 2.00 }

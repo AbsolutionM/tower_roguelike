@@ -9,5 +9,5 @@ accessory_name = "Lebensamulett"
 description = "Wärmt die Brust und schließt Wunden von allein."
 rarity = 2
 shop_price = 300
-flat_hp_bonus = 35.0
+heart_container_bonus = 1
 regen_bonus = 0.8

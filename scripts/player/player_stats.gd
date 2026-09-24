@@ -10,7 +10,10 @@ signal hit_landed
 
 @export var character_data: CharacterData
 
-var max_health: float = 100.0
+## Herzcontainer (rote Herzen) in ganzen Herzen.
+var heart_containers: int = 3
+## Seelenherzen (blau), mit denen der Held startet - in ganzen Herzen.
+var soul_hearts: int = 0
 var move_speed: float = 200.0
 var damage_mult: float = 1.0
 var flat_damage: float = 0.0
@@ -21,9 +24,10 @@ var crit_chance: float = 0.05
 var crit_damage: float = 2.0
 var armor: float = 0.0
 var luck: float = 0.0
-## Anteil des ausgeteilten Schadens, der als Leben zurückkommt (0-1).
+## Anteil des ausgeteilten Schadens, der als Heilung zurückkommt (0-1).
+## Sammelt sich in PlayerHealth, bis ein halbes Herz voll ist.
 var lifesteal: float = 0.0
-## Leben pro Sekunde.
+## Heilpunkte pro Sekunde - PlayerHealth macht daraus halbe Herzen.
 var health_regen: float = 0.0
 ## Schaden, der bei einem Treffer an nahe Gegner zurückgeht.
 var thorns: float = 0.0
@@ -56,15 +60,14 @@ func recalculate() -> void:
 	_apply_weather()
 	stats_changed.emit()
 
-## Kraftstufe des Helden: pauschal mehr Leben und Schaden pro Stufe,
-## dazu die Freischaltungen auf Stufe 5 und 9.
+## Kraftstufe des Helden: pauschal mehr Schaden pro Stufe, Herzcontainer
+## auf bestimmten Stufen, dazu die Freischaltungen auf Stufe 5 und 9.
 func _apply_power_level() -> void:
 	if not character_data:
 		return
 	var level := RunState.get_character_level(character_data.character_id)
-	var factor := Progression.power_level_mult(level)
-	max_health *= factor
-	damage_mult *= factor
+	damage_mult *= Progression.power_level_mult(level)
+	heart_containers += Progression.bonus_hearts(level)
 
 	for star in character_data.get_unlocked_stars(level):
 		for stat_name in star.stat_add:
@@ -109,7 +112,8 @@ func report_damage(amount: float) -> void:
 
 func _apply_base() -> void:
 	if character_data:
-		max_health = character_data.base_health + character_data.vitality * 8.0
+		heart_containers = character_data.red_hearts
+		soul_hearts = character_data.soul_hearts
 		move_speed = character_data.base_speed + character_data.agility * 5.0
 		damage_mult = 1.0 + character_data.power * 0.04
 		attack_speed_mult = 1.0 + character_data.agility * 0.02
@@ -118,7 +122,8 @@ func _apply_base() -> void:
 		armor = float(character_data.toughness - 5) * 1.6
 		ability_cooldown_mult = clampf(1.0 - float(character_data.focus - 5) * 0.045, 0.5, 1.5)
 	else:
-		max_health = 100.0
+		heart_containers = 3
+		soul_hearts = 0
 		move_speed = 200.0
 		damage_mult = 1.0
 		attack_speed_mult = 1.0
@@ -140,7 +145,8 @@ func _apply_accessories() -> void:
 	if not character_data:
 		return
 	for accessory in RunState.get_equipped_accessories(character_data.character_id):
-		max_health += accessory.flat_hp_bonus
+		heart_containers += accessory.heart_container_bonus
+		soul_hearts += accessory.soul_heart_bonus
 		move_speed += accessory.flat_speed_bonus
 		flat_damage += accessory.flat_damage_bonus
 		damage_mult *= accessory.damage_multiplier
@@ -155,14 +161,20 @@ func _add_stat(stat_name: String, value: float) -> void:
 	if current == null:
 		push_warning("PlayerStats hat kein Feld '%s'" % stat_name)
 		return
-	set(stat_name, float(current) + value)
+	if typeof(current) == TYPE_INT:
+		set(stat_name, int(current) + int(round(value)))
+	else:
+		set(stat_name, float(current) + value)
 
 func _mult_stat(stat_name: String, factor: float) -> void:
 	var current = get(stat_name)
 	if current == null:
 		push_warning("PlayerStats hat kein Feld '%s'" % stat_name)
 		return
-	set(stat_name, float(current) * factor)
+	if typeof(current) == TYPE_INT:
+		set(stat_name, int(round(float(current) * factor)))
+	else:
+		set(stat_name, float(current) * factor)
 
 ## Kombiniert Spielerwerte, Waffen-Upgrades und Charakter-Affinität.
 func get_weapon_modifiers(weapon: WeaponData) -> Dictionary:
@@ -214,17 +226,32 @@ func describe_sheet() -> Array:
 		{"name": "Angriffe/s", "value": "%.2f" % attacks_per_second},
 		{"name": "Krit-Chance", "value": "%.0f%%" % (clampf(crit, 0.0, 1.0) * 100.0)},
 		{"name": "Krit-Schaden", "value": "%.0f%%" % (crit_damage * 100.0)},
-		{"name": "Leben", "value": "%.0f" % max_health},
+		{"name": "Herzen", "value": describe_hearts()},
 		{"name": "Tempo", "value": "%.0f" % move_speed},
 		{"name": "Rüstung", "value": "%.1f" % armor},
 		{"name": "Lebensraub", "value": "%.1f%%" % (lifesteal * 100.0)},
-		{"name": "Regeneration", "value": "%.1f/s" % health_regen},
+		{"name": "Regeneration", "value": _describe_regen()},
 		{"name": "Ausweichen", "value": "%.0f%%" % (dodge_chance * 100.0)},
 		{"name": "Dornen", "value": "%.0f" % thorns},
 		{"name": "Sammelradius", "value": "%.0f" % pickup_radius},
 		{"name": "Fähigkeit", "value": "%.0f%%" % (ability_cooldown_mult * 100.0)},
 		{"name": "Glück", "value": "%.0f%%" % (luck * 100.0)}
 	]
+
+## Regeneration als "½ Herz alle 40s" - Punkte pro Sekunde sagen mit Herzen nichts mehr.
+func _describe_regen() -> String:
+	if health_regen <= 0.0:
+		return "-"
+	return "½ Herz/%.0fs" % (PlayerHealth.HALF_HEART_VALUE / health_regen)
+
+## "3 rot + 1 blau" - für Menüs.
+func describe_hearts() -> String:
+	var parts: Array[String] = []
+	if heart_containers > 0:
+		parts.append("%d rot" % heart_containers)
+	if soul_hearts > 0:
+		parts.append("%d blau" % soul_hearts)
+	return " + ".join(parts) if not parts.is_empty() else "-"
 
 ## Liefert { "damage": float, "crit": bool } für einen Waffen-Grundschaden.
 func compute_damage(base_damage: float, weapon: WeaponData = null) -> Dictionary:

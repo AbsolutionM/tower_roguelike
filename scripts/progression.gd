@@ -9,7 +9,8 @@ class_name Progression
 ##   Waffen  -> Schmiedestufen +0..+10 (Elden Ring): Material + Gold,
 ##              Werte wachsen mit der Stufe, Skalierungsnoten steigen mit.
 ##   Helden  -> Kraftstufen 1..11 (Brawl Stars): Gold + Essenz,
-##              jede Stufe gibt pauschal Leben und Schaden, plus Freischaltungen.
+##              jede Stufe gibt pauschal Schaden, manche Stufen einen
+##              Herzcontainer, plus Freischaltungen.
 
 # --- Waffen: Schmieden -----------------------------------------------------
 
@@ -60,11 +61,13 @@ static func reinforce_stagger_mult(level: int) -> float:
 const MIN_POWER_LEVEL := 1
 const MAX_POWER_LEVEL := 11
 
-## Pauschaler Zuwachs pro Stufe auf Leben und Schaden.
+## Pauschaler Zuwachs pro Stufe auf den Schaden.
 const POWER_LEVEL_BONUS := 0.05
 
 ## Ab dieser Stufe gibt es das Gadget, ab jener die Sternenkraft.
 const GADGET_LEVEL := 5
+## Auf diesen Stufen gibt es je einen zusätzlichen Herzcontainer.
+const HEART_LEVELS := [4, 8, 11]
 const STAR_POWER_LEVEL := 9
 
 const POWER_BASE_GOLD := 40
@@ -77,9 +80,17 @@ static func power_gold_cost(level: int) -> int:
 static func power_essence_cost(level: int) -> int:
 	return POWER_BASE_ESSENCE + maxi(level - 1, 0)
 
-## Faktor auf Leben und Schaden bei Kraftstufe `level`.
+## Faktor auf den Schaden bei Kraftstufe `level`.
 static func power_level_mult(level: int) -> float:
 	return 1.0 + POWER_LEVEL_BONUS * float(clampi(level, MIN_POWER_LEVEL, MAX_POWER_LEVEL) - 1)
+
+## Zusätzliche Herzcontainer, die Kraftstufe `level` bis hierhin gebracht hat.
+static func bonus_hearts(level: int) -> int:
+	var count: int = 0
+	for heart_level in HEART_LEVELS:
+		if level >= int(heart_level):
+			count += 1
+	return count
 
 static func unlocks_at(level: int) -> String:
 	if level == GADGET_LEVEL:

@@ -8,7 +8,7 @@ class_name ItemSymbol
 ## Gezeichnet wird über `paint()`, damit dieselbe Form auch von Node2D-Knoten
 ## (dem Bodenpickup) benutzt werden kann.
 
-enum Kind { GEL, SCRAP, SHARD, COIN, FLASK, ORE, CORE, ESSENCE }
+enum Kind { GEL, SCRAP, SHARD, COIN, FLASK, ORE, CORE, ESSENCE, HEART, HALF_HEART, KEY }
 
 var kind: Kind = Kind.GEL
 var tint: Color = Palette.BONE
@@ -45,6 +45,12 @@ static func paint(canvas: CanvasItem, center: Vector2, box: float, symbol: Kind,
 			_core(canvas, center, unit, color, edge, shine)
 		Kind.ESSENCE:
 			_essence(canvas, center, unit, color, edge, shine)
+		Kind.HEART:
+			paint_heart(canvas, center, unit, color, Color.TRANSPARENT, 2)
+		Kind.HALF_HEART:
+			paint_heart(canvas, center, unit, color, Color.TRANSPARENT, 1)
+		Kind.KEY:
+			_key(canvas, center, unit, color, edge, shine)
 
 static func _box(canvas: CanvasItem, center: Vector2, offset: Vector2, size: Vector2,
 		unit: float, fill: Color, edge: Color) -> void:
@@ -110,3 +116,73 @@ static func _essence(canvas: CanvasItem, c: Vector2, u: float, fill: Color, edge
 	_box(canvas, c, Vector2(-1.2, 0.6), Vector2(0.9, 0.9), u, shine, shine)
 	_box(canvas, c, Vector2(3.2, -2.4), Vector2(0.8, 0.8), u, shine, shine)
 	_box(canvas, c, Vector2(-3.4, 1.8), Vector2(0.7, 0.7), u, shine, shine)
+
+## Herz als Pixelraster, 9 x 8 Pixel. Die linke Hälfte sind die Spalten 0-4.
+const HEART_ROWS := [
+	".XX...XX.",
+	"XXXX.XXXX",
+	"XXXXXXXXX",
+	"XXXXXXXXX",
+	".XXXXXXX.",
+	"..XXXXX..",
+	"...XXX...",
+	"....X....",
+]
+
+## Zeichnet ein Herz mit Rand. `filled_halves`: 2 = voll, 1 = linke Hälfte,
+## 0 = leer. Der ungefüllte Teil bekommt `empty` (transparent = weglassen).
+## Wird vom Bodenpickup und von der Herzleiste im HUD benutzt.
+static func paint_heart(canvas: CanvasItem, center: Vector2, pixel: float, fill: Color,
+		empty: Color, filled_halves: int) -> void:
+	var rows: int = HEART_ROWS.size()
+	var columns: int = str(HEART_ROWS[0]).length()
+	var origin := center - Vector2(columns, rows) * pixel * 0.5
+	var outline: Color = Palette.INK
+	var shine: Color = Palette.highlight(fill)
+
+	# Rand: jedes Rasterfeld, das an ein Herzfeld grenzt, selbst aber keins ist.
+	for y in range(-1, rows + 1):
+		for x in range(-1, columns + 1):
+			if _heart_cell(x, y):
+				continue
+			var touches := false
+			for offset in [Vector2i(-1, 0), Vector2i(1, 0), Vector2i(0, -1), Vector2i(0, 1)]:
+				if _heart_cell(x + offset.x, y + offset.y):
+					touches = true
+					break
+			if touches:
+				canvas.draw_rect(Rect2(origin + Vector2(x, y) * pixel, Vector2.ONE * pixel), outline)
+
+	for y in rows:
+		for x in columns:
+			if not _heart_cell(x, y):
+				continue
+			var is_filled: bool = filled_halves >= 2 or (filled_halves == 1 and x <= 4)
+			var color: Color = fill if is_filled else empty
+			if color.a <= 0.0:
+				continue
+			canvas.draw_rect(Rect2(origin + Vector2(x, y) * pixel, Vector2.ONE * pixel), color)
+
+	# Glanzpunkt oben links, nur auf gefüllten Herzen.
+	if filled_halves > 0:
+		canvas.draw_rect(Rect2(origin + Vector2(1, 1) * pixel, Vector2.ONE * pixel), shine)
+		canvas.draw_rect(Rect2(origin + Vector2(2, 1) * pixel, Vector2.ONE * pixel), shine)
+		canvas.draw_rect(Rect2(origin + Vector2(1, 2) * pixel, Vector2.ONE * pixel), shine)
+
+static func _heart_cell(x: int, y: int) -> bool:
+	if y < 0 or y >= HEART_ROWS.size():
+		return false
+	var row: String = HEART_ROWS[y]
+	if x < 0 or x >= row.length():
+		return false
+	return row[x] == "X"
+
+## Schlüssel: Ring als Griff, Schaft nach rechts, zwei Bartzähne.
+static func _key(canvas: CanvasItem, c: Vector2, u: float, fill: Color, edge: Color, shine: Color) -> void:
+	_box(canvas, c, Vector2(1.4, 0), Vector2(5.6, 1.4), u, fill, edge)
+	_box(canvas, c, Vector2(3.4, 1.4), Vector2(1.0, 1.6), u, fill, edge)
+	_box(canvas, c, Vector2(1.8, 1.2), Vector2(1.0, 1.2), u, fill, edge)
+	PixelDraw.disc(canvas, c + Vector2(-2.6, 0.0) * u, u * 2.6, u, edge)
+	PixelDraw.disc(canvas, c + Vector2(-2.6, 0.0) * u, u * 2.0, u, fill)
+	PixelDraw.disc(canvas, c + Vector2(-2.6, 0.0) * u, u * 0.9, u, edge)
+	_box(canvas, c, Vector2(-3.4, -1.0), Vector2(0.8, 0.8), u, shine, shine)

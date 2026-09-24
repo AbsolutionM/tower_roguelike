@@ -1,7 +1,9 @@
 extends Resource
 class_name ItemData
 
-enum ItemType { MATERIAL, CURRENCY, ESSENCE, CONSUMABLE }
+## HEART, SOUL_HEART und KEY wirken sofort beim Aufsammeln und landen nie
+## im Beutel. `value` ist dann die Menge (halbe Herzen bzw. Schlüssel).
+enum ItemType { MATERIAL, CURRENCY, ESSENCE, CONSUMABLE, HEART, SOUL_HEART, KEY }
 enum Rarity { COMMON, UNCOMMON, RARE, EPIC, LEGENDARY }
 
 const RARITY_NAMES := {
@@ -32,7 +34,6 @@ const RARITY_COLORS := {
 @export var rarity: Rarity = Rarity.COMMON
 @export var value: int = 1
 @export var essence_id: String = ""
-@export var heal_amount: float = 0.0
 
 @export_group("Optik")
 ## Gezeichnete Form, solange kein `icon` gesetzt ist.

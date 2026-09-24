@@ -9,6 +9,6 @@ accessory_name = "Eisenplatte"
 description = "Schwer, aber jeder Treffer tut weniger weh."
 rarity = 1
 shop_price = 240
-flat_hp_bonus = 15.0
+soul_heart_bonus = 1
 armor_bonus = 4.0
 flat_speed_bonus = -8.0

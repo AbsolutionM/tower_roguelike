@@ -6,6 +6,9 @@
 [ext_resource type="Resource" path="res://resources/items/essence_slime.tres" id="4_essence"]
 [ext_resource type="Resource" path="res://resources/items/iron_scrap.tres" id="5_scrap"]
 [ext_resource type="Resource" path="res://resources/items/crystal_shard.tres" id="6_crystal"]
+[ext_resource type="Resource" path="res://resources/items/red_heart.tres" id="7_heart"]
+[ext_resource type="Resource" path="res://resources/items/soul_heart.tres" id="8_soul"]
+[ext_resource type="Resource" path="res://resources/items/key.tres" id="9_key"]
 
 [sub_resource type="Resource" id="Entry_essence"]
 script = ExtResource("2_entry")
@@ -28,9 +31,30 @@ chance = 0.22
 count_min = 1
 count_max = 1
 
+[sub_resource type="Resource" id="Entry_heart"]
+script = ExtResource("2_entry")
+item = ExtResource("7_heart")
+chance = 0.1
+count_min = 1
+count_max = 1
+
+[sub_resource type="Resource" id="Entry_soul"]
+script = ExtResource("2_entry")
+item = ExtResource("8_soul")
+chance = 0.05
+count_min = 1
+count_max = 1
+
+[sub_resource type="Resource" id="Entry_key"]
+script = ExtResource("2_entry")
+item = ExtResource("9_key")
+chance = 0.1
+count_min = 1
+count_max = 1
+
 [resource]
 script = ExtResource("1_table")
-entries = Array[DropEntry]([SubResource("Entry_essence"), SubResource("Entry_scrap"), SubResource("Entry_crystal")])
+entries = Array[DropEntry]([SubResource("Entry_essence"), SubResource("Entry_scrap"), SubResource("Entry_crystal"), SubResource("Entry_heart"), SubResource("Entry_soul"), SubResource("Entry_key")])
 gold_item = ExtResource("3_gold")
 gold_chance = 1.0
 gold_min = 6

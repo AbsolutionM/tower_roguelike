@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+item_id = "key"
+item_name = "Schlüssel"
+description = "Öffnet eine verschlossene Goldtruhe."
+item_type = 6
+rarity = 1
+max_stack = 99
+value = 1
+
+symbol = 10
+color = Color(0.847, 0.824, 0.878, 1)
+pickup_scale = 1.5

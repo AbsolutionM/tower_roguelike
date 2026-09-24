@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+item_id = "half_red_heart"
+item_name = "Halbes Herz"
+description = "Füllt ein halbes rotes Herz auf."
+item_type = 4
+rarity = 0
+max_stack = 99
+value = 1
+
+symbol = 9
+color = Color(0.851, 0.31, 0.31, 1)
+pickup_scale = 1.3

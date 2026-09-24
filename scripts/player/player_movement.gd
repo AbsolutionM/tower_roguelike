@@ -209,7 +209,10 @@ func apply_character_data() -> void:
 		speed = character_data.base_speed
 
 	if health:
-		health.setup(stats.max_health if stats else character_data.base_health)
+		if stats:
+			health.setup(stats.heart_containers, stats.soul_hearts)
+		else:
+			health.setup(character_data.red_hearts, character_data.soul_hearts)
 	if ability:
 		ability.ability = character_data.ability
 	if weapon_controller and character_data.starting_weapon and not weapon_controller.equipped_weapon:

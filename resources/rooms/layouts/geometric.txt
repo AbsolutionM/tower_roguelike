@@ -1,5 +1,5 @@
 // Geometrische Raum-Layouts - 15 Spalten x 19 Zeilen.
-// Zeichen:  . leer   # Fels   e Gegner   c Truhe   o Erz
+// Zeichen:  . leer   # Fels   e Gegner   c Truhe   k Goldtruhe   o Erz
 // Layouts werden durch eine Leerzeile getrennt. // = Kommentar.
 // Der Spieler startet in der Mitte (Spalte 8 / Zeile 10) - dort bleibt es frei.
 

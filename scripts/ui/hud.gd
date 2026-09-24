@@ -4,7 +4,7 @@ class_name HUD
 ## Verbindet die UI mit Player, RunState und RoomController.
 ## Sucht seine Kinder über feste Pfade - Namen im Szenenbaum bitte so lassen.
 
-@onready var health_bar: StatBar = get_node_or_null("TopBar/HealthBar")
+@onready var heart_bar: HeartBar = get_node_or_null("TopBar/HeartBar")
 @onready var timer_bar: StatBar = get_node_or_null("TopBar/TimerBar")
 @onready var timer_label: Label = get_node_or_null("TopBar/TimerLabel")
 @onready var gold_label: Label = get_node_or_null("TopBar/GoldLabel")
@@ -25,6 +25,8 @@ class_name HUD
 @onready var joystick: Control = get_node_or_null("Joystick")
 ## Wird in _ready gebaut, siehe _create_pause_button.
 var pause_button: Button
+## Wird in _ready gebaut, siehe _create_key_counter.
+var key_label: Label
 
 var _boss: Node = null
 var _pause_overlay: Control = null
@@ -40,11 +42,13 @@ func _ready() -> void:
 	FX.screen_flash_requested.connect(_on_screen_flash)
 
 	RunState.run_inventory_changed.connect(_update_bag_label)
+	RunState.keys_changed.connect(_on_keys_changed)
 	RunState.bag_full.connect(_on_bag_full)
 
 	_on_gold_changed(RunState.gold)
 	_update_essence_label()
 	_update_bag_label()
+	_create_key_counter()
 	# Erst nach dem Layout, dann steht die Leistenhöhe fest.
 	_create_pause_button()
 	_apply_safe_area.call_deferred()
@@ -63,6 +67,41 @@ func _create_pause_button() -> void:
 	pause_button.process_mode = Node.PROCESS_MODE_ALWAYS
 	pause_button.pressed.connect(_toggle_pause)
 	add_child(pause_button)
+
+## Schlüssel stehen neben Gold und Essenz - mit Symbol, weil die Zahl
+## allein sonst nicht von den anderen zu unterscheiden wäre.
+func _create_key_counter() -> void:
+	if not top_bar:
+		return
+	var row := HBoxContainer.new()
+	row.name = "KeyCounter"
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_theme_constant_override("separation", 6)
+	row.position = Vector2(276.0, 92.0)
+	row.size = Vector2(120.0, 34.0)
+	top_bar.add_child(row)
+
+	var icon := ItemSymbol.new()
+	icon.kind = ItemSymbol.Kind.KEY
+	icon.tint = Palette.BONE
+	icon.symbol_size = 30.0
+	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(icon)
+
+	key_label = Label.new()
+	key_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	key_label.add_theme_color_override("font_color", Palette.BONE)
+	key_label.add_theme_color_override("font_outline_color", Palette.INK)
+	key_label.add_theme_constant_override("outline_size", 6)
+	key_label.add_theme_font_size_override("font_size", 32)
+	row.add_child(key_label)
+	_on_keys_changed(RunState.keys)
+
+func _on_keys_changed(amount: int) -> void:
+	if not key_label:
+		return
+	key_label.text = "%d" % amount
+	_pop(key_label)
 
 ## Kerbe und Home-Indikator freihalten, dann dem Spielfeld sagen, wie viel
 ## Platz die Steuerleiste unten einnimmt.
@@ -121,8 +160,8 @@ func _bind_player() -> void:
 
 	var health = player.get_node_or_null("PlayerHealth")
 	if health:
-		health.health_changed.connect(_on_health_changed)
-		_on_health_changed(health.current_health, health.max_health)
+		health.hearts_changed.connect(_on_hearts_changed)
+		_on_hearts_changed(health.red, health.red_max, health.soul)
 
 	# Ladebalken des Waffen-Sonderschlags.
 	var controller = player.get_node_or_null("WeaponController")
@@ -280,9 +319,9 @@ func _update_boss() -> void:
 	boss_label.text = title
 	boss_bar.set_value(_boss.current_health, _boss.max_health)
 
-func _on_health_changed(current: float, maximum: float) -> void:
-	if health_bar:
-		health_bar.set_value(current, maximum)
+func _on_hearts_changed(red: int, red_max: int, soul: int) -> void:
+	if heart_bar:
+		heart_bar.set_hearts(red, red_max, soul)
 
 ## Der Sonderschlag laedt sich mit Treffern auf und loest von selbst aus.
 func _on_special_charge(ratio: float) -> void:

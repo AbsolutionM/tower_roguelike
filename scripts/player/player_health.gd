@@ -1,17 +1,37 @@
 extends Node
 class_name PlayerHealth
 
-signal health_changed(current: float, maximum: float)
-signal damaged(amount: float)
-signal healed(amount: float)
+## Leben wie in Isaac: gezählt wird in halben Herzen.
+##
+##   Rote Herzen   - sitzen in Herzcontainern. Ein leerer Container bleibt
+##                   stehen und kann wieder aufgefüllt werden.
+##   Seelenherzen  - (blau) liegen hinter den Containern, fangen Treffer
+##                   zuerst ab und sind weg, sobald sie verbraucht sind.
+##
+## Tot ist der Held, wenn weder rote noch blaue Hälften übrig sind.
+
+signal hearts_changed(red: int, red_max: int, soul: int)
+signal damaged(halves: int)
+signal healed(halves: int)
 signal died
+
+## Obergrenze für Container plus Seelenherzen zusammen, in ganzen Herzen.
+const MAX_HEARTS := 12
+## So viel alter Schaden bzw. alte Heilung entspricht einem halben Herzen.
+## Gegnerschaden, Lebensraub und Regeneration rechnen weiter in Punkten
+## und werden hier in Herzhälften übersetzt.
+const HALF_HEART_VALUE := 30.0
+## Mehr als so viele Hälften nimmt ein einzelner Treffer nie.
+const MAX_HALVES_PER_HIT := 4
 
 @export var invuln_time: float = 0.9
 @export var death_restart_delay: float = 1.5
 @export var blink_interval: float = 0.09
 
-var max_health: float = 100.0
-var current_health: float = 100.0
+## Alles in halben Herzen.
+var red: int = 6
+var red_max: int = 6
+var soul: int = 0
 var invuln_timer: float = 0.0
 var is_dead: bool = false
 
@@ -19,20 +39,29 @@ var _body: Node2D
 var _sprite: CanvasItem
 var _initialized: bool = false
 var _blink_timer: float = 0.0
+## Sammelt Lebensraub und Regeneration, bis ein halbes Herz voll ist.
+var _heal_buffer: float = 0.0
 
 func _ready() -> void:
 	_body = get_parent() as Node2D
 	if _body:
 		_sprite = _body.get_node_or_null("RigView/Rig/FirstBody")
 
-func setup(maximum: float) -> void:
-	max_health = maxf(maximum, 1.0)
+## `containers` und `soul_hearts` in ganzen Herzen. Beim ersten Aufruf startet
+## der Held voll, danach werden nur die Container angepasst.
+func setup(containers: int, soul_hearts: int = 0) -> void:
+	red_max = clampi(containers, 0, MAX_HEARTS) * 2
 	if not _initialized:
-		current_health = max_health
+		red = red_max
+		soul = clampi(soul_hearts * 2, 0, MAX_HEARTS * 2 - red_max)
 		_initialized = true
+		# Ohne ein einziges Herz wäre der Held sofort tot.
+		if red + soul <= 0:
+			soul = 2
 	else:
-		current_health = minf(current_health, max_health)
-	health_changed.emit(current_health, max_health)
+		red = mini(red, red_max)
+		soul = mini(soul, MAX_HEARTS * 2 - red_max)
+	_emit()
 
 func _process(delta: float) -> void:
 	_tick_regen(delta)
@@ -45,24 +74,19 @@ func _process(delta: float) -> void:
 		if invuln_timer <= 0.0 and _sprite:
 			_sprite.modulate.a = 1.0
 
-func _get_stats() -> Node:
-	return _body.get_node_or_null("PlayerStats") if _body else null
+# --- Abfragen --------------------------------------------------------------
 
-func _tick_regen(delta: float) -> void:
-	if is_dead or current_health >= max_health:
-		return
-	var stats = _get_stats()
-	if not stats or stats.health_regen <= 0.0:
-		return
-	current_health = minf(current_health + stats.health_regen * delta, max_health)
-	health_changed.emit(current_health, max_health)
+func get_containers() -> int:
+	return red_max / 2
 
-## Heilung ohne Effekte - für Lebensraub, der pro Treffer auslöst.
-func heal_silent(amount: float) -> void:
-	if is_dead or amount <= 0.0 or current_health >= max_health:
-		return
-	current_health = minf(current_health + amount, max_health)
-	health_changed.emit(current_health, max_health)
+func is_red_full() -> bool:
+	return red >= red_max
+
+func can_add_soul() -> bool:
+	return red_max + soul < MAX_HEARTS * 2
+
+func can_add_container() -> bool:
+	return red_max < MAX_HEARTS * 2
 
 func is_invulnerable() -> bool:
 	return invuln_timer > 0.0 or is_dead
@@ -70,33 +94,143 @@ func is_invulnerable() -> bool:
 func set_invulnerable(duration: float) -> void:
 	invuln_timer = maxf(invuln_timer, duration)
 
+## Rechnet einen Schadenswert in halbe Herzen um - mindestens eins.
+static func damage_to_halves(amount: float) -> int:
+	return clampi(int(round(amount / HALF_HEART_VALUE)), 1, MAX_HALVES_PER_HIT)
+
+func _get_stats() -> Node:
+	return _body.get_node_or_null("PlayerStats") if _body else null
+
+func _emit() -> void:
+	hearts_changed.emit(red, red_max, soul)
+
+# --- Heilen ----------------------------------------------------------------
+
+func _tick_regen(delta: float) -> void:
+	if is_dead or is_red_full():
+		return
+	var stats = _get_stats()
+	if not stats or stats.health_regen <= 0.0:
+		return
+	heal_silent(stats.health_regen * delta)
+
+## Heilung ohne Effekte - für Lebensraub und Regeneration. Kleine Beträge
+## sammeln sich, bis ein halbes Herz zusammen ist.
+func heal_silent(amount: float) -> void:
+	if is_dead or amount <= 0.0 or is_red_full():
+		_heal_buffer = 0.0
+		return
+	_heal_buffer += amount
+	var halves: int = int(_heal_buffer / HALF_HEART_VALUE)
+	if halves <= 0:
+		return
+	_heal_buffer -= float(halves) * HALF_HEART_VALUE
+	red = mini(red + halves, red_max)
+	_emit()
+
+## Heilung aus Fähigkeiten, in alten Lebenspunkten - mindestens ein halbes Herz.
+func heal(amount: float) -> void:
+	if amount <= 0.0:
+		return
+	heal_hearts(maxi(int(round(amount / HALF_HEART_VALUE)), 1))
+
+## Füllt rote Container auf. Gibt zurück, wie viele Hälften tatsächlich
+## ankamen - ein voller Held nimmt kein rotes Herz auf.
+func heal_hearts(halves: int) -> int:
+	if is_dead or halves <= 0:
+		return 0
+	var gained: int = mini(halves, red_max - red)
+	if gained <= 0:
+		return 0
+	red += gained
+	_emit()
+	healed.emit(gained)
+	var origin: Vector2 = _body.global_position if _body else Vector2.ZERO
+	FX.floating_text(origin + Vector2(0.0, -46.0), _halves_text(gained), FX.COLOR_HEAL, 20, 46.0)
+	FX.ring_burst(origin, FX.COLOR_HEAL, 10.0, 70.0, 0.4, 5.0)
+	return gained
+
+## Seelenherzen kommen oben drauf, solange Platz ist.
+func add_soul_hearts(halves: int) -> int:
+	if is_dead or halves <= 0:
+		return 0
+	var gained: int = mini(halves, MAX_HEARTS * 2 - red_max - soul)
+	if gained <= 0:
+		return 0
+	soul += gained
+	_emit()
+	var origin: Vector2 = _body.global_position if _body else Vector2.ZERO
+	FX.floating_text(origin + Vector2(0.0, -46.0), _halves_text(gained), Palette.AZURE, 20, 46.0)
+	FX.ring_burst(origin, Palette.AZURE, 10.0, 70.0, 0.4, 5.0)
+	return gained
+
+## Ein neuer Container kommt gefüllt dazu (wie in Isaac).
+func add_container(count: int = 1) -> void:
+	if is_dead or count <= 0:
+		return
+	var added: int = mini(count * 2, MAX_HEARTS * 2 - red_max)
+	if added <= 0:
+		return
+	red_max += added
+	red += added
+	# Container verdrängen Seelenherzen, wenn das Limit erreicht ist.
+	soul = mini(soul, MAX_HEARTS * 2 - red_max)
+	_emit()
+
+static func _halves_text(halves: int) -> String:
+	if halves % 2 == 0:
+		return "+%d Herz" % (halves / 2) if halves == 2 else "+%d Herzen" % (halves / 2)
+	if halves == 1:
+		return "+½ Herz"
+	return "+%d½ Herzen" % (halves / 2)
+
+# --- Schaden ---------------------------------------------------------------
+
+## Schaden in alten Punkten - Rüstung zieht ab, der Rest wird in Herzen umgerechnet.
 func take_damage(amount: float, from_position: Vector2 = Vector2.ZERO) -> void:
 	if is_dead or amount <= 0.0 or is_invulnerable():
 		return
-
-	var origin_position: Vector2 = _body.global_position if _body else Vector2.ZERO
 	var stats = _get_stats()
-
-	if stats and randf() < clampf(stats.dodge_chance, 0.0, 1.0):
-		invuln_timer = maxf(invuln_timer, 0.25)
-		FX.floating_text(origin_position + Vector2(0.0, -46.0), "Ausgewichen", Palette.TEAL, 17, 40.0)
-		FX.ring_burst(origin_position, Palette.TEAL, 8.0, 52.0, 0.25, 4.0)
+	if _try_dodge(stats):
 		return
-
 	var final_amount: float = amount
 	if stats:
 		final_amount = maxf(1.0, amount - stats.armor)
 		_apply_thorns(stats)
+	_apply_hit(damage_to_halves(final_amount), from_position)
 
-	current_health = maxf(current_health - final_amount, 0.0)
+## Schaden direkt in halben Herzen - für Fallen wie Stachelkisten.
+func take_hearts_damage(halves: int, from_position: Vector2 = Vector2.ZERO) -> void:
+	if is_dead or halves <= 0 or is_invulnerable():
+		return
+	_apply_hit(halves, from_position)
+
+func _try_dodge(stats: Node) -> bool:
+	if not stats or randf() >= clampf(stats.dodge_chance, 0.0, 1.0):
+		return false
+	var origin_position: Vector2 = _body.global_position if _body else Vector2.ZERO
+	invuln_timer = maxf(invuln_timer, 0.25)
+	FX.floating_text(origin_position + Vector2(0.0, -46.0), "Ausgewichen", Palette.TEAL, 17, 40.0)
+	FX.ring_burst(origin_position, Palette.TEAL, 8.0, 52.0, 0.25, 4.0)
+	return true
+
+## Seelenherzen fangen zuerst ab, danach leeren sich die roten Container.
+func _apply_hit(halves: int, from_position: Vector2) -> void:
+	var origin_position: Vector2 = _body.global_position if _body else Vector2.ZERO
+
+	var from_soul: int = mini(halves, soul)
+	soul -= from_soul
+	red = maxi(red - (halves - from_soul), 0)
+
 	invuln_timer = invuln_time
 	_blink_timer = 0.0
 
-	health_changed.emit(current_health, max_health)
-	damaged.emit(final_amount)
+	_emit()
+	damaged.emit(halves)
 
-	FX.damage_number(origin_position + Vector2(0.0, -46.0), final_amount, false, FX.COLOR_HURT)
-	FX.hit_spark(origin_position, FX.COLOR_HURT, 10)
+	var hurt_color: Color = Palette.AZURE if from_soul == halves else FX.COLOR_HURT
+	FX.floating_text(origin_position + Vector2(0.0, -46.0), "-" + _halves_text(halves).substr(1), hurt_color, 20, 40.0)
+	FX.hit_spark(origin_position, hurt_color, 10)
 	FX.shake(7.0)
 	FX.hitstop(0.09, 0.05)
 	Audio.play(Audio.ID_PLAYER_HURT)
@@ -107,7 +241,7 @@ func take_damage(amount: float, from_position: Vector2 = Vector2.ZERO) -> void:
 	if from_position != Vector2.ZERO and _body and _body.has_method("apply_knockback"):
 		_body.apply_knockback(from_position.direction_to(origin_position), 260.0)
 
-	if current_health <= 0.0:
+	if red + soul <= 0:
 		_die()
 
 ## Dornen: ein Teil des Schadens geht an nahe Gegner zurück.
@@ -123,16 +257,6 @@ func _apply_thorns(stats: Node) -> void:
 			continue
 		if enemy.has_method("take_damage"):
 			enemy.take_damage(stats.thorns, origin, false)
-
-func heal(amount: float) -> void:
-	if is_dead or amount <= 0.0:
-		return
-	current_health = minf(current_health + amount, max_health)
-	health_changed.emit(current_health, max_health)
-	healed.emit(amount)
-	var origin: Vector2 = _body.global_position if _body else Vector2.ZERO
-	FX.floating_text(origin + Vector2(0.0, -46.0), "+" + str(int(round(amount))), FX.COLOR_HEAL, 20, 46.0)
-	FX.ring_burst(origin, FX.COLOR_HEAL, 10.0, 70.0, 0.4, 5.0)
 
 func _die() -> void:
 	if is_dead:

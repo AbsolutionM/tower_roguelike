@@ -47,6 +47,7 @@ func _ready() -> void:
 	z_as_relative = false
 	_apply_tower()
 	GameManager.begin_run()
+	RunState.start_run()
 	GameManager.room_time_up.connect(_on_time_up)
 	# Erst nach dem Szenenaufbau spawnen, sonst ist die Root-Node noch gesperrt.
 	start_room.call_deferred()
@@ -242,6 +243,8 @@ func spawn_from_layout(room: RoomData) -> bool:
 					_spawn_layout_enemy(room, cell)
 				"c":
 					_spawn_layout_prop(room.chest_scene, cell)
+				"k":
+					_spawn_layout_chest(room.chest_scene, cell, Chest.ChestType.GOLD)
 				"o":
 					_spawn_layout_prop(room.harvestable_scene, cell)
 
@@ -276,6 +279,37 @@ func _spawn_layout_prop(scene: PackedScene, position: Vector2) -> void:
 	var prop = scene.instantiate()
 	get_tree().current_scene.add_child(prop)
 	prop.global_position = position
+
+## Truhe mit fester Art statt ausgewürfelter.
+func _spawn_layout_chest(scene: PackedScene, position: Vector2, chest_type: Chest.ChestType) -> void:
+	if not scene:
+		return
+	var chest = scene.instantiate()
+	if chest is Chest:
+		chest.randomize_type = false
+		chest.chest_type = chest_type
+	get_tree().current_scene.add_child(chest)
+	chest.global_position = position
+
+## Rote Truhe: Gegner aus dem Pool des Raums springen im Kreis um `origin`
+## heraus. Gibt zurück, wie viele es wurden.
+func spawn_ambush(origin: Vector2, count: int) -> int:
+	var room := get_current_room()
+	if not enemy_scene or not room or room.enemy_pool.is_empty() or is_transitioning:
+		return 0
+	var half: Vector2 = room.room_size * 0.5 - Vector2.ONE * _wall_inset()
+	var start_angle: float = randf() * TAU
+	for i in count:
+		var angle: float = start_angle + TAU * float(i) / float(maxi(count, 1))
+		var position := origin + Vector2(cos(angle), sin(angle)) * 80.0
+		position.x = clampf(position.x, global_position.x - half.x, global_position.x + half.x)
+		position.y = clampf(position.y, global_position.y - half.y, global_position.y + half.y)
+		var enemy = enemy_scene.instantiate()
+		enemy.enemy_data = room.enemy_pool[randi() % room.enemy_pool.size()]
+		get_tree().current_scene.add_child.call_deferred(enemy)
+		enemy.set_deferred("global_position", position)
+		FX.ring_burst(position, Palette.BLOOD, 6.0, 48.0, 0.35, 4.0)
+	return count
 
 func spawn_props() -> void:
 	var room := get_current_room()

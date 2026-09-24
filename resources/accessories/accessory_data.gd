@@ -14,7 +14,10 @@ class_name AccessoryData
 @export_group("Werte")
 @export var flat_damage_bonus: float = 0.0
 @export var flat_speed_bonus: float = 0.0
-@export var flat_hp_bonus: float = 0.0
+## Zusätzliche Herzcontainer (rote Herzen).
+@export var heart_container_bonus: int = 0
+## Zusätzliche Seelenherzen (blau) zu Beginn des Laufs.
+@export var soul_heart_bonus: int = 0
 @export var damage_multiplier: float = 1.0
 @export var lifesteal_bonus: float = 0.0
 @export var regen_bonus: float = 0.0
@@ -33,8 +36,10 @@ func describe() -> String:
 		parts.append("%+d%% Schaden" % int(round((damage_multiplier - 1.0) * 100.0)))
 	if not is_zero_approx(flat_speed_bonus):
 		parts.append("%+.0f Tempo" % flat_speed_bonus)
-	if not is_zero_approx(flat_hp_bonus):
-		parts.append("%+.0f Leben" % flat_hp_bonus)
+	if heart_container_bonus != 0:
+		parts.append("%+d Herzcontainer" % heart_container_bonus)
+	if soul_heart_bonus != 0:
+		parts.append("%+d Seelenherz" % soul_heart_bonus)
 	if not is_zero_approx(lifesteal_bonus):
 		parts.append("%+.0f%% Lebensraub" % (lifesteal_bonus * 100.0))
 	if not is_zero_approx(regen_bonus):

@@ -6,6 +6,5 @@
 script = ExtResource("1_script")
 star_id = "brute_dornenhaut"
 star_name = "Dornenhaut"
-description = "Wer den Koloss trifft, blutet mit. Angreifer nehmen Schaden."
-stat_add = { "thorns": 9.00 }
-stat_mult = { "max_health": 1.12 }
+description = "Wer den Koloss trifft, blutet mit. Angreifer nehmen Schaden. Dazu ein Herzcontainer."
+stat_add = { "thorns": 9.00, "heart_containers": 1.00 }

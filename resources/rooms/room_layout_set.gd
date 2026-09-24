@@ -9,7 +9,8 @@ class_name RoomLayoutSet
 ##   .  leer
 ##   #  Fels
 ##   e  Gegner (aus dem enemy_pool des Raums)
-##   c  Truhe
+##   c  Truhe (Art wird ausgewürfelt)
+##   k  Goldtruhe (braucht einen Schlüssel)
 ##   o  Erz
 ## Zeilen, die mit // beginnen, sind Kommentare.
 

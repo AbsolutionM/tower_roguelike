@@ -158,17 +158,22 @@ func _make_info(character: CharacterData) -> Control:
 		if not character.ability.description.is_empty():
 			column.add_child(UIKit.make_label(character.ability.description, 15, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_LEFT, true))
 
+	# Startherzen inklusive Kraftstufe und Accessoires - so, wie der Lauf beginnt.
+	var stats := PlayerStats.preview(character)
+	column.add_child(UIKit.make_section("Herzen", Palette.BLOOD))
+	var hearts := HeartBar.new()
+	hearts.set_hearts(stats.heart_containers * 2, stats.heart_containers * 2, stats.soul_hearts * 2)
+	column.add_child(hearts)
+
 	column.add_child(UIKit.make_section("Attribute", character.accent_color))
 	column.add_child(UIKit.make_attribute_row("Kraft", character.power, 10, Palette.EMBER))
 	column.add_child(UIKit.make_attribute_row("Geschick", character.agility, 10, Palette.MOSS))
-	column.add_child(UIKit.make_attribute_row("Vitalität", character.vitality, 10, Palette.GOLD))
 	column.add_child(UIKit.make_attribute_row("Zähigkeit", character.toughness, 10, Palette.BONE))
 	column.add_child(UIKit.make_attribute_row("Fokus", character.focus, 10, Palette.VIOLET))
 	column.add_child(UIKit.make_attribute_row("Glück", character.fortune, 10, Palette.TEAL))
 
 	# Endwerte inklusive Waffe, Accessoires, Upgrades und Wetter.
 	column.add_child(UIKit.make_section("Werte mit Ausrüstung", character.accent_color))
-	var stats := PlayerStats.preview(character)
 	column.add_child(UIKit.make_stat_sheet(stats.describe_sheet(), 2))
 	stats.free()
 

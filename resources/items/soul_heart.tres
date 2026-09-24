@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+item_id = "soul_heart"
+item_name = "Seelenherz"
+description = "Blaues Herz obendrauf. Fängt Treffer zuerst ab und ist dann weg."
+item_type = 5
+rarity = 2
+max_stack = 99
+value = 2
+
+symbol = 8
+color = Color(0.29, 0.565, 0.851, 1)
+pickup_scale = 1.4

@@ -11,6 +11,7 @@ signal loadout_changed
 signal run_inventory_changed
 signal stash_changed
 signal bag_full
+signal keys_changed(amount: int)
 
 const SAVE_PATH := "user://savegame.json"
 const MAX_RUN_SLOTS := 12
@@ -20,6 +21,8 @@ const SLOTS_LOST_ON_DEATH := 4
 const MAX_ACCESSORY_SLOTS := 2
 
 var gold: int = 0
+## Schlüssel gelten nur für den laufenden Run und werden nicht gespeichert.
+var keys: int = 0
 var essences: Dictionary = {}
 ## weapon_id -> Schmiedestufe (0..Progression.MAX_REINFORCE)
 var weapon_levels: Dictionary = {}
@@ -69,6 +72,27 @@ func get_total_essence() -> int:
 	for key in essences:
 		total += int(essences[key])
 	return total
+
+# --- Schlüssel -------------------------------------------------------------
+
+## Setzt alles zurück, was nur einen Run lang lebt.
+func start_run() -> void:
+	keys = 0
+	keys_changed.emit(keys)
+
+func add_keys(amount: int) -> void:
+	if amount <= 0:
+		return
+	keys += amount
+	keys_changed.emit(keys)
+
+## False = kein Schlüssel da.
+func spend_key() -> bool:
+	if keys <= 0:
+		return false
+	keys -= 1
+	keys_changed.emit(keys)
+	return true
 
 # --- Beutel (Run-Inventar) -------------------------------------------------
 

@@ -4,6 +4,7 @@
 [ext_resource type="Script" path="res://scripts/ui/stat_bar.gd" id="2_bar"]
 [ext_resource type="Script" path="res://scripts/ui/virtual_joystick.gd" id="3_stick"]
 [ext_resource type="Script" path="res://scripts/ui/action_button.gd" id="4_button"]
+[ext_resource type="Script" path="res://scripts/ui/heart_bar.gd" id="5_hearts"]
 
 [node name="UiLayer" type="CanvasLayer" unique_id=251034318]
 
@@ -15,24 +16,22 @@ script = ExtResource("1_hud")
 
 [node name="TopBar" type="Control" parent="HUD"]
 anchor_right = 1.0
-offset_bottom = 170.0
+offset_bottom = 200.0
 mouse_filter = 2
 
-[node name="HealthBar" type="Control" parent="HUD/TopBar"]
+[node name="HeartBar" type="Control" parent="HUD/TopBar"]
 offset_left = 24.0
-offset_top = 24.0
-offset_right = 300.0
-offset_bottom = 54.0
+offset_top = 20.0
+offset_right = 228.0
+offset_bottom = 84.0
 mouse_filter = 2
-script = ExtResource("2_bar")
-fill_color = Color(0.435, 0.749, 0.353, 1)
-ghost_color = Color(0.851, 0.31, 0.31, 1)
+script = ExtResource("5_hearts")
 
 [node name="GoldLabel" type="Label" parent="HUD/TopBar"]
 offset_left = 24.0
-offset_top = 62.0
-offset_right = 204.0
-offset_bottom = 96.0
+offset_top = 92.0
+offset_right = 144.0
+offset_bottom = 126.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.949, 0.694, 0.204, 1)
 theme_override_colors/font_outline_color = Color(0.078, 0.071, 0.122, 1)
@@ -41,10 +40,10 @@ theme_override_font_sizes/font_size = 32
 text = "0"
 
 [node name="EssenceLabel" type="Label" parent="HUD/TopBar"]
-offset_left = 212.0
-offset_top = 62.0
-offset_right = 392.0
-offset_bottom = 96.0
+offset_left = 150.0
+offset_top = 92.0
+offset_right = 270.0
+offset_bottom = 126.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.247, 0.824, 0.78, 1)
 theme_override_colors/font_outline_color = Color(0.078, 0.071, 0.122, 1)
@@ -54,9 +53,9 @@ text = "0"
 
 [node name="TimerBar" type="Control" parent="HUD/TopBar"]
 offset_left = 200.0
-offset_top = 108.0
+offset_top = 138.0
 offset_right = 520.0
-offset_bottom = 124.0
+offset_bottom = 154.0
 mouse_filter = 2
 script = ExtResource("2_bar")
 fill_color = Color(0.29, 0.565, 0.851, 1)
@@ -65,9 +64,9 @@ ghost_color = Color(0.271, 0.247, 0.361, 1)
 [node name="SpecialBar" type="Control" parent="HUD/TopBar"]
 visible = false
 offset_left = 24.0
-offset_top = 100.0
+offset_top = 130.0
 offset_right = 180.0
-offset_bottom = 112.0
+offset_bottom = 142.0
 mouse_filter = 2
 script = ExtResource("2_bar")
 fill_color = Color(0.545, 0.435, 0.831, 1)
@@ -75,9 +74,9 @@ ghost_color = Color(0.271, 0.247, 0.361, 1)
 
 [node name="TimerLabel" type="Label" parent="HUD/TopBar"]
 offset_left = 440.0
-offset_top = 96.0
+offset_top = 126.0
 offset_right = 612.0
-offset_bottom = 130.0
+offset_bottom = 160.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.29, 0.565, 0.851, 1)
 theme_override_colors/font_outline_color = Color(0.078, 0.071, 0.122, 1)
@@ -87,9 +86,9 @@ text = "30"
 horizontal_alignment = 2
 
 [node name="RoomLabel" type="Label" parent="HUD/TopBar"]
-offset_top = 130.0
+offset_top = 160.0
 offset_right = 720.0
-offset_bottom = 166.0
+offset_bottom = 196.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.847, 0.824, 0.878, 1)
 theme_override_colors/font_outline_color = Color(0.078, 0.071, 0.122, 1)
@@ -126,9 +125,9 @@ horizontal_alignment = 2
 
 [node name="BossLabel" type="Label" parent="HUD/TopBar"]
 visible = false
-offset_top = 176.0
+offset_top = 206.0
 offset_right = 720.0
-offset_bottom = 210.0
+offset_bottom = 240.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.851, 0.31, 0.31, 1)
 theme_override_colors/font_outline_color = Color(0.078, 0.071, 0.122, 1)
@@ -140,9 +139,9 @@ horizontal_alignment = 1
 [node name="BossBar" type="Control" parent="HUD/TopBar"]
 visible = false
 offset_left = 90.0
-offset_top = 214.0
+offset_top = 244.0
 offset_right = 630.0
-offset_bottom = 240.0
+offset_bottom = 270.0
 mouse_filter = 2
 script = ExtResource("2_bar")
 fill_color = Color(0.851, 0.31, 0.31, 1)
