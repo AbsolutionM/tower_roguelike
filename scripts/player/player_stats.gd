@@ -102,6 +102,14 @@ func _apply_relics() -> void:
 			_add_stat(str(stat_name), float(relic["add"][stat_name]))
 		for stat_name in relic.get("mult", {}):
 			_mult_stat(str(stat_name), float(relic["mult"][stat_name]))
+	# Power-ups aus Level-ups: jeder Stapel wirkt einmal.
+	for power_id in RunState.run_power_ups:
+		var power := PowerUps.find(power_id)
+		for i in int(RunState.run_power_ups[power_id]):
+			for stat_name in power.get("add", {}):
+				_add_stat(str(stat_name), float(power["add"][stat_name]))
+			for stat_name in power.get("mult", {}):
+				_mult_stat(str(stat_name), float(power["mult"][stat_name]))
 	if RunState.has_relic("tower_heart"):
 		var floors: int = clampi(GameManager.current_floor - RunState.tower_heart_floor, 0, 5)
 		damage_mult *= 1.0 + 0.05 * float(floors)

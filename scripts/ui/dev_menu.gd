@@ -138,6 +138,7 @@ func _build_cheats(column: VBoxContainer) -> void:
 	_action(actions, "+ 100 Gold", func() -> void: RunState.add_gold(100))
 	_action(actions, "+ 10 Essenz", func() -> void: RunState.add_essence("slime", 10))
 	_action(actions, "Gegner töten", DevMode.kill_all_enemies)
+	_action(actions, "+ Level", func() -> void: RunState.add_xp(RunState.xp_needed(RunState.run_level) - RunState.run_xp), true)
 	column.add_child(actions)
 
 func _build_loadout(column: VBoxContainer) -> void:

@@ -623,6 +623,8 @@ func die() -> void:
 
 	_spawn_loot()
 	_relic_kill_effects()
+	# Erfahrung nach Zähigkeit: ein Slime (70 HP) gibt 4, ein Mini-Boss um 36.
+	RunState.add_xp(maxi(int(round(max_health / 18.0)), 1))
 
 	if enemy_data:
 		if enemy_data.explode_on_death:

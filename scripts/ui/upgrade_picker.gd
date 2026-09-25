@@ -13,6 +13,8 @@ var min_rare: bool = false
 ## Relikte, die zusätzlich zur Wahl stehen, und ihre Mindestseltenheit.
 var relic_count: int = 0
 var min_rarity: int = 0
+## Power-ups aus einem Level-up.
+var power_count: int = 0
 var source: String = ""
 
 var _offers: Array = []
@@ -26,6 +28,10 @@ func _ready() -> void:
 	var stats := get_tree().get_first_node_in_group("player_stats")
 	var luck: float = stats.luck if stats else 0.0
 	_offers = []
+	var player := get_tree().get_first_node_in_group("player")
+	var health: PlayerHealth = player.get_node_or_null("PlayerHealth") if player else null
+	for power in PowerUps.roll(power_count, health):
+		_offers.append({"type": "power", "power": power})
 	for relic in Relics.roll(relic_count, luck, min_rarity):
 		_offers.append({"type": "relic", "relic": relic})
 	for offer in WeaponUpgrades.roll(count, _weapon, luck, min_rare):
@@ -60,7 +66,9 @@ func _build() -> void:
 	margin.add_child(column)
 
 	column.add_child(UIKit.make_label(source if not source.is_empty() else "Waffen-Upgrade", 34, Palette.GOLD, HORIZONTAL_ALIGNMENT_CENTER))
-	if count > 0:
+	if power_count > 0:
+		column.add_child(UIKit.make_label("Level %d - wähle ein Power-up. Es gilt bis zum Ende des Laufs." % RunState.run_level, 17, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_CENTER, true))
+	elif count > 0:
 		column.add_child(UIKit.make_label(_weapon_line(), 17, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_CENTER, true))
 	else:
 		column.add_child(UIKit.make_label("Relikte wirken bis zum Ende des Laufs.", 17, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_CENTER, true))
@@ -88,6 +96,8 @@ func _weapon_line() -> String:
 func _make_card(offer: Dictionary) -> Control:
 	if offer.get("type", "upgrade") == "relic":
 		return _make_relic_card(offer["relic"])
+	if offer.get("type", "upgrade") == "power":
+		return _make_power_card(offer["power"])
 	var card: Dictionary = offer["card"]
 	var rare: bool = offer["rare"]
 	var accent: Color = Palette.VIOLET if rare else Palette.TEAL
@@ -118,9 +128,23 @@ func _make_relic_card(relic: Dictionary) -> Control:
 	button.pressed.connect(func() -> void: _pick({"type": "relic", "relic": relic}))
 	return button
 
+func _make_power_card(power: Dictionary) -> Control:
+	var have := PowerUps.stacks(power["id"])
+	var text := "%s\n%s" % [power["name"], power["text"]]
+	if int(power["max"]) < 99:
+		text += "\nStufe %d / %d" % [have + 1, int(power["max"])]
+	var button := UIKit.make_button(text, 17, Palette.GOLD)
+	button.custom_minimum_size = Vector2(0.0, 132.0)
+	button.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	button.pressed.connect(func() -> void: _pick({"type": "power", "power": power}))
+	return button
+
 func _pick(offer: Dictionary) -> void:
 	var label: String
-	if offer.get("type", "upgrade") == "relic":
+	if offer.get("type", "upgrade") == "power":
+		RunState.add_power_up(offer["power"]["id"])
+		label = str(offer["power"]["name"])
+	elif offer.get("type", "upgrade") == "relic":
 		RunState.add_relic(offer["relic"]["id"])
 		label = str(offer["relic"]["name"])
 	else:

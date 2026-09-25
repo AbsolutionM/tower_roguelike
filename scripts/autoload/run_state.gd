@@ -20,6 +20,10 @@ signal run_upgrades_changed
 signal upgrade_offer_requested(count: int, min_rare: bool, source: String)
 signal weapon_evolved(weapon: WeaponData)
 signal relics_changed
+## Erfahrung im Lauf: aktuelle XP, XP bis zum nächsten Level, Level.
+signal xp_changed(xp: int, needed: int, level: int)
+## Level-up - der HUD zeigt die Power-up-Wahl.
+signal level_up_offer_requested(level: int)
 ## Relikt-Wahl (Mini-Boss, Goldtruhe): `relic_count` Relikte und
 ## `upgrade_count` Waffen-Upgrades nebeneinander, eins davon wird genommen.
 signal relic_offer_requested(relic_count: int, upgrade_count: int, source: String, min_rarity: int)
@@ -46,6 +50,11 @@ var run_upgrade_count: int = 0
 ## höchsten in der Stadt gebauten Stufe (`run_weapon_cap`).
 var run_weapon: WeaponData
 var run_weapon_cap: WeaponData
+## Erfahrung gilt nur im Turm und beginnt jeden Lauf wieder bei Level 1.
+var run_xp: int = 0
+var run_level: int = 1
+## Power-ups aus Level-ups: ID -> Stapel.
+var run_power_ups: Dictionary = {}
 ## Relikte dieses Laufs (IDs aus Relics.RELICS).
 var run_relics: Array[String] = []
 ## Wiedergeburt greift nur einmal pro Lauf.
@@ -122,6 +131,10 @@ func start_run() -> void:
 	run_upgrades.clear()
 	run_upgrade_count = 0
 	run_relics.clear()
+	run_xp = 0
+	run_level = 1
+	run_power_ups.clear()
+	xp_changed.emit(run_xp, xp_needed(run_level), run_level)
 	rebirth_used = false
 	tower_heart_floor = 0
 	relics_changed.emit()
@@ -159,6 +172,40 @@ func add_shards(amount: int) -> void:
 		shards -= SHARDS_PER_UPGRADE
 		upgrade_offer_requested.emit(3, false, "Upgrade-Splitter")
 	shards_changed.emit(shards)
+
+# --- Erfahrung und Power-ups ----------------------------------------------
+
+## XP bis zum nächsten Level: 20, 32, 44, ... - ein voller Lauf reicht für
+## etwa 12-15 Level.
+static func xp_needed(level: int) -> int:
+	return 20 + 12 * (level - 1)
+
+func add_xp(amount: int) -> void:
+	if amount <= 0 or not GameManager.run_active:
+		return
+	run_xp += amount
+	while run_xp >= xp_needed(run_level):
+		run_xp -= xp_needed(run_level)
+		run_level += 1
+		level_up_offer_requested.emit(run_level)
+	xp_changed.emit(run_xp, xp_needed(run_level), run_level)
+
+## Nimmt ein Power-up. Herzen wirken sofort, Werte über PlayerStats.
+func add_power_up(power_id: String) -> void:
+	var power := PowerUps.find(power_id)
+	if power.is_empty():
+		return
+	run_power_ups[power_id] = int(run_power_ups.get(power_id, 0)) + 1
+	var player := get_tree().get_first_node_in_group("player")
+	var health: PlayerHealth = player.get_node_or_null("PlayerHealth") if player else null
+	if health:
+		if int(power.get("containers", 0)) > 0:
+			health.add_container(int(power["containers"]))
+		if int(power.get("soul", 0)) > 0:
+			health.add_soul_hearts(int(power["soul"]) * 2)
+		if int(power.get("heal", 0)) > 0:
+			health.heal_hearts(int(power["heal"]))
+	loadout_changed.emit()
 
 # --- Relikte ---------------------------------------------------------------
 

@@ -36,6 +36,9 @@ var shard_label: Label
 ## Offene Upgrade-Angebote - es ist immer nur eine Kartenwahl zu sehen.
 var _offer_queue: Array = []
 var _health: PlayerHealth = null
+## XP-Leiste über der Steuerleiste - nur im Turm, beginnt jeden Lauf bei Level 1.
+var xp_bar: StatBar
+var xp_level_label: Label
 var _picker: UpgradePicker = null
 
 var _boss: Node = null
@@ -57,6 +60,8 @@ func _ready() -> void:
 	RunState.shards_changed.connect(_on_shards_changed)
 	RunState.upgrade_offer_requested.connect(_on_upgrade_offer)
 	RunState.relic_offer_requested.connect(_on_relic_offer)
+	RunState.level_up_offer_requested.connect(_on_level_up)
+	RunState.xp_changed.connect(_on_xp_changed)
 	RunState.bag_full.connect(_on_bag_full)
 
 	_on_gold_changed(RunState.gold)
@@ -64,6 +69,7 @@ func _ready() -> void:
 	_update_bag_label()
 	_create_key_counter()
 	_create_continue_button()
+	_create_xp_bar()
 	# Erst nach dem Layout, dann steht die Leistenhöhe fest.
 	_create_pause_button()
 	_apply_safe_area.call_deferred()
@@ -149,12 +155,24 @@ func _on_shards_changed(amount: int) -> void:
 # --- Waffen-Upgrades --------------------------------------------------------
 
 func _on_upgrade_offer(count: int, min_rare: bool, source: String) -> void:
-	_offer_queue.append({"count": count, "min_rare": min_rare, "source": source, "relics": 0, "min_rarity": 0})
+	_offer_queue.append({"count": count, "min_rare": min_rare, "source": source, "relics": 0, "min_rarity": 0, "powers": 0})
+	if not is_instance_valid(_picker):
+		_show_next_offer.call_deferred()
+
+## Level-up: drei Power-ups zur Wahl.
+func _on_level_up(level: int) -> void:
+	_offer_queue.append({"count": 0, "min_rare": false, "source": "Level %d!" % level, "relics": 0, "min_rarity": 0, "powers": 3})
+	if xp_bar:
+		_pop(xp_level_label)
+	var player := get_tree().get_first_node_in_group("player")
+	if player:
+		FX.floating_text(player.global_position + Vector2(0.0, -110.0), "Level up!", Palette.GOLD, 26, 60.0)
+		FX.ring_burst(player.global_position, Palette.GOLD, 10.0, 140.0, 0.45, 7.0)
 	if not is_instance_valid(_picker):
 		_show_next_offer.call_deferred()
 
 func _on_relic_offer(relic_count: int, upgrade_count: int, source: String, min_rarity: int) -> void:
-	_offer_queue.append({"count": upgrade_count, "min_rare": false, "source": source, "relics": relic_count, "min_rarity": min_rarity})
+	_offer_queue.append({"count": upgrade_count, "min_rare": false, "source": source, "relics": relic_count, "min_rarity": min_rarity, "powers": 0})
 	if not is_instance_valid(_picker):
 		_show_next_offer.call_deferred()
 
@@ -168,6 +186,7 @@ func _show_next_offer() -> void:
 	_picker.source = offer["source"]
 	_picker.relic_count = offer["relics"]
 	_picker.min_rarity = offer["min_rarity"]
+	_picker.power_count = offer["powers"]
 	_picker.closed.connect(_on_picker_closed)
 	get_tree().root.add_child(_picker)
 
@@ -354,6 +373,38 @@ func _leave_run() -> void:
 
 # --- Raumende, Mini-Boss, Sieg --------------------------------------------
 
+## Hängt an der Steuerleiste und wandert so mit, wenn die sichere Zone sie
+## nach oben schiebt.
+func _create_xp_bar() -> void:
+	if not control_band:
+		return
+	xp_level_label = Label.new()
+	xp_level_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	xp_level_label.add_theme_color_override("font_color", Palette.GOLD)
+	xp_level_label.add_theme_color_override("font_outline_color", Palette.INK)
+	xp_level_label.add_theme_constant_override("outline_size", 6)
+	xp_level_label.add_theme_font_size_override("font_size", 24)
+	xp_level_label.position = Vector2(16.0, -40.0)
+	xp_level_label.size = Vector2(90.0, 30.0)
+	control_band.add_child(xp_level_label)
+
+	xp_bar = StatBar.new()
+	xp_bar.fill_color = Palette.GOLD
+	xp_bar.ghost_color = Palette.AMBER
+	xp_bar.anchor_right = 1.0
+	xp_bar.offset_left = 100.0
+	xp_bar.offset_right = -16.0
+	xp_bar.offset_top = -34.0
+	xp_bar.offset_bottom = -16.0
+	control_band.add_child(xp_bar)
+	_on_xp_changed(RunState.run_xp, RunState.xp_needed(RunState.run_level), RunState.run_level)
+
+func _on_xp_changed(xp: int, needed: int, level: int) -> void:
+	if xp_bar:
+		xp_bar.set_value(float(xp), float(needed))
+	if xp_level_label:
+		xp_level_label.text = "Lv %d" % level
+
 func _create_continue_button() -> void:
 	continue_button = UIKit.make_primary_button("Weiter", 22, Palette.GOLD)
 	# Unten im Spielfeld, direkt über der Steuerleiste - dort verdeckt er
@@ -364,8 +415,8 @@ func _create_continue_button() -> void:
 	continue_button.anchor_bottom = 1.0
 	continue_button.offset_left = -170.0
 	continue_button.offset_right = 170.0
-	continue_button.offset_top = -470.0
-	continue_button.offset_bottom = -390.0
+	continue_button.offset_top = -510.0
+	continue_button.offset_bottom = -430.0
 	continue_button.visible = false
 	continue_button.pressed.connect(func() -> void:
 		continue_button.visible = false

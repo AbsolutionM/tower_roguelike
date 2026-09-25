@@ -71,6 +71,12 @@ func _ready() -> void:
 		_stats.hit_landed.connect(_on_hit_landed)
 	RunState.run_upgrades_changed.connect(_on_run_upgrades_changed)
 
+	# Nachladeleiste über dem Kopf des Helden.
+	if parent:
+		var cooldown_bar := WeaponCooldownBar.new()
+		cooldown_bar.controller = self
+		parent.add_child.call_deferred(cooldown_bar)
+
 	if show_target_marker:
 		_marker = TargetMarker.new()
 		_marker.setup(parent as Node2D)
