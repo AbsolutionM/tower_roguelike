@@ -32,6 +32,9 @@ const MAX_HALVES_PER_HIT := 4
 var red: int = 6
 var red_max: int = 6
 var soul: int = 0
+## Kristallherz (Relikt Kristallpanzer): Schild über allen Herzen, max. 1 Herz.
+var shield: int = 0
+const MAX_SHIELD := 2
 var invuln_timer: float = 0.0
 var is_dead: bool = false
 
@@ -164,6 +167,21 @@ func add_soul_hearts(halves: int) -> int:
 	FX.ring_burst(origin, Palette.AZURE, 10.0, 70.0, 0.4, 5.0)
 	return gained
 
+## Kristallherz auffüllen (pro Raum ½ nach).
+func add_shield(halves: int) -> void:
+	if is_dead or halves <= 0:
+		return
+	shield = mini(shield + halves, MAX_SHIELD)
+	_emit()
+
+## Container weg (Glaskanone). Bleibt nichts übrig, rettet ein Seelenherz.
+func remove_container(count: int = 1) -> void:
+	red_max = maxi(red_max - count * 2, 0)
+	red = mini(red, red_max)
+	if red + soul <= 0:
+		soul = 2
+	_emit()
+
 ## Ein neuer Container kommt gefüllt dazu (wie in Isaac).
 func add_container(count: int = 1) -> void:
 	if is_dead or count <= 0:
@@ -218,9 +236,15 @@ func _try_dodge(stats: Node) -> bool:
 func _apply_hit(halves: int, from_position: Vector2) -> void:
 	var origin_position: Vector2 = _body.global_position if _body else Vector2.ZERO
 
-	var from_soul: int = mini(halves, soul)
+	# Reihenfolge: Kristallherz, dann Seelenherzen, dann Rot.
+	var from_shield: int = mini(halves, shield)
+	shield -= from_shield
+	var rest: int = halves - from_shield
+	var from_soul: int = mini(rest, soul)
 	soul -= from_soul
-	red = maxi(red - (halves - from_soul), 0)
+	red = maxi(red - (rest - from_soul), 0)
+	if RunState.has_relic("gold_greed") and RunState.gold > 0:
+		RunState.add_gold(-mini(3, RunState.gold))
 
 	invuln_timer = invuln_time
 	_blink_timer = 0.0
@@ -228,7 +252,7 @@ func _apply_hit(halves: int, from_position: Vector2) -> void:
 	_emit()
 	damaged.emit(halves)
 
-	var hurt_color: Color = Palette.AZURE if from_soul == halves else FX.COLOR_HURT
+	var hurt_color: Color = Palette.TEAL if from_shield == halves else (Palette.AZURE if from_shield + from_soul == halves else FX.COLOR_HURT)
 	FX.floating_text(origin_position + Vector2(0.0, -46.0), "-" + _halves_text(halves).substr(1), hurt_color, 20, 40.0)
 	FX.hit_spark(origin_position, hurt_color, 10)
 	FX.shake(7.0)
@@ -242,7 +266,22 @@ func _apply_hit(halves: int, from_position: Vector2) -> void:
 		_body.apply_knockback(from_position.direction_to(origin_position), 260.0)
 
 	if red + soul <= 0:
+		if RunState.has_relic("rebirth") and not RunState.rebirth_used:
+			_rebirth()
+			return
 		_die()
+
+## Wiedergeburt: einmal pro Lauf mit zwei roten Herzen wieder aufstehen.
+func _rebirth() -> void:
+	RunState.rebirth_used = true
+	red_max = maxi(red_max, 4)
+	red = 4
+	invuln_timer = 2.0
+	_emit()
+	var origin: Vector2 = _body.global_position if _body else Vector2.ZERO
+	FX.floating_text(origin + Vector2(0.0, -80.0), "Wiedergeburt!", Palette.GOLD, 26, 60.0)
+	FX.ring_burst(origin, Palette.GOLD, 10.0, 220.0, 0.6, 10.0)
+	FX.screen_flash(Color(1.0, 0.9, 0.6, 0.5), 0.5)
 
 ## Dornen: ein Teil des Schadens geht an nahe Gegner zurück.
 func _apply_thorns(stats: Node) -> void:

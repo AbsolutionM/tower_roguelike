@@ -244,10 +244,14 @@ func open_chest() -> void:
 	if chest_type == ChestType.RED and randf() < red_ambush_chance and _spring_ambush():
 		return
 
-	# Goldtruhe: statt Kleinkram eine Wahl aus zwei Waffen-Upgrades.
+	# Goldtruhe: statt Kleinkram 1 Relikt oder 1 Waffen-Upgrade (Wahl aus 2).
 	if chest_type == ChestType.GOLD and GameManager.run_active:
-		RunState.upgrade_offer_requested.emit(2, false, "Goldtruhe")
+		var upgrades: int = 2 if RunState.has_relic("key_ring") else 1
+		RunState.relic_offer_requested.emit(1, upgrades, "Goldtruhe", Relics.Rarity.COMMON)
 		return
+	# Stacheltruhe: ein seltenes Relikt, dazu die übliche Beute.
+	if chest_type == ChestType.SPIKED and GameManager.run_active:
+		RunState.relic_offer_requested.emit(1, 0, "Stacheltruhe", Relics.Rarity.RARE)
 
 	for drop in _roll_drops():
 		_spawn_pickup(drop["item"], drop["count"])

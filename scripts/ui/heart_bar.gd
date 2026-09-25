@@ -18,6 +18,9 @@ const HEARTS_PER_ROW := 6
 var red: int = 0
 var red_max: int = 0
 var soul: int = 0
+## Kristallherz, in Hälften (max. 2).
+var shield: int = 0
+@export var shield_color: Color = Palette.TEAL
 
 var _pulse: float = 0.0
 var _time: float = 0.0
@@ -39,7 +42,7 @@ func set_hearts(new_red: int, new_red_max: int, new_soul: int) -> void:
 
 ## Ganze Herzplätze: Container plus angefangene Seelenherzen.
 func get_slot_count() -> int:
-	return red_max / 2 + (soul + 1) / 2
+	return red_max / 2 + (soul + 1) / 2 + (1 if shield > 0 else 0)
 
 func _process(delta: float) -> void:
 	_time += delta
@@ -55,7 +58,8 @@ func _draw() -> void:
 	var low: bool = red + soul <= 2
 	var beat: float = 1.0 + (0.12 * maxf(sin(_time * 7.0), 0.0) if low else 0.0) + _pulse * 0.15
 
-	for i in containers + soul_slots:
+	var shield_slots: int = 1 if shield > 0 else 0
+	for i in containers + soul_slots + shield_slots:
 		var column: int = i % HEARTS_PER_ROW
 		var row: int = i / HEARTS_PER_ROW
 		var center := Vector2(spacing * (float(column) + 0.5), row_height * (float(row) + 0.5))
@@ -64,6 +68,8 @@ func _draw() -> void:
 		if i < containers:
 			var filled: int = clampi(red - i * 2, 0, 2)
 			ItemSymbol.paint_heart(self, center, pixel, red_color, empty_color, filled)
+		elif i >= containers + soul_slots:
+			ItemSymbol.paint_heart(self, center, pixel, shield_color, Color.TRANSPARENT, shield)
 		else:
 			var soul_index: int = i - containers
 			var filled_soul: int = clampi(soul - soul_index * 2, 0, 2)

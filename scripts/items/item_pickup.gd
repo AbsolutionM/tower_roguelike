@@ -137,7 +137,10 @@ func collect() -> void:
 
 	match item.item_type:
 		ItemData.ItemType.CURRENCY:
-			RunState.add_gold(item.value * count)
+			var gold: int = item.value * count
+			if RunState.has_relic("gold_greed"):
+				gold = int(ceil(float(gold) * 1.5))
+			RunState.add_gold(gold)
 		ItemData.ItemType.ESSENCE:
 			RunState.add_essence(item.essence_id, count)
 		ItemData.ItemType.HEART:

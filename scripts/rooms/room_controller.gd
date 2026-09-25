@@ -59,6 +59,8 @@ var _special_this_floor: bool = false
 var _reinforce_timer: float = 0.0
 var _reinforcements_left: int = 0
 var _boss_down: bool = false
+## Perfektionist: wurde der Held in diesem Raum getroffen?
+var _hit_this_room: bool = false
 var current_room_index: int = -1
 
 var _ambient: CanvasModulate
@@ -158,6 +160,11 @@ func start_room() -> void:
 	is_transitioning = false
 	is_perfect = false
 	_boss_down = false
+	_hit_this_room = false
+	_connect_player_health()
+	var health := _player_health()
+	if health and RunState.has_relic("crystal_armor"):
+		health.add_shield(1)
 	Enemy.time_scale = 1.0
 	pick_next_room()
 	_apply_weather_for_room()
@@ -539,6 +546,8 @@ func clear_room() -> void:
 	is_transitioning = true
 
 	var was_boss_room: bool = GameManager.stage != GameManager.Stage.ROOM
+	if not _hit_this_room and RunState.has_relic("perfectionist"):
+		RunState.add_shards(1)
 	GameManager.on_room_cleared()
 	_teardown_and_next(was_boss_room)
 
@@ -572,6 +581,18 @@ func _award_perfect_bonus() -> void:
 	FX.ring_burst(origin, Palette.GOLD, 12.0, 190.0, 0.45, 8.0)
 	Audio.play(Audio.ID_LEVEL_UP)
 
+func _player_health() -> PlayerHealth:
+	var player := get_tree().get_first_node_in_group("player")
+	return player.get_node_or_null("PlayerHealth") if player else null
+
+func _connect_player_health() -> void:
+	var health := _player_health()
+	if health and not health.damaged.is_connected(_on_player_damaged):
+		health.damaged.connect(_on_player_damaged)
+
+func _on_player_damaged(_halves: int) -> void:
+	_hit_this_room = true
+
 ## Mini-Boss liegt: ein Herz zurück, Beute einsammeln, dann fragt der HUD.
 func _on_mini_boss_down() -> void:
 	var player := get_tree().get_first_node_in_group("player")
@@ -585,6 +606,8 @@ func _on_mini_boss_down() -> void:
 		return
 	_collect_remaining_pickups()
 	GameManager.room_active = false
+	# Beute des Mini-Bosses: ein Relikt, Wahl aus zwei.
+	RunState.relic_offer_requested.emit(2, 0, "Mini-Boss besiegt", Relics.Rarity.COMMON)
 	mini_boss_defeated.emit(GameManager.is_last_floor())
 
 ## Nach der Entscheidung "weiter": nächste Etage bzw. Hauptboss.

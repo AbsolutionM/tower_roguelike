@@ -198,6 +198,36 @@ func _tick_status(delta: float) -> void:
 	if amount > 0.0:
 		take_status_damage(amount, Palette.EMBER if status.burn_time > 0.0 else Palette.LIME)
 
+## Relikte, die beim Tod eines Gegners greifen.
+func _relic_kill_effects() -> void:
+	if not GameManager.run_active:
+		return
+	if RunState.has_relic("bounty") and GameManager.room_kills == 1:
+		_drop_item("res://resources/items/red_heart.tres", 1)
+	if RunState.has_relic("midas_hand") and randf() < 0.05:
+		_drop_item("res://resources/items/gold_coin.tres", 20)
+		FX.floating_text(global_position + Vector2(0.0, -40.0), "Midas!", Palette.GOLD, 18, 36.0)
+	if RunState.has_relic("time_thief") and enemy_data and enemy_data.drop_table and enemy_data.drop_table.resource_path.ends_with("dt_elite.tres"):
+		GameManager.add_room_time(3.0)
+		FX.floating_text(global_position + Vector2(0.0, -56.0), "+3 s", Palette.AZURE, 18, 36.0)
+	if RunState.has_relic("chain_reaction") and randf() < 0.2:
+		FX.ring_burst(global_position, Palette.EMBER, 10.0, 80.0, 0.3, 6.0)
+		for other in get_tree().get_nodes_in_group("enemies"):
+			if other != self and is_instance_valid(other) and global_position.distance_to(other.global_position) <= 80.0:
+				other.take_damage(40.0, global_position, false)
+
+func _drop_item(path: String, count: int) -> void:
+	var scene_root := get_tree().current_scene
+	if not pickup_scene or not scene_root:
+		return
+	var pickup = pickup_scene.instantiate()
+	pickup.item = load(path)
+	pickup.count = count
+	pickup.global_position = global_position
+	if pickup.has_method("pop_out"):
+		pickup.pop_out()
+	scene_root.add_child.call_deferred(pickup)
+
 ## Brand-Affinität: ein brennender Gegner steckt beim Tod einen Nachbarn an.
 func _spread_burn() -> void:
 	if not status or status.burn_time <= 0.0 or not status.burn_spreads:
@@ -592,6 +622,7 @@ func die() -> void:
 	FX.hitstop(0.05, 0.08)
 
 	_spawn_loot()
+	_relic_kill_effects()
 
 	if enemy_data:
 		if enemy_data.explode_on_death:

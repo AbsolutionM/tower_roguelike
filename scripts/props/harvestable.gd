@@ -89,6 +89,8 @@ func break_ore() -> void:
 		var scene_root := get_tree().current_scene
 		if scene_root:
 			var amount := randi_range(drop_count_min, max(drop_count_min, drop_count_max))
+			if RunState.has_relic("ore_finder"):
+				amount += 1
 			for i in amount:
 				var pickup = pickup_scene.instantiate()
 				pickup.item = drop_item

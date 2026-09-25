@@ -44,6 +44,8 @@ var run_elapsed: float = 0.0
 var run_active: bool = false
 ## Gold, das im laufenden Raum eingesammelt wurde - Grundlage des Perfekt-Bonus.
 var room_gold_earned: int = 0
+## Kills im laufenden Raum (Kopfgeld: der erste droppt ein Herz).
+var room_kills: int = 0
 
 ## Setzt Etage, Raum und alle Zahlen zurück. Wird beim Betreten des Turms gerufen.
 func begin_run() -> void:
@@ -71,6 +73,7 @@ func count_room_cleared_early() -> void:
 func count_enemy_killed() -> void:
 	if run_active:
 		run_enemies_killed += 1
+		room_kills += 1
 
 func count_gold(amount: int) -> void:
 	if run_active and amount > 0:
@@ -102,6 +105,7 @@ func start_room(duration_override: float = 0.0, timed: bool = true) -> void:
 	room_timer = current_duration
 	room_elapsed = 0.0
 	room_gold_earned = 0
+	room_kills = 0
 	room_active = true
 
 ## Zusätzliche Sekunden pro Raum aus Relikten (z.B. Taschenuhr).

@@ -1,7 +1,8 @@
 extends CanvasLayer
 class_name UpgradePicker
 
-## Kartenwahl für Waffen-Upgrades: 1 aus N. Pausiert das Spiel.
+## Kartenwahl: Waffen-Upgrades und/oder Relikte, eins davon wird genommen.
+## Pausiert das Spiel.
 ## Kommen mehrere Angebote kurz hintereinander (fünf Splitter plus Amboss),
 ## stellt der HUD sie in eine Schlange - es ist immer nur eine Wahl offen.
 
@@ -9,6 +10,9 @@ signal closed
 
 var count: int = 3
 var min_rare: bool = false
+## Relikte, die zusätzlich zur Wahl stehen, und ihre Mindestseltenheit.
+var relic_count: int = 0
+var min_rarity: int = 0
 var source: String = ""
 
 var _offers: Array = []
@@ -21,7 +25,12 @@ func _ready() -> void:
 	_weapon = RunState.get_active_weapon()
 	var stats := get_tree().get_first_node_in_group("player_stats")
 	var luck: float = stats.luck if stats else 0.0
-	_offers = WeaponUpgrades.roll(count, _weapon, luck, min_rare)
+	_offers = []
+	for relic in Relics.roll(relic_count, luck, min_rarity):
+		_offers.append({"type": "relic", "relic": relic})
+	for offer in WeaponUpgrades.roll(count, _weapon, luck, min_rare):
+		offer["type"] = "upgrade"
+		_offers.append(offer)
 	if _offers.is_empty():
 		# Alles am Deckel - statt einer leeren Wahl gibt es Funken zurück.
 		RunState.add_sparks(15)
@@ -36,7 +45,7 @@ func _build() -> void:
 	add_child(root)
 
 	var dim := ColorRect.new()
-	dim.color = Color(Palette.INK, 0.9)
+	dim.color = Color(Palette.INK, 0.97)
 	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.add_child(dim)
 
@@ -51,7 +60,10 @@ func _build() -> void:
 	margin.add_child(column)
 
 	column.add_child(UIKit.make_label(source if not source.is_empty() else "Waffen-Upgrade", 34, Palette.GOLD, HORIZONTAL_ALIGNMENT_CENTER))
-	column.add_child(UIKit.make_label(_weapon_line(), 17, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_CENTER, true))
+	if count > 0:
+		column.add_child(UIKit.make_label(_weapon_line(), 17, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_CENTER, true))
+	else:
+		column.add_child(UIKit.make_label("Relikte wirken bis zum Ende des Laufs.", 17, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_CENTER, true))
 	column.add_child(UIKit.make_spacer(8.0))
 
 	for offer in _offers:
@@ -74,6 +86,8 @@ func _weapon_line() -> String:
 	return line
 
 func _make_card(offer: Dictionary) -> Control:
+	if offer.get("type", "upgrade") == "relic":
+		return _make_relic_card(offer["relic"])
 	var card: Dictionary = offer["card"]
 	var rare: bool = offer["rare"]
 	var accent: Color = Palette.VIOLET if rare else Palette.TEAL
@@ -95,11 +109,26 @@ func _make_card(offer: Dictionary) -> Control:
 	button.pressed.connect(func() -> void: _pick(offer))
 	return button
 
+func _make_relic_card(relic: Dictionary) -> Control:
+	var accent := Relics.rarity_color(relic)
+	var text := "Relikt: %s  (%s)\n%s" % [relic["name"], Relics.rarity_name(relic), relic["text"]]
+	var button := UIKit.make_button(text, 17, accent)
+	button.custom_minimum_size = Vector2(0.0, 132.0)
+	button.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	button.pressed.connect(func() -> void: _pick({"type": "relic", "relic": relic}))
+	return button
+
 func _pick(offer: Dictionary) -> void:
-	WeaponUpgrades.apply(offer, _weapon)
+	var label: String
+	if offer.get("type", "upgrade") == "relic":
+		RunState.add_relic(offer["relic"]["id"])
+		label = str(offer["relic"]["name"])
+	else:
+		WeaponUpgrades.apply(offer, _weapon)
+		label = str(offer["card"]["name"])
 	var player := get_tree().get_first_node_in_group("player")
 	if player:
-		FX.floating_text(player.global_position + Vector2(0.0, -80.0), str(offer["card"]["name"]), Palette.GOLD, 20, 44.0)
+		FX.floating_text(player.global_position + Vector2(0.0, -80.0), label, Palette.GOLD, 20, 44.0)
 	_close()
 
 func _close() -> void:

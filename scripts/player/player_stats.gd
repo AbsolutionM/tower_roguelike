@@ -60,6 +60,7 @@ func recalculate() -> void:
 	_apply_power_level()
 	_apply_weapon_upgrades()
 	_apply_accessories()
+	_apply_relics()
 	_apply_weather()
 	stats_changed.emit()
 
@@ -90,6 +91,27 @@ func _apply_weapon_upgrades() -> void:
 	# Gewicht 3.0 ist neutral - alles darüber bremst, alles darunter macht flink.
 	move_speed -= (weapon.weight - 3.0) * 6.0
 	armor += weapon.armor_bonus
+
+## Relikte des laufenden Laufs. Herzen wirken schon beim Aufheben (RunState).
+func _apply_relics() -> void:
+	if not GameManager.run_active:
+		return
+	for relic_id in RunState.run_relics:
+		var relic := Relics.find(relic_id)
+		for stat_name in relic.get("add", {}):
+			_add_stat(str(stat_name), float(relic["add"][stat_name]))
+		for stat_name in relic.get("mult", {}):
+			_mult_stat(str(stat_name), float(relic["mult"][stat_name]))
+	if RunState.has_relic("tower_heart"):
+		var floors: int = clampi(GameManager.current_floor - RunState.tower_heart_floor, 0, 5)
+		damage_mult *= 1.0 + 0.05 * float(floors)
+
+## Adrenalin: unter zwei Herzen mehr Schaden und Tempo.
+func adrenaline_active() -> bool:
+	if not RunState.has_relic("adrenaline"):
+		return false
+	var health: PlayerHealth = get_parent().get_node_or_null("PlayerHealth") if get_parent() else null
+	return health != null and health.red + health.soul + health.shield < 4
 
 ## Wetter wirkt zuletzt, damit es auf allem anderen aufsetzt.
 func _apply_weather() -> void:
@@ -276,6 +298,8 @@ func describe_hearts() -> String:
 func compute_damage(base_damage: float, weapon: WeaponData = null) -> Dictionary:
 	var mods := get_weapon_modifiers(weapon)
 	var damage: float = (base_damage + float(mods["flat"])) * float(mods["damage"])
+	if adrenaline_active():
+		damage *= 1.3
 	var is_crit: bool = randf() < clampf(float(mods["crit"]), 0.0, 1.0)
 	if is_crit:
 		damage *= crit_damage + upgrade("crit_power", weapon)

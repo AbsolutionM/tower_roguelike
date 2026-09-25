@@ -35,6 +35,7 @@ var spark_label: Label
 var shard_label: Label
 ## Offene Upgrade-Angebote - es ist immer nur eine Kartenwahl zu sehen.
 var _offer_queue: Array = []
+var _health: PlayerHealth = null
 var _picker: UpgradePicker = null
 
 var _boss: Node = null
@@ -55,6 +56,7 @@ func _ready() -> void:
 	RunState.sparks_changed.connect(_on_sparks_changed)
 	RunState.shards_changed.connect(_on_shards_changed)
 	RunState.upgrade_offer_requested.connect(_on_upgrade_offer)
+	RunState.relic_offer_requested.connect(_on_relic_offer)
 	RunState.bag_full.connect(_on_bag_full)
 
 	_on_gold_changed(RunState.gold)
@@ -147,7 +149,12 @@ func _on_shards_changed(amount: int) -> void:
 # --- Waffen-Upgrades --------------------------------------------------------
 
 func _on_upgrade_offer(count: int, min_rare: bool, source: String) -> void:
-	_offer_queue.append({"count": count, "min_rare": min_rare, "source": source})
+	_offer_queue.append({"count": count, "min_rare": min_rare, "source": source, "relics": 0, "min_rarity": 0})
+	if not is_instance_valid(_picker):
+		_show_next_offer.call_deferred()
+
+func _on_relic_offer(relic_count: int, upgrade_count: int, source: String, min_rarity: int) -> void:
+	_offer_queue.append({"count": upgrade_count, "min_rare": false, "source": source, "relics": relic_count, "min_rarity": min_rarity})
 	if not is_instance_valid(_picker):
 		_show_next_offer.call_deferred()
 
@@ -159,6 +166,8 @@ func _show_next_offer() -> void:
 	_picker.count = offer["count"]
 	_picker.min_rare = offer["min_rare"]
 	_picker.source = offer["source"]
+	_picker.relic_count = offer["relics"]
+	_picker.min_rarity = offer["min_rarity"]
 	_picker.closed.connect(_on_picker_closed)
 	get_tree().root.add_child(_picker)
 
@@ -235,6 +244,7 @@ func _bind_player() -> void:
 
 	var health = player.get_node_or_null("PlayerHealth")
 	if health:
+		_health = health
 		health.hearts_changed.connect(_on_hearts_changed)
 		_on_hearts_changed(health.red, health.red_max, health.soul)
 
@@ -308,6 +318,14 @@ func _open_pause() -> void:
 		"Beutel %d/%d. Sicher ist die Beute erst, wenn du nach einem Mini-Boss den Turm verlässt. Wer aufgibt oder stirbt, verliert die Hälfte." % [RunState.get_used_slots(), RunState.MAX_RUN_SLOTS],
 		16, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_CENTER, true
 	))
+	if not RunState.run_relics.is_empty():
+		var names: Array[String] = []
+		for relic_id in RunState.run_relics:
+			names.append(str(Relics.find(relic_id).get("name", relic_id)))
+		column.add_child(UIKit.make_label("Relikte: " + ", ".join(names), 16, UIKit.TEXT, HORIZONTAL_ALIGNMENT_CENTER, true))
+	var weapon := RunState.get_active_weapon()
+	if weapon:
+		column.add_child(UIKit.make_label("%s · Stufe %s · %d Upgrades" % [weapon.weapon_name, WeaponUpgrades.tier_name(weapon), RunState.run_upgrade_count], 16, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_CENTER, true))
 	column.add_child(UIKit.make_spacer(20.0))
 
 	var resume := UIKit.make_primary_button("Fortsetzen", 24, UIKit.ACCENT)
@@ -504,6 +522,7 @@ func _update_boss() -> void:
 
 func _on_hearts_changed(red: int, red_max: int, soul: int) -> void:
 	if heart_bar:
+		heart_bar.shield = _health.shield if _health else 0
 		heart_bar.set_hearts(red, red_max, soul)
 
 ## Der Sonderschlag laedt sich mit Treffern auf und loest von selbst aus.

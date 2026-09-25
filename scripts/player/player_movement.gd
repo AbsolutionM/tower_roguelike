@@ -220,7 +220,9 @@ func apply_character_data() -> void:
 		weapon_controller.equipped_weapon = character_data.starting_weapon
 
 func get_move_speed() -> float:
-	return stats.move_speed if stats else speed
+	if not stats:
+		return speed
+	return stats.move_speed * (1.3 if stats.adrenaline_active() else 1.0)
 
 func get_dash_cooldown() -> float:
 	return dash_cooldown * (stats.dash_cooldown_mult if stats else 1.0)
@@ -288,6 +290,16 @@ func try_dash() -> void:
 	FX.dust_puff(global_position + shadow_offset, Color(Palette.BONE, 0.5), 5, 28.0)
 	FX.shake(2.0)
 	dash_cooldown_changed.emit(dash_cd_timer, get_dash_cooldown())
+	if RunState.has_relic("phantom_step"):
+		_phantom_blade(global_position)
+
+## Phantomschritt: am Startpunkt des Dashs bleibt eine Klinge zurück.
+func _phantom_blade(at: Vector2) -> void:
+	await get_tree().create_timer(0.12).timeout
+	FX.ring_burst(at, Palette.VIOLET, 8.0, 70.0, 0.3, 5.0)
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if is_instance_valid(enemy) and at.distance_to(enemy.global_position) <= 70.0:
+			enemy.take_damage(30.0, at, false)
 
 func apply_knockback(direction: Vector2, force: float) -> void:
 	knockback_velocity = direction.normalized() * force

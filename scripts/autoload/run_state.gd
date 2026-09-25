@@ -19,6 +19,10 @@ signal run_upgrades_changed
 ## zeigt die Kartenwahl. `source` steht als Überschrift darüber.
 signal upgrade_offer_requested(count: int, min_rare: bool, source: String)
 signal weapon_evolved(weapon: WeaponData)
+signal relics_changed
+## Relikt-Wahl (Mini-Boss, Goldtruhe): `relic_count` Relikte und
+## `upgrade_count` Waffen-Upgrades nebeneinander, eins davon wird genommen.
+signal relic_offer_requested(relic_count: int, upgrade_count: int, source: String, min_rarity: int)
 
 const SAVE_PATH := "user://savegame.json"
 const MAX_RUN_SLOTS := 12
@@ -42,6 +46,12 @@ var run_upgrade_count: int = 0
 ## höchsten in der Stadt gebauten Stufe (`run_weapon_cap`).
 var run_weapon: WeaponData
 var run_weapon_cap: WeaponData
+## Relikte dieses Laufs (IDs aus Relics.RELICS).
+var run_relics: Array[String] = []
+## Wiedergeburt greift nur einmal pro Lauf.
+var rebirth_used: bool = false
+## Etage, auf der der Turmherz-Splitter aufgehoben wurde.
+var tower_heart_floor: int = 0
 var essences: Dictionary = {}
 ## weapon_id -> Schmiedestufe (0..Progression.MAX_REINFORCE)
 var weapon_levels: Dictionary = {}
@@ -111,6 +121,10 @@ func start_run() -> void:
 	shards = 0
 	run_upgrades.clear()
 	run_upgrade_count = 0
+	run_relics.clear()
+	rebirth_used = false
+	tower_heart_floor = 0
+	relics_changed.emit()
 	sparks_changed.emit(sparks)
 	shards_changed.emit(shards)
 	run_gold = 0
@@ -145,6 +159,37 @@ func add_shards(amount: int) -> void:
 		shards -= SHARDS_PER_UPGRADE
 		upgrade_offer_requested.emit(3, false, "Upgrade-Splitter")
 	shards_changed.emit(shards)
+
+# --- Relikte ---------------------------------------------------------------
+
+func has_relic(relic_id: String) -> bool:
+	return GameManager.run_active and run_relics.has(relic_id)
+
+## Nimmt ein Relikt. Herzen und Schlüssel wirken sofort, Werte über
+## PlayerStats (loadout_changed löst die Neuberechnung aus).
+func add_relic(relic_id: String) -> void:
+	var relic := Relics.find(relic_id)
+	if relic.is_empty() or run_relics.has(relic_id):
+		return
+	run_relics.append(relic_id)
+	var player := get_tree().get_first_node_in_group("player")
+	var health: PlayerHealth = player.get_node_or_null("PlayerHealth") if player else null
+	if health:
+		var containers: int = int(relic.get("containers", 0))
+		if containers > 0:
+			health.add_container(containers)
+		elif containers < 0:
+			health.remove_container(-containers)
+		if int(relic.get("soul", 0)) > 0:
+			health.add_soul_hearts(int(relic["soul"]) * 2)
+		if relic_id == "crystal_armor":
+			health.add_shield(2)
+	if relic_id == "key_ring":
+		add_keys(3)
+	if relic_id == "tower_heart":
+		tower_heart_floor = GameManager.current_floor
+	relics_changed.emit()
+	loadout_changed.emit()
 
 ## Laufbeginn: die Stadtwaffe gibt die Obergrenze, gestartet wird auf Stufe I.
 func begin_weapon_run(town_weapon: WeaponData) -> WeaponData:
