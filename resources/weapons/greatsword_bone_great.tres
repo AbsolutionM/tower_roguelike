@@ -37,3 +37,4 @@ swing_angle_degrees = 180.0
 armor_bonus = 2.0
 is_melee = true
 special = ExtResource("5_special")
+affinity = 1

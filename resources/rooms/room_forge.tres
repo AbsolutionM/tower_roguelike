@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="RoomData" format=3]
+
+[ext_resource type="Script" path="res://resources/rooms/room_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_normal.tres" id="2_enemy"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_charger.tres" id="3_enemy"]
+[ext_resource type="PackedScene" path="res://scenes/props/obstacle.tscn" id="90_rock"]
+[ext_resource type="PackedScene" path="res://scenes/props/chest.tscn" id="91_chest"]
+[ext_resource type="PackedScene" path="res://scenes/props/ore.tscn" id="92_ore"]
+
+[resource]
+script = ExtResource("1_script")
+room_name = "Schmiede"
+kind = 2
+weight = 6.0
+enemy_pool = Array[EnemyData]([ExtResource("2_enemy"), ExtResource("3_enemy")])
+enemy_count = 4
+room_size = Vector2(1280, 1792)
+fixed_camera = false
+spawn_margin = 110.0
+min_player_distance = 330.0
+obstacle_scene = ExtResource("90_rock")
+obstacle_count = 4
+chest_scene = ExtResource("91_chest")
+harvestable_scene = ExtResource("92_ore")
+harvestable_count = 3
+anvil_chance = 1.0

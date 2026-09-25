@@ -190,6 +190,11 @@ func set_weapon(weapon: WeaponData) -> void:
 	var controller = player.get_node_or_null("WeaponController")
 	if controller:
 		controller.equipped_weapon = weapon
+		RunState.run_weapon = weapon
+		RunState.run_weapon_cap = weapon
+		while RunState.run_weapon_cap.next_tier:
+			RunState.run_weapon_cap = RunState.run_weapon_cap.next_tier
+		RunState.loadout_changed.emit()
 		_toast("Waffe: " + weapon.weapon_name)
 
 func next_weapon() -> void:

@@ -8,7 +8,7 @@ class_name ItemSymbol
 ## Gezeichnet wird über `paint()`, damit dieselbe Form auch von Node2D-Knoten
 ## (dem Bodenpickup) benutzt werden kann.
 
-enum Kind { GEL, SCRAP, SHARD, COIN, FLASK, ORE, CORE, ESSENCE, HEART, HALF_HEART, KEY }
+enum Kind { GEL, SCRAP, SHARD, COIN, FLASK, ORE, CORE, ESSENCE, HEART, HALF_HEART, KEY, SPARK }
 
 var kind: Kind = Kind.GEL
 var tint: Color = Palette.BONE
@@ -51,6 +51,8 @@ static func paint(canvas: CanvasItem, center: Vector2, box: float, symbol: Kind,
 			paint_heart(canvas, center, unit, color, Color.TRANSPARENT, 1)
 		Kind.KEY:
 			_key(canvas, center, unit, color, edge, shine)
+		Kind.SPARK:
+			_spark(canvas, center, unit, color, edge, shine)
 
 static func _box(canvas: CanvasItem, center: Vector2, offset: Vector2, size: Vector2,
 		unit: float, fill: Color, edge: Color) -> void:
@@ -186,3 +188,10 @@ static func _key(canvas: CanvasItem, c: Vector2, u: float, fill: Color, edge: Co
 	PixelDraw.disc(canvas, c + Vector2(-2.6, 0.0) * u, u * 2.0, u, fill)
 	PixelDraw.disc(canvas, c + Vector2(-2.6, 0.0) * u, u * 0.9, u, edge)
 	_box(canvas, c, Vector2(-3.4, -1.0), Vector2(0.8, 0.8), u, shine, shine)
+
+## Turmfunke: vierzackiger Stern mit hellem Kern.
+static func _spark(canvas: CanvasItem, c: Vector2, u: float, fill: Color, edge: Color, shine: Color) -> void:
+	_box(canvas, c, Vector2(0, 0), Vector2(1.6, 7.0), u, fill, edge)
+	_box(canvas, c, Vector2(0, 0), Vector2(7.0, 1.6), u, fill, edge)
+	_box(canvas, c, Vector2(0, 0), Vector2(3.2, 3.2), u, fill, edge)
+	_box(canvas, c, Vector2(0, 0), Vector2(1.4, 1.4), u, shine, shine)

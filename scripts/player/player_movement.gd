@@ -101,7 +101,8 @@ func apply_loadout() -> void:
 	var selected := RunState.get_selected_character()
 	if selected:
 		character_data = selected
-		var weapon := RunState.get_equipped_weapon()
+		# Im Turm startet jede Waffe auf Stufe I ihrer Linie und wächst im Lauf.
+		var weapon := RunState.begin_weapon_run(RunState.get_equipped_weapon())
 		if weapon and weapon_controller:
 			weapon_controller.equipped_weapon = weapon
 	elif test_loadout:

@@ -40,3 +40,4 @@ next_tier = ExtResource("7_next")
 tier_gold = 600
 tier_material_ids = Array[String](["iron_scrap", "ore_chunk"])
 tier_material_counts = Array[int]([10, 6])
+affinity = 1

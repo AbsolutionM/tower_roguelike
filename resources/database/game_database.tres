@@ -28,6 +28,8 @@
 [ext_resource type="Resource" path="res://resources/items/half_red_heart.tres" id="40_half_heart"]
 [ext_resource type="Resource" path="res://resources/items/soul_heart.tres" id="41_soul_heart"]
 [ext_resource type="Resource" path="res://resources/items/key.tres" id="42_key"]
+[ext_resource type="Resource" path="res://resources/items/tower_spark.tres" id="43_spark"]
+[ext_resource type="Resource" path="res://resources/items/upgrade_shard.tres" id="44_shard"]
 
 
 [ext_resource type="Resource" path="res://resources/weapons/shortsword_bone.tres" id="w100_weapon"]
@@ -44,7 +46,7 @@ script = ExtResource("1_script")
 characters = Array[CharacterData]([ExtResource("2_cowboy"), ExtResource("3_first"), ExtResource("4_ronin"), ExtResource("5_brute"), ExtResource("6_templer"), ExtResource("7_schatten"), ExtResource("8_jaeger"), ExtResource("9_kanonier")])
 weapons = Array[WeaponData]([ExtResource("w100_weapon"), ExtResource("w101_weapon"), ExtResource("w102_weapon"), ExtResource("w103_weapon"), ExtResource("w104_weapon"), ExtResource("w105_weapon"), ExtResource("w106_weapon"), ExtResource("w107_weapon")])
 towers = Array[TowerData]([ExtResource("24_tower"), ExtResource("33_tower2")])
-items = Array[ItemData]([ExtResource("25_gold"), ExtResource("26_essence"), ExtResource("27_gel"), ExtResource("28_ore"), ExtResource("29_scrap"), ExtResource("30_crystal"), ExtResource("31_core"), ExtResource("32_heart"), ExtResource("40_half_heart"), ExtResource("41_soul_heart"), ExtResource("42_key")])
+items = Array[ItemData]([ExtResource("25_gold"), ExtResource("26_essence"), ExtResource("27_gel"), ExtResource("28_ore"), ExtResource("29_scrap"), ExtResource("30_crystal"), ExtResource("31_core"), ExtResource("32_heart"), ExtResource("40_half_heart"), ExtResource("41_soul_heart"), ExtResource("42_key"), ExtResource("43_spark"), ExtResource("44_shard")])
 accessories = Array[AccessoryData]([ExtResource("34_acc1"), ExtResource("35_acc2"), ExtResource("36_acc3"), ExtResource("37_acc4"), ExtResource("38_acc5"), ExtResource("39_acc6")])
 recipes = Array[CraftingRecipe]([])
 starting_weapon_ids = Array[String](["shortsword_bone", "shortsword_slime"])

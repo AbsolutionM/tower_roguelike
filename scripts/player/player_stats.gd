@@ -48,6 +48,7 @@ static func preview(character: CharacterData) -> PlayerStats:
 func _ready() -> void:
 	add_to_group("player_stats")
 	RunState.loadout_changed.connect(recalculate)
+	RunState.run_upgrades_changed.connect(recalculate)
 	Weather.weather_changed.connect(_on_weather_changed)
 	recalculate()
 
@@ -79,11 +80,11 @@ func _apply_power_level() -> void:
 
 ## Eigenschaften der ausgerüsteten Waffe und ihres Upgrade-Baums.
 func _apply_weapon_upgrades() -> void:
-	var weapon := RunState.get_equipped_weapon()
+	var weapon := RunState.get_active_weapon()
 	if not weapon:
 		return
 
-	lifesteal += weapon.lifesteal
+	lifesteal += weapon.lifesteal + upgrade("thirst", weapon)
 	move_speed += weapon.move_speed_bonus
 	crit_damage += weapon.crit_damage_bonus
 	# Gewicht 3.0 ist neutral - alles darüber bremst, alles darunter macht flink.
@@ -197,20 +198,35 @@ func get_weapon_modifiers(weapon: WeaponData) -> Dictionary:
 			mods["attack_speed"] = float(mods["attack_speed"]) * affinity.attack_speed_mult
 			mods["crit"] = float(mods["crit"]) + affinity.crit_bonus
 
-	mods["attack_speed"] = float(mods["attack_speed"]) * weapon.attack_speed_mult
-	mods["crit"] = float(mods["crit"]) + weapon.crit_bonus
+	mods["attack_speed"] = float(mods["attack_speed"]) * weapon.attack_speed_mult * (1.0 + upgrade("tempo", weapon))
+	mods["crit"] = float(mods["crit"]) + weapon.crit_bonus + upgrade("precision", weapon)
 	return mods
+
+## Wert eines Waffen-Upgrades aus dem laufenden Lauf, am Stufen-Deckel
+## abgeschnitten. Außerhalb des Turms immer 0.
+func upgrade(key: String, weapon: WeaponData = null) -> float:
+	if not GameManager.run_active:
+		return 0.0
+	return WeaponUpgrades.effective(key, weapon if weapon else RunState.get_active_weapon())
+
+## Schmiedestufe einer Waffe. Im Lauf gilt für jede Stufe der Linie die
+## Schmiedestufe der Stadtwaffe - sonst wäre das Schmieden mit der
+## Evolution verloren.
+func weapon_level(weapon: WeaponData) -> int:
+	if GameManager.run_active and RunState.run_weapon_cap and WeaponUpgrades.line_root(weapon) == WeaponUpgrades.line_root(RunState.run_weapon_cap):
+		return RunState.get_weapon_level(RunState.run_weapon_cap.weapon_id)
+	return RunState.get_weapon_level(weapon.weapon_id)
 
 ## Grundschaden der Waffe inklusive Schmiedestufe und Attributskalierung.
 ## Einzige Stelle, an der Waffenschaden entsteht - Menü und Kampf fragen hier.
 func get_weapon_base_damage(weapon: WeaponData) -> float:
 	if not weapon:
 		return 0.0
-	return weapon.get_effective_damage(character_data, RunState.get_weapon_level(weapon.weapon_id))
+	return weapon.get_effective_damage(character_data, weapon_level(weapon)) * (1.0 + upgrade("sharpness", weapon))
 
 ## Fertige Werteübersicht für die Menüs: [{ "name": String, "value": String }, ...]
 func describe_sheet() -> Array:
-	var weapon := RunState.get_equipped_weapon()
+	var weapon := RunState.get_active_weapon()
 	var attack_speed: float = attack_speed_mult
 	var crit: float = crit_chance
 	var damage_display: float = flat_damage * damage_mult
@@ -262,5 +278,57 @@ func compute_damage(base_damage: float, weapon: WeaponData = null) -> Dictionary
 	var damage: float = (base_damage + float(mods["flat"])) * float(mods["damage"])
 	var is_crit: bool = randf() < clampf(float(mods["crit"]), 0.0, 1.0)
 	if is_crit:
-		damage *= crit_damage
+		damage *= crit_damage + upgrade("crit_power", weapon)
 	return {"damage": damage, "crit": is_crit}
+
+# --- Trefferwirkungen der Waffen-Upgrades ----------------------------------
+
+## Von Klinge und Geschoss gerufen, wenn ein Gegner getroffen wurde.
+## Würfelt Brand, Frost, Gift und Kettenblitz aus und baut Blutung auf.
+## Die Affinität der Waffe verstärkt ihr Element wie im Ideensheet.
+func on_weapon_hit(target: Node, damage: float) -> void:
+	if not (target is Enemy) or not is_instance_valid(target) or target.is_dying:
+		return
+	var weapon := RunState.get_active_weapon()
+	if not weapon:
+		return
+	var aff: int = weapon.affinity
+	var A := WeaponData.Affinity
+	var enemy: Enemy = target
+
+	if randf() < upgrade("burn", weapon):
+		var strong: bool = aff == A.BURN
+		enemy.status.apply_burn(4.0 * (1.5 if strong else 1.0), 4.0 if strong else 3.0)
+		enemy.status.burn_spreads = strong
+	if randf() < upgrade("frost", weapon):
+		var strong_frost: bool = aff == A.FROST
+		enemy.status.apply_slow(0.6 if strong_frost else 0.75, 2.0, 3 if strong_frost else 0, 1.0)
+	if randf() < upgrade("poison", weapon):
+		enemy.status.apply_poison(8 if aff == A.POISON else 5)
+	if randf() < upgrade("shock", weapon):
+		_chain_lightning(enemy, damage, 3 if aff == A.SHOCK else 2, 0.6 if aff == A.SHOCK else 0.4)
+
+	var buildup: float = weapon.bleed_buildup + upgrade("bleed", weapon)
+	if buildup > 0.0 and enemy.status.add_bleed(buildup, 70.0 if aff == A.BLEED else 100.0):
+		FX.hit_spark(enemy.global_position, Palette.BLOOD, 10)
+		enemy.take_status_damage(damage, Palette.BLOOD)
+
+func _chain_lightning(from: Enemy, damage: float, jumps: int, factor: float) -> void:
+	var hit: Array = [from]
+	var current: Node2D = from
+	for i in jumps:
+		var next: Node2D = null
+		var best: float = 180.0
+		for other in get_tree().get_nodes_in_group("enemies"):
+			if hit.has(other) or not is_instance_valid(other):
+				continue
+			var distance: float = current.global_position.distance_to(other.global_position)
+			if distance < best:
+				best = distance
+				next = other
+		if not next:
+			return
+		FX.lightning(current.global_position, next.global_position, Palette.TEAL)
+		next.take_status_damage(damage * factor, Palette.TEAL)
+		hit.append(next)
+		current = next

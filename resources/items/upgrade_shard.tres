@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+item_id = "upgrade_shard"
+item_name = "Upgrade-Splitter"
+description = "Fünf Splitter werden zu einem freien Waffen-Upgrade."
+item_type = 8
+rarity = 2
+max_stack = 99
+value = 1
+
+symbol = 2
+color = Color(0.545, 0.435, 0.831, 1)
+pickup_scale = 1.2

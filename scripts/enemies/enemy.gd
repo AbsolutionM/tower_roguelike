@@ -60,6 +60,8 @@ var charge_direction: Vector2 = Vector2.ZERO
 var strafe_sign: float = 1.0
 
 var _shadow: BlobShadow
+## Brand, Frost, Gift, Blutung aus den Waffen-Upgrades.
+var status: EnemyStatus
 var _aura_timer: float = 0.0
 var _base_material: Material
 var _symbol: EnemySymbol
@@ -76,6 +78,7 @@ var _fly_time: float = 0.0
 func _ready() -> void:
 	add_to_group("enemies")
 	add_to_group("damageable")
+	status = EnemyStatus.new(self)
 
 	apply_enemy_data()
 	current_health = max_health
@@ -173,7 +176,10 @@ func _process(delta: float) -> void:
 	attack_timer = maxf(attack_timer - delta, 0.0)
 	contact_timer = maxf(contact_timer - delta, 0.0)
 
-	var speed_factor := _tick_movement(delta)
+	var speed_factor := _tick_movement(delta) * status.speed_factor()
+	_tick_status(delta)
+	if is_dying:
+		return
 	var move_vector := (_behavior_velocity(delta) * speed_factor + _separation_velocity() + _obstacle_push()) * time_scale
 
 	global_position += (move_vector + knockback_velocity) * delta
@@ -184,6 +190,34 @@ func _process(delta: float) -> void:
 	update_squash(delta)
 	update_trail(delta)
 	_apply_visual_height()
+
+## Schaden über Zeit aus Brand und Gift, dazu die Einfärbung.
+func _tick_status(delta: float) -> void:
+	var amount := status.tick(delta)
+	modulate = status.tint()
+	if amount > 0.0:
+		take_status_damage(amount, Palette.EMBER if status.burn_time > 0.0 else Palette.LIME)
+
+## Brand-Affinität: ein brennender Gegner steckt beim Tod einen Nachbarn an.
+func _spread_burn() -> void:
+	if not status or status.burn_time <= 0.0 or not status.burn_spreads:
+		return
+	for other in get_tree().get_nodes_in_group("enemies"):
+		if other != self and is_instance_valid(other) and global_position.distance_to(other.global_position) <= 80.0:
+			other.status.apply_burn(status.burn_dps, 3.0)
+			other.status.burn_spreads = true
+			FX.ring_burst(other.global_position, Palette.EMBER, 4.0, 30.0, 0.25, 3.0)
+			return
+
+## Schaden ohne Treffereffekte - für Brand, Gift und Blutung.
+func take_status_damage(amount: float, color: Color = Palette.EMBER) -> void:
+	if is_dying or amount <= 0.0:
+		return
+	current_health -= amount
+	update_health_bar()
+	FX.damage_number(global_position + Vector2(0.0, -30.0), amount, false, color)
+	if current_health <= 0.0:
+		die()
 
 ## Aktualisiert die Höhe über dem Boden und liefert den Tempofaktor.
 func _tick_movement(delta: float) -> float:
@@ -548,6 +582,7 @@ func die() -> void:
 
 	remove_from_group("enemies")
 	remove_from_group("damageable")
+	_spread_burn()
 	set_deferred("monitoring", false)
 	died.emit(self)
 

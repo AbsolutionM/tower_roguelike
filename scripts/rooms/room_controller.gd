@@ -14,6 +14,7 @@ signal mini_boss_defeated(is_last_floor: bool)
 signal tower_cleared
 
 @export var enemy_scene: PackedScene
+@export var anvil_scene: PackedScene = preload("res://scenes/props/anvil.tscn")
 @export var boss_scene: PackedScene
 @export var rooms: Array[RoomData] = []
 @export var transition_delay: float = 0.55
@@ -179,6 +180,12 @@ func start_room() -> void:
 		spawn_props()
 	else:
 		spawn_props()
+
+	if GameManager.stage == GameManager.Stage.ROOM and room and randf() < room.anvil_chance:
+		_spawn_layout_prop(anvil_scene, _random_spawn_position(room))
+
+	if GameManager.stage == GameManager.Stage.ROOM and room and randf() < room.anvil_chance:
+		_spawn_layout_prop(anvil_scene, _random_spawn_position(room))
 
 	_reinforce_timer = reinforcement_interval
 	_reinforcements_left = int(ceil(float(room.enemy_count) * 0.5)) if room else 0
@@ -546,6 +553,7 @@ func _teardown_and_next(was_boss_room: bool) -> void:
 	_despawn_group("chests")
 	_despawn_group("harvestables")
 	_despawn_group("obstacles")
+	_despawn_group("room_props")
 
 	await get_tree().create_timer(transition_delay, true, false, true).timeout
 	if is_inside_tree():

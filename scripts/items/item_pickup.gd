@@ -149,6 +149,10 @@ func collect() -> void:
 				return
 		ItemData.ItemType.KEY:
 			RunState.add_keys(item.value * count)
+		ItemData.ItemType.SPARK:
+			RunState.add_sparks(item.value * count)
+		ItemData.ItemType.SHARD:
+			RunState.add_shards(item.value * count)
 		_:
 			if not _store_in_bag():
 				return
@@ -192,9 +196,14 @@ func _store_in_bag() -> bool:
 func _collect_effect() -> void:
 	# Herzen melden sich selbst über PlayerHealth.
 	if item.item_type != ItemData.ItemType.HEART and item.item_type != ItemData.ItemType.SOUL_HEART:
-		var amount: int = item.value * count if item.item_type in [ItemData.ItemType.CURRENCY, ItemData.ItemType.KEY] else count
+		var amount: int = item.value * count if item.item_type in [ItemData.ItemType.CURRENCY, ItemData.ItemType.KEY, ItemData.ItemType.SPARK, ItemData.ItemType.SHARD] else count
 		var label_text := "+%d" % amount
-		if item.item_type == ItemData.ItemType.KEY:
-			label_text += " Schlüssel"
+		match item.item_type:
+			ItemData.ItemType.KEY:
+				label_text += " Schlüssel"
+			ItemData.ItemType.SPARK:
+				label_text += " Funken"
+			ItemData.ItemType.SHARD:
+				label_text += " Splitter"
 		FX.floating_text(global_position + Vector2(0.0, -18.0), label_text, item.color, 17, 34.0)
 	FX.ring_burst(global_position, item.color, 3.0, 26.0, 0.22, 3.0)

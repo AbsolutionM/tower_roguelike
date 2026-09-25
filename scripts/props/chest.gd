@@ -244,6 +244,11 @@ func open_chest() -> void:
 	if chest_type == ChestType.RED and randf() < red_ambush_chance and _spring_ambush():
 		return
 
+	# Goldtruhe: statt Kleinkram eine Wahl aus zwei Waffen-Upgrades.
+	if chest_type == ChestType.GOLD and GameManager.run_active:
+		RunState.upgrade_offer_requested.emit(2, false, "Goldtruhe")
+		return
+
 	for drop in _roll_drops():
 		_spawn_pickup(drop["item"], drop["count"])
 

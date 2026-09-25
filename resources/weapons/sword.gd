@@ -172,6 +172,7 @@ func try_hit(area: Area2D) -> void:
 	if stats:
 		stats.report_damage(damage)
 		stats.report_hit()
+		stats.on_weapon_hit(area, damage)
 
 	FX.shake(shake_amount * (1.6 if is_crit else 1.0))
 

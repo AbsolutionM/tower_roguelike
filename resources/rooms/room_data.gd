@@ -45,3 +45,5 @@ enum Kind { NORMAL, ELITE, SPECIAL }
 @export var chest_count: int = 0
 @export var harvestable_scene: PackedScene
 @export var harvestable_count: int = 0
+## Chance auf einen Amboss im Raum (Waffen-Upgrade gegen Turmfunken).
+@export_range(0.0, 1.0) var anvil_chance: float = 0.25

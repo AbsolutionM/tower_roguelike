@@ -69,6 +69,7 @@ func _ready() -> void:
 
 	if _stats:
 		_stats.hit_landed.connect(_on_hit_landed)
+	RunState.run_upgrades_changed.connect(_on_run_upgrades_changed)
 
 	if show_target_marker:
 		_marker = TargetMarker.new()
@@ -120,7 +121,7 @@ func _on_hit_landed() -> void:
 
 	_special_hits += 1
 	special_charge_changed.emit(get_special_charge())
-	if _special_hits < special.hits_required:
+	if _special_hits < _hits_required(special):
 		return
 
 	_special_hits = 0
@@ -137,7 +138,43 @@ func get_special_charge() -> float:
 	var special := _current_special()
 	if not special or special.hits_required <= 0:
 		return 0.0
-	return clampf(float(_special_hits) / float(special.hits_required), 0.0, 1.0)
+	return clampf(float(_special_hits) / float(_hits_required(special)), 0.0, 1.0)
+
+## Ladung-Upgrades senken die nötigen Treffer, nie unter zwei.
+func _hits_required(special: WeaponSpecial) -> int:
+	var fewer: int = int(_stats.upgrade("charge", equipped_weapon)) if _stats else 0
+	return maxi(special.hits_required - fewer, 2)
+
+# --- Lauf-Upgrades und Evolution -------------------------------------------
+
+func _on_run_upgrades_changed() -> void:
+	if not equipped_weapon:
+		return
+	if WeaponUpgrades.can_evolve(equipped_weapon):
+		_evolve()
+	else:
+		_configure_swing()
+
+## Nächste Stufe der Linie: neue Werte (Upgrades bleiben als Prozente),
+## Weißblitz, Hit-Stop und ein voll geladener Sonderschlag.
+func _evolve() -> void:
+	var next: WeaponData = equipped_weapon.next_tier
+	equipped_weapon = next
+	RunState.run_weapon = next
+	RunState.loadout_changed.emit()
+	var player := get_parent() as Node2D
+	var origin: Vector2 = player.global_position if player else global_position
+	FX.screen_flash(Color(1.0, 1.0, 1.0, 0.7), 0.4)
+	FX.hitstop(0.25, 0.05)
+	FX.ring_burst(origin, Palette.GOLD, 10.0, 160.0, 0.5, 8.0)
+	FX.floating_text(origin + Vector2(0.0, -100.0), "%s  (Stufe %s)" % [next.weapon_name, WeaponUpgrades.tier_name(next)], Palette.GOLD, 24, 60.0)
+	Audio.play(Audio.ID_LEVEL_UP)
+	_apply_weapon_visuals()
+	var special := _current_special()
+	if special:
+		_special_hits = _hits_required(special) - 1
+		special_charge_changed.emit(get_special_charge())
+	RunState.weapon_evolved.emit(next)
 
 func _fire_special(special: WeaponSpecial) -> void:
 	var player := get_parent() as Node2D
@@ -172,7 +209,10 @@ func get_attack_range() -> float:
 		return 0.0
 	if equipped_weapon.is_melee and weapon_pivot:
 		return weapon_pivot.pivot_radius + _melee_reach
-	return equipped_weapon.weapon_range
+	return equipped_weapon.weapon_range * _reach_mult()
+
+func _reach_mult() -> float:
+	return 1.0 + (_stats.upgrade("reach", equipped_weapon) if _stats else 0.0)
 
 ## Der nächste Gegner im Kegel vor dem Helden. Wer seitlich oder hinter
 ## ihm steht, wird nicht angegriffen - man muss sich ihm zuwenden.
@@ -297,8 +337,10 @@ func _configure_swing() -> void:
 	if not sword or not sword.has_method("configure"):
 		return
 	# Geschmiedete Waffen stoßen Gegner spürbar weiter zurück.
-	var stagger_mult := Progression.reinforce_stagger_mult(RunState.get_weapon_level(equipped_weapon.weapon_id))
-	_melee_reach = _blade_reach()
+	var level: int = _stats.weapon_level(equipped_weapon) if _stats else RunState.get_weapon_level(equipped_weapon.weapon_id)
+	var stagger_mult := Progression.reinforce_stagger_mult(level)
+	stagger_mult *= 1.0 + (_stats.upgrade("impact", equipped_weapon) if _stats else 0.0)
+	_melee_reach = _blade_reach() * _reach_mult()
 	sword.configure(
 		equipped_weapon.swing_duration,
 		equipped_weapon.swing_angle_degrees,

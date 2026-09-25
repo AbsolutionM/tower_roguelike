@@ -16,6 +16,7 @@
 [ext_resource type="Resource" path="res://resources/enemies/miniboss_slime_mother.tres" id="mb_miniboss_slime_mother"]
 [ext_resource type="Resource" path="res://resources/enemies/miniboss_spider_mother.tres" id="mb_miniboss_spider_mother"]
 [ext_resource type="Resource" path="res://resources/rooms/room_mini_boss.tres" id="mb_room"]
+[ext_resource type="Resource" path="res://resources/rooms/room_forge.tres" id="forge_room"]
 
 [resource]
 script = ExtResource("1_script")
@@ -26,7 +27,7 @@ accent_color = Color(0.55, 0.95, 0.6, 1)
 tileset = ExtResource("13_tiles")
 ambient_color = Color(0.6, 0.62, 0.76, 1)
 floors = 5
-rooms = Array[RoomData]([ExtResource("2_room1"), ExtResource("3_room2"), ExtResource("4_room3"), ExtResource("5_room4"), ExtResource("6_room5"), ExtResource("7_room6"), ExtResource("12_belfry"), ExtResource("8_boss")])
+rooms = Array[RoomData]([ExtResource("forge_room"), ExtResource("2_room1"), ExtResource("3_room2"), ExtResource("4_room3"), ExtResource("5_room4"), ExtResource("6_room5"), ExtResource("7_room6"), ExtResource("12_belfry"), ExtResource("8_boss")])
 weather_options = Array[WeatherData]([ExtResource("9_clear"), ExtResource("10_fog"), ExtResource("11_rain")])
 unlocked = true
 damage_mult = 1.0

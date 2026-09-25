@@ -12,6 +12,13 @@ signal run_inventory_changed
 signal stash_changed
 signal bag_full
 signal keys_changed(amount: int)
+signal sparks_changed(amount: int)
+signal shards_changed(amount: int)
+signal run_upgrades_changed
+## Jemand bietet Waffen-Upgrades an (Splitter, Amboss, Goldtruhe) - der HUD
+## zeigt die Kartenwahl. `source` steht als Überschrift darüber.
+signal upgrade_offer_requested(count: int, min_rare: bool, source: String)
+signal weapon_evolved(weapon: WeaponData)
 
 const SAVE_PATH := "user://savegame.json"
 const MAX_RUN_SLOTS := 12
@@ -23,6 +30,18 @@ const MAX_ACCESSORY_SLOTS := 2
 var gold: int = 0
 ## Schlüssel gelten nur für den laufenden Run und werden nicht gespeichert.
 var keys: int = 0
+## Turmfunken: Währung nur für den Lauf (Amboss, später Händler, Glücksrad).
+var sparks: int = 0
+## Upgrade-Splitter: 5 Stück = 1 freies Waffen-Upgrade.
+var shards: int = 0
+const SHARDS_PER_UPGRADE := 5
+## Waffen-Upgrades dieses Laufs: Karten-Schlüssel -> gesammelter Wert.
+var run_upgrades: Dictionary = {}
+var run_upgrade_count: int = 0
+## Waffe im Lauf: startet auf Stufe I der Linie und evolviert bis zur
+## höchsten in der Stadt gebauten Stufe (`run_weapon_cap`).
+var run_weapon: WeaponData
+var run_weapon_cap: WeaponData
 var essences: Dictionary = {}
 ## weapon_id -> Schmiedestufe (0..Progression.MAX_REINFORCE)
 var weapon_levels: Dictionary = {}
@@ -88,6 +107,12 @@ func get_total_essence() -> int:
 ## Setzt alles zurück, was nur einen Run lang lebt.
 func start_run() -> void:
 	keys = 0
+	sparks = 0
+	shards = 0
+	run_upgrades.clear()
+	run_upgrade_count = 0
+	sparks_changed.emit(sparks)
+	shards_changed.emit(shards)
 	run_gold = 0
 	run_essences.clear()
 	keys_changed.emit(keys)
@@ -97,6 +122,41 @@ func add_keys(amount: int) -> void:
 		return
 	keys += amount
 	keys_changed.emit(keys)
+
+func add_sparks(amount: int) -> void:
+	if amount <= 0:
+		return
+	sparks += amount
+	sparks_changed.emit(sparks)
+
+func spend_sparks(amount: int) -> bool:
+	if sparks < amount:
+		return false
+	sparks -= amount
+	sparks_changed.emit(sparks)
+	return true
+
+## Fünf Splitter werden sofort zu einer Upgrade-Wahl.
+func add_shards(amount: int) -> void:
+	if amount <= 0:
+		return
+	shards += amount
+	while shards >= SHARDS_PER_UPGRADE:
+		shards -= SHARDS_PER_UPGRADE
+		upgrade_offer_requested.emit(3, false, "Upgrade-Splitter")
+	shards_changed.emit(shards)
+
+## Laufbeginn: die Stadtwaffe gibt die Obergrenze, gestartet wird auf Stufe I.
+func begin_weapon_run(town_weapon: WeaponData) -> WeaponData:
+	run_weapon_cap = town_weapon
+	run_weapon = WeaponUpgrades.line_root(town_weapon) if town_weapon else null
+	return run_weapon
+
+## Die Waffe, die gerade zählt: im Turm die Laufwaffe, in der Stadt die ausgerüstete.
+func get_active_weapon() -> WeaponData:
+	if GameManager.run_active and run_weapon:
+		return run_weapon
+	return get_equipped_weapon()
 
 ## False = kein Schlüssel da.
 func spend_key() -> bool:

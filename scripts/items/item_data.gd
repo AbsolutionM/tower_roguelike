@@ -1,9 +1,10 @@
 extends Resource
 class_name ItemData
 
-## HEART, SOUL_HEART und KEY wirken sofort beim Aufsammeln und landen nie
-## im Beutel. `value` ist dann die Menge (halbe Herzen bzw. Schlüssel).
-enum ItemType { MATERIAL, CURRENCY, ESSENCE, CONSUMABLE, HEART, SOUL_HEART, KEY }
+## HEART, SOUL_HEART, KEY, SPARK und SHARD wirken sofort beim Aufsammeln und
+## landen nie im Beutel. `value` ist dann die Menge (halbe Herzen, Schlüssel,
+## Turmfunken, Upgrade-Splitter).
+enum ItemType { MATERIAL, CURRENCY, ESSENCE, CONSUMABLE, HEART, SOUL_HEART, KEY, SPARK, SHARD }
 enum Rarity { COMMON, UNCOMMON, RARE, EPIC, LEGENDARY }
 
 const RARITY_NAMES := {

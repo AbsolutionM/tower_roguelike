@@ -139,6 +139,28 @@ const CATEGORY_NAMES := {
 ## Rüstung, solange die Waffe getragen wird. Schilde.
 @export var armor_bonus: float = 0.0
 
+@export_group("Lauf-Upgrades")
+## Affinität der Waffenlinie: macht passende Upgrade-Karten stärker.
+enum Affinity { NONE, BLEED, POISON, BURN, FROST, SHOCK, CRIT, IMPACT, SPECIAL }
+@export var affinity: Affinity = Affinity.NONE
+## Höchstwerte dieser Stufe. Upgrades im Lauf schieben Schaden und Takt vom
+## Grundwert bis hierher; erst die nächste Stufe hebt die Grenze an.
+## 0 = automatisch (Schaden ×1,35, Cooldown ×0,86 - wie im Ideensheet).
+@export var damage_max: float = 0.0
+@export var cooldown_min: float = 0.0
+
+const AFFINITY_NAMES := {
+	Affinity.NONE: "-", Affinity.BLEED: "Blutung", Affinity.POISON: "Gift",
+	Affinity.BURN: "Brand", Affinity.FROST: "Frost", Affinity.SHOCK: "Blitz",
+	Affinity.CRIT: "Krit", Affinity.IMPACT: "Wucht", Affinity.SPECIAL: "Sonderschlag"
+}
+
+func get_damage_max() -> float:
+	return damage_max if damage_max > 0.0 else damage * 1.35
+
+func get_cooldown_min() -> float:
+	return cooldown_min if cooldown_min > 0.0 else cooldown * 0.86
+
 @export_group("Fortschritt")
 ## Nächste Stufe dieser Waffenlinie. Aufwerten tauscht die Waffe gegen sie
 ## und nimmt die Schmiedestufe mit. Leer = Ende der Linie.

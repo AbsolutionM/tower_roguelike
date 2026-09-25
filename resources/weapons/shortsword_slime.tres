@@ -41,3 +41,4 @@ tier_gold = 250
 tier_material_ids = Array[String](["slime_gel"])
 tier_material_counts = Array[int]([10])
 shop_price = 180
+affinity = 2

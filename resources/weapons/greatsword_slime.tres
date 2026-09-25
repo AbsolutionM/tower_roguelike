@@ -42,3 +42,4 @@ next_tier = ExtResource("7_next")
 tier_gold = 1200
 tier_material_ids = Array[String](["slime_gel", "essence_slime", "boss_core"])
 tier_material_counts = Array[int]([32, 8, 1])
+affinity = 2

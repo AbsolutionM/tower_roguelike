@@ -256,6 +256,8 @@ func _damage_target(target: Node) -> void:
 		target.take_damage(damage, global_position, is_crit)
 		if target.has_method("apply_knockback"):
 			target.apply_knockback(direction, 140.0)
+		if stats and not hostile:
+			stats.on_weapon_hit(target, damage)
 	else:
 		target.take_damage(damage)
 

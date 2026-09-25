@@ -31,6 +31,11 @@ var dev_button: Button
 var continue_button: Button
 ## Wird in _ready gebaut, siehe _create_key_counter.
 var key_label: Label
+var spark_label: Label
+var shard_label: Label
+## Offene Upgrade-Angebote - es ist immer nur eine Kartenwahl zu sehen.
+var _offer_queue: Array = []
+var _picker: UpgradePicker = null
 
 var _boss: Node = null
 var _pause_overlay: Control = null
@@ -47,6 +52,9 @@ func _ready() -> void:
 
 	RunState.run_inventory_changed.connect(_update_bag_label)
 	RunState.keys_changed.connect(_on_keys_changed)
+	RunState.sparks_changed.connect(_on_sparks_changed)
+	RunState.shards_changed.connect(_on_shards_changed)
+	RunState.upgrade_offer_requested.connect(_on_upgrade_offer)
 	RunState.bag_full.connect(_on_bag_full)
 
 	_on_gold_changed(RunState.gold)
@@ -88,34 +96,80 @@ func _create_pause_button() -> void:
 	dev_button.pressed.connect(DevMode.toggle_menu)
 	add_child(dev_button)
 
-## Schlüssel stehen neben Gold und Essenz - mit Symbol, weil die Zahl
-## allein sonst nicht von den anderen zu unterscheiden wäre.
+## Schlüssel, Turmfunken und Splitter stehen neben Gold und Essenz - mit
+## Symbol, weil die Zahlen allein sonst nicht zu unterscheiden wären.
+## Run-Items weiß, damit sie sich von der Beute (Gold, Essenz) abheben.
 func _create_key_counter() -> void:
 	if not top_bar:
 		return
+	key_label = _make_counter("KeyCounter", ItemSymbol.Kind.KEY, Palette.BONE, Vector2(276.0, 92.0))
+	spark_label = _make_counter("SparkCounter", ItemSymbol.Kind.SPARK, Palette.AMBER, Vector2(372.0, 92.0))
+	shard_label = _make_counter("ShardCounter", ItemSymbol.Kind.SHARD, Palette.VIOLET, Vector2(480.0, 92.0))
+	_on_keys_changed(RunState.keys)
+	_on_sparks_changed(RunState.sparks)
+	_on_shards_changed(RunState.shards)
+
+func _make_counter(counter_name: String, kind: ItemSymbol.Kind, tint: Color, at: Vector2) -> Label:
 	var row := HBoxContainer.new()
-	row.name = "KeyCounter"
+	row.name = counter_name
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_theme_constant_override("separation", 6)
-	row.position = Vector2(276.0, 92.0)
-	row.size = Vector2(120.0, 34.0)
+	row.position = at
+	row.size = Vector2(100.0, 34.0)
 	top_bar.add_child(row)
 
 	var icon := ItemSymbol.new()
-	icon.kind = ItemSymbol.Kind.KEY
-	icon.tint = Palette.BONE
+	icon.kind = kind
+	icon.tint = tint
 	icon.symbol_size = 30.0
 	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(icon)
 
-	key_label = Label.new()
-	key_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	key_label.add_theme_color_override("font_color", Palette.BONE)
-	key_label.add_theme_color_override("font_outline_color", Palette.INK)
-	key_label.add_theme_constant_override("outline_size", 6)
-	key_label.add_theme_font_size_override("font_size", 32)
-	row.add_child(key_label)
-	_on_keys_changed(RunState.keys)
+	var label := Label.new()
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.add_theme_color_override("font_color", Palette.BONE)
+	label.add_theme_color_override("font_outline_color", Palette.INK)
+	label.add_theme_constant_override("outline_size", 6)
+	label.add_theme_font_size_override("font_size", 30)
+	row.add_child(label)
+	return label
+
+func _on_sparks_changed(amount: int) -> void:
+	if spark_label:
+		spark_label.text = "%d" % amount
+		_pop(spark_label)
+
+func _on_shards_changed(amount: int) -> void:
+	if shard_label:
+		shard_label.text = "%d/%d" % [amount, RunState.SHARDS_PER_UPGRADE]
+		_pop(shard_label)
+
+# --- Waffen-Upgrades --------------------------------------------------------
+
+func _on_upgrade_offer(count: int, min_rare: bool, source: String) -> void:
+	_offer_queue.append({"count": count, "min_rare": min_rare, "source": source})
+	if not is_instance_valid(_picker):
+		_show_next_offer.call_deferred()
+
+func _show_next_offer() -> void:
+	if is_instance_valid(_picker) or _offer_queue.is_empty():
+		return
+	var offer: Dictionary = _offer_queue.pop_front()
+	_picker = UpgradePicker.new()
+	_picker.count = offer["count"]
+	_picker.min_rare = offer["min_rare"]
+	_picker.source = offer["source"]
+	_picker.closed.connect(_on_picker_closed)
+	get_tree().root.add_child(_picker)
+
+func _on_picker_closed() -> void:
+	_picker = null
+	if not _offer_queue.is_empty():
+		_show_next_offer.call_deferred()
+		return
+	# Stand dahinter noch eine Entscheidung oder die Pause offen, bleibt es still.
+	if get_node_or_null("ChoiceOverlay") or is_instance_valid(_pause_overlay):
+		get_tree().paused = true
 
 func _on_keys_changed(amount: int) -> void:
 	if not key_label:

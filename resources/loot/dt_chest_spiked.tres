@@ -8,6 +8,7 @@
 [ext_resource type="Resource" path="res://resources/items/red_heart.tres" id="6_heart"]
 [ext_resource type="Resource" path="res://resources/items/soul_heart.tres" id="7_soul"]
 [ext_resource type="Resource" path="res://resources/items/key.tres" id="8_key"]
+[ext_resource type="Resource" path="res://resources/items/upgrade_shard.tres" id="x101_upgrade_shard"]
 
 [sub_resource type="Resource" id="Entry_essence"]
 script = ExtResource("2_entry")
@@ -44,9 +45,16 @@ chance = 0.35
 count_min = 1
 count_max = 1
 
+[sub_resource type="Resource" id="Entry_x101"]
+script = ExtResource("2_entry")
+item = ExtResource("x101_upgrade_shard")
+chance = 0.6
+count_min = 1
+count_max = 2
+
 [resource]
 script = ExtResource("1_table")
-entries = Array[DropEntry]([SubResource("Entry_essence"), SubResource("Entry_scrap"), SubResource("Entry_heart"), SubResource("Entry_soul"), SubResource("Entry_key")])
+entries = Array[DropEntry]([SubResource("Entry_essence"), SubResource("Entry_scrap"), SubResource("Entry_heart"), SubResource("Entry_soul"), SubResource("Entry_key"), SubResource("Entry_x101")])
 gold_item = ExtResource("3_gold")
 gold_chance = 1.0
 gold_min = 12

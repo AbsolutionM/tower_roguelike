@@ -39,3 +39,4 @@ tier_gold = 250
 tier_material_ids = Array[String](["iron_scrap"])
 tier_material_counts = Array[int]([6])
 shop_price = 140
+affinity = 1

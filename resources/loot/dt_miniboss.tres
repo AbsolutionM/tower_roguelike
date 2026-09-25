@@ -7,6 +7,7 @@
 [ext_resource type="Resource" path="res://resources/items/boss_core.tres" id="5_core"]
 [ext_resource type="Resource" path="res://resources/items/essence_slime.tres" id="6_essence"]
 [ext_resource type="Resource" path="res://resources/items/key.tres" id="7_key"]
+[ext_resource type="Resource" path="res://resources/items/tower_spark.tres" id="x101_tower_spark"]
 
 [sub_resource type="Resource" id="Entry_heart"]
 script = ExtResource("2_entry")
@@ -36,9 +37,16 @@ chance = 0.5
 count_min = 1
 count_max = 1
 
+[sub_resource type="Resource" id="Entry_x101"]
+script = ExtResource("2_entry")
+item = ExtResource("x101_tower_spark")
+chance = 1.0
+count_min = 10
+count_max = 15
+
 [resource]
 script = ExtResource("1_table")
-entries = Array[DropEntry]([SubResource("Entry_heart"), SubResource("Entry_core"), SubResource("Entry_essence"), SubResource("Entry_key")])
+entries = Array[DropEntry]([SubResource("Entry_heart"), SubResource("Entry_core"), SubResource("Entry_essence"), SubResource("Entry_key"), SubResource("Entry_x101")])
 gold_item = ExtResource("3_gold")
 gold_chance = 1.0
 gold_min = 15
