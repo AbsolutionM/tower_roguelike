@@ -75,7 +75,7 @@ func _process(delta: float) -> void:
 	var real_delta: float = delta / maxf(Engine.time_scale, 0.001)
 	if run_active:
 		run_elapsed += real_delta
-	if not room_active:
+	if not room_active or DevMode.freeze_timer:
 		return
 	room_timer -= real_delta
 	if room_timer <= 0.0:

@@ -37,6 +37,8 @@ signal room_finished
 @export var grid_size: float = 76.0
 
 var is_transitioning: bool = false
+## Dev-Modus: dieser Raum kommt als nächstes statt eines zufälligen (-1 = aus).
+var forced_room_index: int = -1
 var current_room_index: int = -1
 
 var _ambient: CanvasModulate
@@ -118,6 +120,11 @@ func pick_next_room() -> void:
 		return
 	if rooms.size() == 1:
 		current_room_index = 0
+		return
+
+	if forced_room_index >= 0 and forced_room_index < rooms.size():
+		current_room_index = forced_room_index
+		forced_room_index = -1
 		return
 
 	var cleared := GameManager.rooms_cleared_this_floor

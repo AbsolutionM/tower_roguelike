@@ -479,6 +479,8 @@ func take_damage(amount: float, from_position: Vector2 = Vector2.ZERO, crit: boo
 	if is_dying:
 		return
 
+	if DevMode.one_hit_kill:
+		amount = maxf(amount, current_health)
 	current_health -= amount
 	update_health_bar()
 
@@ -491,7 +493,7 @@ func take_damage(amount: float, from_position: Vector2 = Vector2.ZERO, crit: boo
 	FX.impact(global_position, impact_direction, FX.COLOR_CRIT if crit else FX.COLOR_DAMAGE, 1.4 if crit else 1.0)
 
 	var visual := _visual()
-	if visual:
+	if visual and DevMode.fx("hit_flash"):
 		FX.flash(visual, Color(8.0, 8.0, 8.0), 0.12)
 		var rest := _visual_rest_scale()
 		var tween := visual.create_tween()
