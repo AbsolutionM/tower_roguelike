@@ -152,6 +152,73 @@ def schultern(punkte):
     return punkte - {(x0, y0), (x1, y0)}
 
 
+INDEX = {}                              # Farbe -> (Tonreihe, Stufe)
+for _n, _r in T.items():
+    for _i, _h in enumerate(_r):
+        INDEX.setdefault(rgb(_h), (_n, _i))
+
+
+def reihe_von(col):
+    return INDEX.get(col, (None, 0))[0]
+
+
+def aufraeumen(img):
+    """Nimmt heraus, was zufaellig aussieht: ein Pixel, dessen Farbe bei
+    keinem der acht Nachbarn vorkommt und das zur selben Tonreihe wie seine
+    Umgebung gehoert, ist Rauschen und wird zur haeufigsten Nachbarfarbe.
+    Bewusst gesetzte Akzente aus einer anderen Reihe (Auge, Niete, Glut)
+    bleiben. Dazu fliegen lose Teile bis zwei Pixel ohne Anschluss raus."""
+    px = img.load()
+    for _ in range(2):
+        alt = [[px[x, y] for x in range(32)] for y in range(32)]
+        for y in range(32):
+            for x in range(32):
+                c = alt[y][x]
+                if not c[3]:
+                    continue
+                nb = []
+                for dy in (-1, 0, 1):
+                    for dx in (-1, 0, 1):
+                        if dx or dy:
+                            nx, ny = x + dx, y + dy
+                            if 0 <= nx < 32 and 0 <= ny < 32 and alt[ny][nx][3]:
+                                nb.append(alt[ny][nx])
+                if not nb or any(q == c for q in nb):
+                    continue
+                eigen = reihe_von(c)
+                if eigen is None:
+                    continue                        # Akzent (Glut, Zahn, Auge) bleibt
+                if all(reihe_von(q) != eigen for q in nb):
+                    continue                        # Material liegt allein auf, kein Rauschen
+                gleiche = [q for q in nb if reihe_von(q) == eigen] or nb
+                px[x, y] = max(set(gleiche), key=gleiche.count)
+    gesehen, teile = set(), []
+    for y in range(32):
+        for x in range(32):
+            if (x, y) in gesehen or not px[x, y][3]:
+                continue
+            stapel, teil = [(x, y)], []
+            gesehen.add((x, y))
+            while stapel:
+                cx, cy = stapel.pop()
+                teil.append((cx, cy))
+                for dy in (-1, 0, 1):
+                    for dx in (-1, 0, 1):
+                        nx, ny = cx + dx, cy + dy
+                        if (0 <= nx < 32 and 0 <= ny < 32 and (nx, ny) not in gesehen
+                                and px[nx, ny][3]):
+                            gesehen.add((nx, ny))
+                            stapel.append((nx, ny))
+            teile.append(teil)
+    if teile:
+        teile.sort(key=len, reverse=True)
+        for teil in teile[1:]:
+            if len(teil) <= 2:
+                for x, y in teil:
+                    px[x, y] = (0, 0, 0, 0)
+    return img
+
+
 # --- Beleuchtung --------------------------------------------------------------------
 
 LICHT = (-0.55, -0.55, 0.62)          # von links oben vorne
@@ -314,7 +381,8 @@ def zombie(px, m, seitlich, hinten, frame):
     tupfen(px, r, ((2, 1), (6, 0)), lh, x0, y0)
     tupfen(px, r, ((5, 3), (6, 3)), haut[2], x0, y0)                  # Loch mit Haut
     tupfen(px, r, ((6, 4),), haut[3], x0, y0)
-    tupfen(px, r, ((2, 4),), haut[2], x0, y0)
+    tupfen(px, r, ((1, 4), (2, 4)), haut[2], x0, y0)                  # Riss im Hemd
+    tupfen(px, r, ((1, 5), (2, 5)), haut[3], x0, y0)
     tupfen(px, r, ((3, 0), (3, 1)), lk, x0, y0)                       # offene Naht
     tupfen(px, r, ((4, 1),), lh, x0, y0)
     for x in range(x0, x1 + 1):                                       # zerfetzter Saum
@@ -325,10 +393,12 @@ def zombie(px, m, seitlich, hinten, frame):
     kx0, ky0, kx1, ky1 = kasten(k)
     bh, bm, bd, bk = ton('haar')
     if hinten:
-        tupfen(px, k, ((3, 3), (4, 3), (7, 4)), haut[3], kx0, ky0)    # kahle Stellen
+        for dx, dy in ((3, 3), (4, 3), (4, 4)):                       # kahle Stelle am Hinterkopf
+            put(px, kx0 + dx, ky0 + dy, haut[3])
     else:
-        tupfen(px, k, ((1, 4), (8, 2)), haut[2], kx0, ky0)            # Flecken
-        tupfen(px, k, ((1, 5),), rgb('654956'), kx0, ky0)             # Bluterguss
+        for dx, dy in ((1, 4), (1, 5), (2, 5)):                       # Faeule als Fleck,
+            put(px, kx0 + dx, ky0 + dy, haut[2])                      # nicht als Streusel
+        put(px, kx0 + 1, ky0 + 6, haut[3])
         li, re = augen(px, k, seitlich, rgb(NACHT), hoehe=2, zeile=3)
         put(px, re, ky0 + 4, rgb(NACHT)); put(px, re + 1, ky0 + 3, haut[2])   # rechtes Auge haengt
         put(px, re, ky0 + 5, haut[3]); put(px, li, ky0 + 5, haut[3])          # Traenensaecke
@@ -336,9 +406,15 @@ def zombie(px, m, seitlich, hinten, frame):
             put(px, kx0 + 3 + dx + seitlich, ky0 + 5 + (1 if dx == 2 else 0), rgb(NACHT))
         put(px, kx0 + 4 + seitlich, ky0 + 5, rgb('ddcebf'))
         put(px, kx0 + 6 + seitlich, ky0 + 6, haut[3])                 # haengender Winkel
-    for dx, dy, t in ((1, 1, 1), (2, 0, 0), (3, 1, 1), (4, -1, 0), (5, 0, 1), (6, -1, 0),
-                      (7, 0, 1), (8, 1, 2), (0, 2, 2), (9, 2, 2), (3, 0, 0), (6, 0, 2), (1, 0, 2)):
-        put(px, kx0 + dx, ky0 + dy, (bh, bm, bd, bk)[t])
+    for dx in range(0, 10):                                           # Haarkappe, geschlossen
+        put(px, kx0 + dx, ky0, bm if dx < 5 else bd)
+        put(px, kx0 + dx, ky0 + 1, bh if dx < 3 else (bm if dx < 7 else bd))
+    for dx in (1, 4, 7):                                              # Struhnen stehen ab
+        put(px, kx0 + dx, ky0 - 1, bm)
+    put(px, kx0 - 1, ky0 + 1, bd)                                     # Haar faellt seitlich
+    put(px, kx1 + 1, ky0 + 1, bk)
+    put(px, kx0 - 1, ky0 + 2, bk)
+    put(px, kx1 + 1, ky0 + 2, bk)
 
 
 def skeleton(px, m, seitlich, hinten, frame):
@@ -369,13 +445,17 @@ def skeleton(px, m, seitlich, hinten, frame):
         for y in range(y0, y1 + 1):                                   # Brustbein
             put(px, cx - 1, y, bein[1] if y % 2 else bein[0])
             put(px, cx, y, bein[2] if y % 2 else bein[1])
-        for j in (0, 2, 4):                                           # Rippenboegen
+        for j in (0, 2, 4):                                           # Rippenboegen, je zwei Pixel
             for dx in (2, 3):
-                yy = y0 + j + (1 if dx == 3 else 0)
-                if (cx - dx, yy) in r:
-                    put(px, cx - dx, yy, bein[0] if dx < 3 else bein[1])
-                if (cx + dx - 1, yy) in r:
-                    put(px, cx + dx - 1, yy, bein[1] if dx < 3 else bein[2])
+                if (cx - dx, y0 + j) in r:
+                    put(px, cx - dx, y0 + j, bein[0] if dx == 2 else bein[1])
+                if (cx + dx - 1, y0 + j) in r:
+                    put(px, cx + dx - 1, y0 + j, bein[1] if dx == 2 else bein[2])
+            for dx in (3, 4):                                         # Bogen faellt nach aussen ab
+                if (cx - dx, y0 + j + 1) in r:
+                    put(px, cx - dx, y0 + j + 1, bein[1])
+                if (cx + dx - 1, y0 + j + 1) in r:
+                    put(px, cx + dx - 1, y0 + j + 1, bein[2])
         put(px, cx - 2, y0, bein[0]); put(px, cx + 1, y0, bein[1])   # Schluesselbeine
     k = ecken(m['kopf'], oben=1, unten=2)                             # Schaedel: schmaler Kiefer
     ellipsoid(px, k, bein, grenzen=(0.42, 0.08, -0.25))
@@ -386,22 +466,27 @@ def skeleton(px, m, seitlich, hinten, frame):
         put(px, li, ky0 + 4, bein[2]); put(px, li + 1, ky0 + 4, bein[0])    # Wangenknochen
         put(px, re, ky0 + 4, bein[2]); put(px, re + 1, ky0 + 4, bein[0])
         put(px, kx0 + 4 + seitlich, ky0 + 4, bein[3])                 # Nasenloch
-        for x in range(kx0 + 2, kx0 + 8):                             # Zahnreihe
-            put(px, x + seitlich, ky0 + 5, bein[3] if x % 2 else bein[0])
+        for x in range(kx0 + 2, kx0 + 8):                             # Kiefer: dunkler Spalt
+            put(px, x + seitlich, ky0 + 5, bein[3])
             if (x + seitlich, ky0 + 6) in k:
-                put(px, x + seitlich, ky0 + 6, bein[2] if x % 2 else bein[1])
+                put(px, x + seitlich, ky0 + 6, bein[2])
+        for dx in (2, 3, 5, 6):                                       # Zaehne paarweise
+            put(px, kx0 + dx + seitlich, ky0 + 5, bein[0])
     else:
         tupfen(px, k, ((3, 2), (4, 3), (5, 4), (6, 3), (2, 5)), bein[3], kx0, ky0)    # Naehte
         tupfen(px, k, ((3, 3), (6, 4)), bein[0], kx0, ky0)
-    tupfen(px, k, ((1, 2), (1, 3), (2, 4)), bein[3], kx0, ky0)        # Riss links
+    for dx, dy in ((1, 2), (1, 3), (2, 3)):                           # Riss links, durchgehend
+        put(px, kx0 + dx, ky0 + dy, bein[3])
     tupfen(px, k, ((3, 1), (4, 1)), bein[0], kx0, ky0)                # Stirnwoelbung
     rost = ton('rost')
     for x, y in k:                                                    # Kappe: obere zwei Zeilen
         if y <= ky0 + 1:
             u = (x - kx0) / (kx1 - kx0)
             put(px, x, y, rost[0] if (u < 0.45 and y == ky0) else (rost[1] if u < 0.65 else rost[2]))
-    tupfen(px, k, ((3, 1), (7, 1), (8, 0)), rgb('b47538'), kx0, ky0)  # Rost
-    tupfen(px, k, ((5, 0),), rgb('e6e7f0'), kx0, ky0)                 # Niete
+    for dx in (2, 5, 8):                                              # Nietenreihe am Kappenrand
+        put(px, kx0 + dx, ky0 + 1, rgb('e6e7f0'))
+    for dx in (3, 4):                                                 # Rostfleck, zusammenhaengend
+        put(px, kx0 + dx, ky0, rgb('b47538'))
     put(px, kx0 + 1, ky0 + 1, rost[3]); put(px, kx1 - 1, ky0 + 1, rost[3])
 
 
@@ -427,11 +512,12 @@ def ghoul(px, m, seitlich, hinten, frame):
                     put(px, cx + dx, y0 + j, hk)
         tupfen(px, r, ((3, 4), (4, 4)), hd, x0, y0)
         tupfen(px, r, ((2, 5), (5, 5)), hk, x0, y0)
-    tupfen(px, r, ((1, 3), (6, 2)), hk, x0, y0)                       # Flecken
+    tupfen(px, r, ((1, 2), (1, 3)), hk, x0, y0)                       # Schatten unter der Achsel
     k = ecken(m['kopf'])
     haut_kopf(px, k, haut, seitlich, hinten, haar=None)
     kx0, ky0, kx1, ky1 = kasten(k)
-    tupfen(px, k, ((1, 1), (8, 1), (2, 5), (4, 0)), hk, kx0, ky0)     # fleckige Haut
+    for dx, dy in ((1, 1), (1, 2), (8, 1), (8, 2)):                   # Schwielen an den Schlaefen
+        put(px, kx0 + dx, ky0 + dy, hk)
     if hinten:
         tupfen(px, k, ((4, 3), (5, 4), (3, 5)), hd, kx0, ky0)
     else:
@@ -439,10 +525,15 @@ def ghoul(px, m, seitlich, hinten, frame):
         put(px, li + 1, ky0 + 2, rgb(GLUT)); put(px, re + 1, ky0 + 2, rgb(GLUT))
         put(px, li + 1, ky0 + 3, rgb(GLUT_DK)); put(px, re + 1, ky0 + 3, rgb(GLUT_DK))
         put(px, li, ky0 + 4, hk); put(px, re + 1, ky0 + 4, hk)        # Augenhoehlen
-        for x in range(kx0 + 2, kx0 + 8):                             # breites Maul
-            put(px, x + seitlich, ky0 + 5, rgb(KRALLE) if x % 2 else rgb(NACHT))
+        for x in range(kx0 + 1, kx0 + 9):                             # breites Maul, offen
+            put(px, x + seitlich, ky0 + 5, rgb(NACHT))
             if (x + seitlich, ky0 + 6) in k:
-                put(px, x + seitlich, ky0 + 6, rgb(NACHT) if x % 2 else hk)
+                put(px, x + seitlich, ky0 + 6, hk)
+        for dx in (2, 5, 7):                                          # obere Fangzaehne
+            put(px, kx0 + dx + seitlich, ky0 + 5, rgb(KRALLE))
+        for dx in (3, 6):                                             # untere Zaehne
+            if (kx0 + dx + seitlich, ky0 + 6) in k:
+                put(px, kx0 + dx + seitlich, ky0 + 6, rgb(KRALLE))
         put(px, kx0 + 1 + seitlich, ky0 + 5, rgb(NACHT)); put(px, kx0 + 8 + seitlich, ky0 + 5, rgb(NACHT))
     for sgn, ex in ((-1, kx0 - 1), (1, kx1 + 1)):                     # spitze Ohren
         put(px, ex, ky0 + 2, hm if sgn < 0 else hd)
@@ -528,16 +619,22 @@ def mummy(px, m, seitlich, hinten, frame):
     zylinder(px, r, binde)
     ellipsoid(px, k, binde, grenzen=(0.5, 0.15, -0.25))
     alles = k | r | m['beine']
-    for x, y in alles:                                                # Wickellagen
-        r_ = (y + x // 4) % 3
-        if r_ == 0 and (x + 1, y) in alles and (x - 1, y) in alles:
-            put(px, x, y, bk if (x + y) % 7 == 0 else bd)
-        elif r_ == 1 and (x + y) % 3 == 0 and (x, y) in (k | r):
+    for x, y in alles:                                                # Wickellagen: jede
+        if (x + 1, y) not in alles or (x - 1, y) not in alles:        # zweite Zeile eine Lage,
+            continue                                                  # oben hell, unten dunkel
+        if y % 3 == 0:
             put(px, x, y, bh)
+        elif y % 3 == 2:
+            put(px, x, y, bd)
+    for x, y in alles:                                                # zwei schraege Naehte
+        if (x + 1, y) in alles and (x - 1, y) in alles and (x + y) % 7 == 0:
+            put(px, x, y, bk)
     x0, y0, x1, y1 = kasten(r)
-    tupfen(px, r, ((2, 1), (6, 0), (3, 4)), fleck, x0, y0)            # Flecken
+    for dx in (2, 3, 4):                                              # alte Verfaerbung, eine Lage
+        put(px, x0 + dx, y0 + 4, fleck)
     kx0, ky0, kx1, ky1 = kasten(k)
-    tupfen(px, k, ((7, 1), (2, 5)), fleck, kx0, ky0)
+    put(px, kx0 + 7, ky0 + 1, fleck)
+    put(px, kx0 + 8, ky0 + 1, fleck)
     if not hinten:                                                    # Augenschlitz, ein Auge
         for x in range(kx0 + 1 + max(0, seitlich), kx1):
             put(px, x, ky0 + 3, rgb(NACHT))
@@ -597,14 +694,16 @@ def bandit(px, m, seitlich, hinten, frame):
             for dx, dy in ((2, 3), (3, 3), (2, 4), (3, 4), (1, 2), (4, 2)):
                 put(px, kx0 + dx, ky0 + dy, rgb(NACHT))
             put(px, kx0 + 3, ky0 + 3, rgb('2d1b1e'))
-        put(px, kx0 + 8, ky0 + 4, rgb('e27285'))                      # Narbe
+        put(px, kx0 + 8, ky0 + 3, rgb('e27285'))                      # Schnitt ueber der Wange
+        put(px, kx0 + 8, ky0 + 4, rgb('b25266'))
     for x, y in k:                                                    # Kopftuch: obere zwei Zeilen
         if y <= ky0 + 1:
             u = (x - kx0) / (kx1 - kx0)
             put(px, x, y, th if (u < 0.4 and y == ky0) else (tm if u < 0.7 else td))
         if y == ky0 + 2:
             put(px, x, y, tk if x > kx0 + 6 else td)
-    tupfen(px, k, ((3, 1), (6, 0)), td, kx0, ky0)                     # Falten im Tuch
+    for dx, dy in ((3, 1), (4, 1), (6, 0), (7, 0)):                   # Falten im Tuch
+        put(px, kx0 + dx, ky0 + dy, td)
     put(px, kx1 + 1, ky0 + 1, td); put(px, kx1 + 1, ky0 + 2, tm)      # Knoten, Zipfel
     put(px, kx1 + 2, ky0 + 2, tk); put(px, kx1 + 2, ky0 + 3, tk)
 
@@ -676,7 +775,7 @@ def wight(px, m, seitlich, hinten, frame):
     put(px, kx0 + 5, ky0 - 1, sd)
     put(px, kx0 + 5, ky0 - 2, uh)
     put(px, kx0 + 4, ky0 - 2, um_)
-    tupfen(px, k, ((2, 1), (3, 0)), sh, kx0, ky0)                 # Glanz auf dem Helm
+    tupfen(px, k, ((2, 1), (3, 1)), sh, kx0, ky0)                 # Glanz auf dem Helm
     tupfen(px, k, ((8, 4), (8, 5)), sk, kx0, ky0)
 
 
@@ -711,13 +810,18 @@ def hag(px, m, seitlich, hinten, frame):
         put(px, re + 1, ky0 + 3, rgb('f8c53a'))
         for j in range(3):                                        # Hakennase
             put(px, kx0 + 4 + seitlich + (1 if j == 2 else 0), ky0 + 3 + j, haut[2])
-        for x in range(kx0 + 3, kx0 + 7):                         # zahnloser Mund
+        for x in range(kx0 + 3, kx0 + 7):                         # eingefallener Mund
             put(px, x + seitlich, ky0 + 5, rgb(NACHT))
-        put(px, kx0 + 4 + seitlich, ky0 + 5, ton('bein')[1])      # ein Zahn
-        tupfen(px, k, ((8, 4), (1, 5)), haut[3], kx0, ky0)        # Warzen
+        put(px, kx0 + 3 + seitlich, ky0 + 6, haut[3])             # Kinnschatten
+        put(px, kx0 + 4 + seitlich, ky0 + 6, haut[3])
+        put(px, kx0 + 5 + seitlich, ky0 + 5, ton('bein')[1])      # ein Zahn
+        put(px, kx0 + 8, ky0 + 4, haut[3])                        # eingefallene Wange
+        put(px, kx0 + 8, ky0 + 5, haut[3])
     hh, hm, hd, hk = ton('haar')
     for x in range(kx0 - 1, kx1 + 2):                             # Haar unter der Krempe
-        put(px, x, ky0 + 1, hm if x % 2 else hd)
+        put(px, x, ky0 + 1, hm if x < kx0 + 4 else hd)
+    for x in (kx0, kx0 + 3, kx1 - 1):                             # Straehnen haengen tiefer
+        put(px, x, ky0 + 2, hd)
     for x, y in ((kx0 - 1, ky0 + 3), (kx0 - 1, ky0 + 4), (kx1 + 1, ky0 + 3), (kx1 + 1, ky0 + 4)):
         put(px, x, y, hd)
     for x in range(kx0 - 2, kx1 + 3):                             # Hutkrempe
@@ -761,8 +865,10 @@ def brute(px, m, seitlich, hinten, frame):
             tupfen(px, r, ((dx, dy),), hd, x0, y0)
         for dx, dy in ((3, 6), (5, 6)):
             tupfen(px, r, ((dx, dy),), hh, x0, y0)
-        for dx, dy in ((1, 2), (2, 3), (3, 4)):                   # Narbe quer
-            tupfen(px, r, ((dx, dy),), ton('narbe')[1], x0, y0)
+        for dx, dy in ((1, 2), (2, 2), (2, 3), (3, 3)):           # Narbe quer ueber die Brust
+            tupfen(px, r, ((dx, dy),), ton('narbe')[2], x0, y0)
+        for dx, dy in ((1, 3), (2, 4)):                           # Wulst darunter
+            tupfen(px, r, ((dx, dy),), ton('narbe')[3], x0, y0)
     for y in range(y0 + 1, y1 + 1):                               # Schulterkanten
         put(px, x0, y, hm if hinten else hd)
         put(px, x1, y, hk)
@@ -782,12 +888,13 @@ def brute(px, m, seitlich, hinten, frame):
         for x, y in k:                                            # Maulkorb, untere Gesichtshaelfte
             if ky0 + 4 <= y <= ky0 + 6 and kx0 + 1 <= x <= kx1 - 1:
                 put(px, x, y, eisen[1] if x < kx0 + 5 else eisen[2])
-        for x in range(kx0 + 1, kx1):                             # Gitterstaebe
-            if x % 2 and (x, ky0 + 5) in k:
+        for x in range(kx0 + 2, kx1 - 1):                         # Spalt im Maulkorb
+            if (x, ky0 + 5) in k:
                 put(px, x, ky0 + 5, eisen[3])
-        for x in range(kx0 + 1, kx1):                             # Nietenkante oben
-            if (x, ky0 + 4) in k and x % 3 == 0:
-                put(px, x, ky0 + 4, eisen[0])
+        for dx in (2, 5):                                         # zwei Nieten
+            if (kx0 + dx, ky0 + 4) in k:
+                put(px, kx0 + dx, ky0 + 4, eisen[0])
+                put(px, kx0 + dx + 1, ky0 + 4, eisen[0])
     else:
         tupfen(px, k, ((3, 3), (5, 4)), ton('haar')[3], kx0, ky0)
     put(px, kx0 - 1, ky0 + 3, ton('leder')[2])                    # Riemen der Maske
@@ -833,7 +940,7 @@ def frame(bauen, richtung, nr, anim='walk'):
         for y in range(30, 32):
             for x in range(32):
                 px[x, y] = (0, 0, 0, 0)
-    return duel_anpassen(img)
+    return duel_anpassen(aufraeumen(img))
 
 
 def main():
