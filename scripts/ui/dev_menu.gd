@@ -108,7 +108,18 @@ func _build_cheats(column: VBoxContainer) -> void:
 		var check := _check(entry[1], bool(DevMode.get(cheat)))
 		check.toggled.connect(func(on: bool) -> void: DevMode.set_cheat(cheat, on))
 		grid.add_child(check)
+	var collisions := _check("Kollisionsformen anzeigen", DevMode.show_collisions)
+	collisions.toggled.connect(DevMode.set_show_collisions)
+	grid.add_child(collisions)
 	column.add_child(grid)
+
+	column.add_child(UIKit.make_label("Kamera-Zoom", 16, UIKit.TEXT_DIM))
+	var zooms := _grid(5)
+	for value in [1.0, 1.25, 1.5, 1.75, 2.0]:
+		var button := UIKit.make_button("%sx" % str(value), 15, Palette.AZURE)
+		button.pressed.connect(func() -> void: DevMode.set_camera_zoom(value))
+		zooms.add_child(button)
+	column.add_child(zooms)
 
 	column.add_child(UIKit.make_label("Spieltempo", 16, UIKit.TEXT_DIM))
 	var speeds := _grid(5)

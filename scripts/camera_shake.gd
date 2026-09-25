@@ -13,6 +13,9 @@ enum Mode { FOLLOW, FIXED }
 @export var max_shake_offset: Vector2 = Vector2(22.0, 18.0)
 @export var max_shake_roll: float = 0.04
 @export var zoom_punch_recovery: float = 7.0
+## Grundzoom der Spielwelt. 1.5 = ein Weltpixelblock (4 px) wird 6 px groß -
+## ganzzahlig, damit die Pixel gleich groß bleiben.
+@export var base_zoom: float = 1.5
 
 var trauma: float = 0.0
 var fixed_position: Vector2 = Vector2.ZERO
@@ -34,7 +37,8 @@ func _ready() -> void:
 	add_to_group("camera")
 	top_level = true
 
-	_base_zoom = zoom
+	_base_zoom = Vector2.ONE * base_zoom
+	zoom = _base_zoom
 	_noise = FastNoiseLite.new()
 	_noise.seed = randi()
 	_noise.frequency = 0.9
@@ -89,6 +93,13 @@ func _update_zoom(delta: float) -> void:
 	if _zoom_punch < 0.001:
 		_zoom_punch = 0.0
 	zoom = _base_zoom * (1.0 + _zoom_punch)
+
+## Zoom zur Laufzeit ändern (Dev-Modus). Die Raumgrenzen hängen am Zoom.
+func set_base_zoom(value: float) -> void:
+	base_zoom = maxf(value, 0.1)
+	_base_zoom = Vector2.ONE * base_zoom
+	zoom = _base_zoom
+	_apply_limits()
 
 ## Kompatibel zum alten Aufruf: shake(4.0)
 func shake(amount: float) -> void:

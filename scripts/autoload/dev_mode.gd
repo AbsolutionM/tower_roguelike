@@ -42,6 +42,9 @@ var freeze_timer: bool = false
 var one_hit_kill: bool = false
 ## Grundtempo des Spiels. Der Hitstop kehrt zu diesem Wert zurück statt zu 1.0.
 var time_scale: float = 1.0
+## Kollisionsformen sehen - aus, auch wenn im Editor "Sichtbare
+## Kollisionsformen" angehakt ist.
+var show_collisions: bool = false
 
 var _menu: DevMenu = null
 
@@ -50,6 +53,8 @@ func _ready() -> void:
 	for key in EFFECTS:
 		effects[key] = true
 	_load()
+	# Unabhängig vom Editor-Haken "Debuggen > Sichtbare Kollisionsformen".
+	get_tree().debug_collisions_hint = available and show_collisions
 	get_tree().node_added.connect(_on_node_added)
 	_apply_all.call_deferred()
 
@@ -83,6 +88,19 @@ func set_cheat(cheat: String, on: bool) -> void:
 	set(cheat, on)
 	_save()
 	settings_changed.emit()
+
+func set_show_collisions(on: bool) -> void:
+	show_collisions = on
+	get_tree().debug_collisions_hint = on
+	_save()
+	settings_changed.emit()
+	# Bereits vorhandene Formen zeichnen sich erst neu, wenn der Raum wechselt.
+	_toast("Kollisionen " + ("an" if on else "aus") + " (ab nächstem Raum)")
+
+func set_camera_zoom(value: float) -> void:
+	var camera := get_tree().get_first_node_in_group("camera")
+	if camera and camera.has_method("set_base_zoom"):
+		camera.set_base_zoom(value)
 
 func set_time_scale(value: float) -> void:
 	time_scale = clampf(value, 0.1, 4.0)
@@ -299,6 +317,7 @@ func _save() -> void:
 		"god_mode": god_mode,
 		"freeze_timer": freeze_timer,
 		"one_hit_kill": one_hit_kill,
+		"show_collisions": show_collisions,
 	}))
 
 func _load() -> void:
@@ -317,3 +336,4 @@ func _load() -> void:
 	god_mode = bool(parsed.get("god_mode", false))
 	freeze_timer = bool(parsed.get("freeze_timer", false))
 	one_hit_kill = bool(parsed.get("one_hit_kill", false))
+	show_collisions = bool(parsed.get("show_collisions", false))
