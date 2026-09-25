@@ -577,6 +577,8 @@ func _draw() -> void:
 
 	# Weicher Schattenrand nach innen - lässt den Raum tiefer wirken,
 	# statt wie eine flache Testfläche auszusehen.
+	if not DevMode.fx("shadows"):
+		return
 	for i in 6:
 		var inset: float = 12.0 + float(i) * 11.0
 		var strength: float = 0.05 * (1.0 - float(i) / 6.0)

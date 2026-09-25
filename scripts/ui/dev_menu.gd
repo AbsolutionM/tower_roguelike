@@ -55,7 +55,7 @@ func _build() -> void:
 	close_button.pressed.connect(DevMode.toggle_menu)
 	header.add_child(close_button)
 	outer.add_child(header)
-	outer.add_child(UIKit.make_label("F1 Menü · F2 Effekte · 1 Held · 2 Waffe · 3 Raum · 4 Gegner weg · 5 Unverwundbar", 14, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_LEFT, true))
+	outer.add_child(UIKit.make_label("F1 Menü · F2/F12 alles aus · 1 Held · 2 Waffe · 3 Raum · 4 Gegner weg · 5 Unverwundbar", 14, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_LEFT, true))
 
 	var scroll := ScrollContainer.new()
 	scroll.name = "Scroll"
@@ -81,7 +81,7 @@ func _section(column: VBoxContainer, text: String, color: Color) -> void:
 
 func _build_effects(column: VBoxContainer) -> void:
 	_section(column, "Effekte", Palette.AMBER)
-	var all := UIKit.make_button("Alle an / aus (F2)", 17, Palette.AMBER)
+	var all := UIKit.make_button("Alle an / aus (F2 / F12)", 17, Palette.AMBER)
 	all.pressed.connect(func() -> void:
 		DevMode.toggle_all_effects()
 		_refresh_toggles(column)

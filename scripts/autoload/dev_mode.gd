@@ -5,7 +5,7 @@ extends Node
 ## Release-Export ist alles aus und das Menü lässt sich nicht öffnen.
 ##
 ## Tasten (am Schreibtisch):
-##   F1  Menü auf/zu          F2  alle Effekte an/aus
+##   F1  Menü auf/zu          F2/F12  alle Effekte, Schatten und Licht an/aus
 ##   1   nächster Held        2   nächste Waffe        3   nächster Raum
 ##   4   alle Gegner töten    5   Unverwundbar an/aus
 ## Auf dem Handy öffnet der "DEV"-Knopf neben der Pause das Menü.
@@ -29,6 +29,7 @@ const EFFECTS := {
 	"afterimage": "Nachbilder (Dash)",
 	"outlines": "Outlines",
 	"lighting": "Beleuchtung & Dunkelheit",
+	"shadows": "Schatten (Figuren & Raumrand)",
 	"weather": "Wetter-Overlay",
 }
 
@@ -96,7 +97,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	match event.physical_keycode:
 		KEY_F1:
 			toggle_menu()
-		KEY_F2:
+		KEY_F2, KEY_F12:
 			toggle_all_effects()
 		KEY_1:
 			next_character()
@@ -138,6 +139,12 @@ func _apply_all() -> void:
 			node.visible = fx("lighting")
 	for node in get_tree().root.find_children("*", "WeatherOverlay", true, false):
 		node.visible = fx("weather")
+	for node in get_tree().root.find_children("*", "BlobShadow", true, false):
+		node.visible = fx("shadows")
+	# Der Raum zeichnet seinen Schattenrand selbst.
+	var controller := _room_controller()
+	if controller:
+		controller.queue_redraw()
 
 ## Neue Lichter und Wetter-Overlays kommen gleich richtig eingestellt auf die Welt.
 func _on_node_added(node: Node) -> void:
@@ -147,6 +154,8 @@ func _on_node_added(node: Node) -> void:
 		node.visible = fx("lighting")
 	elif node is WeatherOverlay:
 		node.visible = fx("weather")
+	elif node is BlobShadow:
+		node.visible = fx("shadows")
 
 # --- Aktionen --------------------------------------------------------------
 
