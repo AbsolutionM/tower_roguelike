@@ -326,17 +326,45 @@ def tupfen(px, punkte, stellen, col, x0=None, y0=None):
             put(px, x0 + dx, y0 + dy, col)
 
 
-def augen(px, kopf, seitlich, farbe, hoehe=2, zeile=3):
-    """Zwei Augen 2 px breit; seitlich rueckt beide nach rechts, das hintere
-    wird 1 px schmal. Gibt die linken Spalten zurueck."""
+AUGENZEILE = 3                          # gleiche Zeile im Kopf bei jeder Figur
+
+
+def augen(px, kopf, seitlich, haut, art='klar', iris=None):
+    """Das Augenpaar ist bei allen Figuren gleich gebaut: dieselbe Zeile,
+    2 px breit, 2 px hoch, vier Pixel Abstand, darueber eine Braue und
+    darunter ein Wangenschatten. Nur das Material wechselt:
+
+        klar    helle Lederhaut, Iris zur Nasenseite
+        hohl    leere Hoehle, unten am tiefsten
+        glut    Hoehle mit einem Glutpunkt
+
+    seitlich rueckt das Paar mit dem Kopf; das hintere Auge wird dabei
+    1 px schmal, weil es angeschnitten ist."""
     x0, y0, x1, y1 = kasten(kopf)
-    li = x0 + 2 + seitlich
-    re = x0 + 6 + seitlich
+    z = y0 + AUGENZEILE
+    hh, hm, hd, hk = haut
+    li, re = x0 + 2 + seitlich, x0 + 6 + seitlich
     for ex, hinteres in ((li, seitlich > 0), (re, False)):
-        for dx in range(1 if hinteres else 2):
-            for dy in range(hoehe):
-                if (ex + dx + (1 if hinteres else 0), y0 + zeile + dy) in kopf:
-                    put(px, ex + dx + (1 if hinteres else 0), y0 + zeile + dy, farbe)
+        breite = 1 if hinteres else 2
+        ax = ex + (1 if hinteres else 0)
+        for dx in range(breite):
+            for dy in (0, 1):
+                if (ax + dx, z + dy) in kopf:
+                    put(px, ax + dx, z + dy, rgb('f1ebdb') if art == 'klar' else rgb(NACHT))
+        innen = ax + breite - 1 if ex == li else ax          # Iris zur Nase hin
+        if art == 'klar':
+            put(px, innen, z, iris or rgb(AUGE))
+            put(px, innen, z + 1, rgb(AUGE))
+        elif art == 'glut':
+            put(px, innen, z, iris or rgb(GLUT))
+            put(px, innen, z + 1, rgb(GLUT_DK))
+        else:
+            put(px, ax, z + 1, rgb(SCHWARZ))                 # Hoehle unten am tiefsten
+        for dx in range(breite):
+            if (ax + dx, z - 1) in kopf:
+                put(px, ax + dx, z - 1, hd)                  # Braue
+            if (ax + dx, z + 2) in kopf:
+                put(px, ax + dx, z + 2, hd)                  # Wangenschatten
     return li, re
 
 
@@ -399,9 +427,9 @@ def zombie(px, m, seitlich, hinten, frame):
         for dx, dy in ((1, 4), (1, 5), (2, 5)):                       # Faeule als Fleck,
             put(px, kx0 + dx, ky0 + dy, haut[2])                      # nicht als Streusel
         put(px, kx0 + 1, ky0 + 6, haut[3])
-        li, re = augen(px, k, seitlich, rgb(NACHT), hoehe=2, zeile=3)
-        put(px, re, ky0 + 4, rgb(NACHT)); put(px, re + 1, ky0 + 3, haut[2])   # rechtes Auge haengt
-        put(px, re, ky0 + 5, haut[3]); put(px, li, ky0 + 5, haut[3])          # Traenensaecke
+        li, re = augen(px, k, seitlich, haut, art='hohl')
+        put(px, li, ky0 + 6, haut[3])                                 # eingefallene Wangen
+        put(px, re + 1, ky0 + 6, haut[3])
         for dx in range(3):                                           # offener Mund, ein Zahn
             put(px, kx0 + 3 + dx + seitlich, ky0 + 5 + (1 if dx == 2 else 0), rgb(NACHT))
         put(px, kx0 + 4 + seitlich, ky0 + 5, rgb('ddcebf'))
@@ -461,17 +489,16 @@ def skeleton(px, m, seitlich, hinten, frame):
     ellipsoid(px, k, bein, grenzen=(0.42, 0.08, -0.25))
     kx0, ky0, kx1, ky1 = kasten(k)
     if not hinten:
-        li, re = augen(px, k, seitlich, rgb(SCHWARZ), hoehe=2, zeile=2)
-        put(px, li + 1, ky0 + 3, rgb('b25266')); put(px, re + 1, ky0 + 3, rgb('b25266'))   # Glimmen
-        put(px, li, ky0 + 4, bein[2]); put(px, li + 1, ky0 + 4, bein[0])    # Wangenknochen
-        put(px, re, ky0 + 4, bein[2]); put(px, re + 1, ky0 + 4, bein[0])
-        put(px, kx0 + 4 + seitlich, ky0 + 4, bein[3])                 # Nasenloch
+        li, re = augen(px, k, seitlich, bein, art='glut', iris=rgb('b25266'))
+        put(px, li, ky0 + 5, bein[2]); put(px, li + 1, ky0 + 5, bein[0])    # Wangenknochen
+        put(px, re, ky0 + 5, bein[2]); put(px, re + 1, ky0 + 5, bein[0])
+        put(px, kx0 + 4 + seitlich, ky0 + 5, bein[3])                 # Nasenloch
         for x in range(kx0 + 2, kx0 + 8):                             # Kiefer: dunkler Spalt
-            put(px, x + seitlich, ky0 + 5, bein[3])
             if (x + seitlich, ky0 + 6) in k:
-                put(px, x + seitlich, ky0 + 6, bein[2])
+                put(px, x + seitlich, ky0 + 6, bein[3])
         for dx in (2, 3, 5, 6):                                       # Zaehne paarweise
-            put(px, kx0 + dx + seitlich, ky0 + 5, bein[0])
+            if (kx0 + dx + seitlich, ky0 + 6) in k:
+                put(px, kx0 + dx + seitlich, ky0 + 6, bein[0])
     else:
         tupfen(px, k, ((3, 2), (4, 3), (5, 4), (6, 3), (2, 5)), bein[3], kx0, ky0)    # Naehte
         tupfen(px, k, ((3, 3), (6, 4)), bein[0], kx0, ky0)
@@ -521,10 +548,7 @@ def ghoul(px, m, seitlich, hinten, frame):
     if hinten:
         tupfen(px, k, ((4, 3), (5, 4), (3, 5)), hd, kx0, ky0)
     else:
-        li, re = augen(px, k, seitlich, rgb(NACHT), hoehe=2, zeile=2)
-        put(px, li + 1, ky0 + 2, rgb(GLUT)); put(px, re + 1, ky0 + 2, rgb(GLUT))
-        put(px, li + 1, ky0 + 3, rgb(GLUT_DK)); put(px, re + 1, ky0 + 3, rgb(GLUT_DK))
-        put(px, li, ky0 + 4, hk); put(px, re + 1, ky0 + 4, hk)        # Augenhoehlen
+        li, re = augen(px, k, seitlich, haut, art='glut')
         for x in range(kx0 + 1, kx0 + 9):                             # breites Maul, offen
             put(px, x + seitlich, ky0 + 5, rgb(NACHT))
             if (x + seitlich, ky0 + 6) in k:
@@ -598,8 +622,7 @@ def cultist(px, m, seitlich, hinten, frame):
         for y in range(ky0 + 3, ky1):
             put(px, kx0 + 1, y, rm)
             put(px, kx1 - 1, y, rk)
-        li, re = augen(px, k, seitlich, rgb(GLUT), hoehe=1, zeile=4)
-        put(px, li + (1 if seitlich else 0), ky0 + 5, rgb(GLUT_DK)); put(px, re, ky0 + 5, rgb(GLUT_DK))
+        li, re = augen(px, k, seitlich, robe, art='glut')             # Augen wie bei allen
     else:
         tupfen(px, k, ((2, 3), (2, 4), (2, 5), (7, 3), (7, 4), (7, 5)), rd, kx0, ky0)
         tupfen(px, k, ((1, 3), (1, 4)), rh, kx0, ky0)
@@ -635,16 +658,15 @@ def mummy(px, m, seitlich, hinten, frame):
     kx0, ky0, kx1, ky1 = kasten(k)
     put(px, kx0 + 7, ky0 + 1, fleck)
     put(px, kx0 + 8, ky0 + 1, fleck)
-    if not hinten:                                                    # Augenschlitz, ein Auge
+    if not hinten:                                                    # Schlitz zwischen den Lagen
         for x in range(kx0 + 1 + max(0, seitlich), kx1):
-            put(px, x, ky0 + 3, rgb(NACHT))
             put(px, x, ky0 + 2, bd)                                   # Lage haengt ueber
-            put(px, x, ky0 + 4, bm)
-        put(px, kx0 + 1 + max(0, seitlich), ky0 + 3, rgb('2d1b1e'))
-        put(px, kx0 + 6 + seitlich, ky0 + 3, rgb(AUGE)); put(px, kx0 + 7 + seitlich, ky0 + 3, rgb(AUGE))
-        put(px, kx0 + 6 + seitlich, ky0 + 4, rgb(AUGE))
-        put(px, kx0 + 7 + seitlich, ky0 + 2, bh)
-        put(px, kx0 + 3 + seitlich, ky0 + 4, rgb('2d1b1e'))
+            put(px, x, ky0 + 5, bm)
+        augen(px, k, seitlich, binde, art='hohl')                     # Augen wie bei allen
+        put(px, kx0 + 4 + seitlich, ky0 + 3, rgb('2d1b1e'))           # Schatten im Schlitz
+        put(px, kx0 + 5 + seitlich, ky0 + 3, rgb('2d1b1e'))
+        put(px, kx0 + 4 + seitlich, ky0 + 4, bd)
+        put(px, kx0 + 5 + seitlich, ky0 + 4, bd)
     for j in range(3):                                                # lose Enden
         put(px, kx0 - 1, ky0 + 4 + j, bd if j < 2 else bk)
     put(px, kx0 - 2, ky0 + 6, bk)
@@ -683,17 +705,18 @@ def bandit(px, m, seitlich, hinten, frame):
     kx0, ky0, kx1, ky1 = kasten(k)
     th, tm, td, tk = ton('tuch')
     if not hinten:
-        li, re = augen(px, k, seitlich, rgb(AUGE), hoehe=2, zeile=3)
-        put(px, li + 1, ky0 + 3, rgb('f1ebdb')); put(px, re + 1, ky0 + 3, rgb('f1ebdb'))
+        li, re = augen(px, k, seitlich, ton('haut'), art='klar')
         for x in range(kx0 + 1, kx1):                                 # Halstuch ueber Nase und Mund
             for dy, col in ((5, th if x < kx0 + 4 else tm), (6, tm if x < kx0 + 6 else td)):
                 if (x, ky0 + dy) in k:
                     put(px, x, ky0 + dy, col)
         put(px, kx1 - 1, ky0 + 5, td); put(px, kx0 + 3, ky0 + 6, tk)  # Schatten, Falte
-        if seitlich == 0:                                             # Augenklappe links, Band schraeg
-            for dx, dy in ((2, 3), (3, 3), (2, 4), (3, 4), (1, 2), (4, 2)):
+        if seitlich == 0:                                             # Augenklappe ueber dem linken Auge
+            for dx, dy in ((2, 3), (3, 3), (2, 4), (3, 4)):
                 put(px, kx0 + dx, ky0 + dy, rgb(NACHT))
             put(px, kx0 + 3, ky0 + 3, rgb('2d1b1e'))
+            for dx, dy in ((1, 2), (4, 2), (0, 1)):                   # Band ueber die Schlaefe
+                put(px, kx0 + dx, ky0 + dy, rgb('2a1e23'))
         put(px, kx0 + 8, ky0 + 3, rgb('e27285'))                      # Schnitt ueber der Wange
         put(px, kx0 + 8, ky0 + 4, rgb('b25266'))
     for x, y in k:                                                    # Kopftuch: obere zwei Zeilen
@@ -764,10 +787,10 @@ def wight(px, m, seitlich, hinten, frame):
             put(px, x, ky0 + 2, sk if x > kx0 + 5 else sd)
     if not hinten:
         for x in range(kx0 + 1, kx1):                             # Sehschlitz
-            if (x, ky0 + 3) in k:
-                put(px, x, ky0 + 3, rgb(SCHWARZ))
-        put(px, kx0 + 3 + seitlich, ky0 + 3, rgb(GLUT_DK))
-        put(px, kx0 + 6 + seitlich, ky0 + 3, rgb(GLUT))
+            for dy in (3, 4):
+                if (x, ky0 + dy) in k:
+                    put(px, x, ky0 + dy, rgb(SCHWARZ) if dy == 3 else rgb(NACHT))
+        augen(px, k, seitlich, stahl, art='glut')                 # Glut dahinter
         for x in range(kx0 + 3, kx0 + 8):                         # Luftschlitze
             if x % 2 and (x + seitlich, ky0 + 5) in k:
                 put(px, x + seitlich, ky0 + 5, sk)
@@ -805,9 +828,7 @@ def hag(px, m, seitlich, hinten, frame):
     haut_kopf(px, k, haut, seitlich, hinten, haar=ton('haar'))
     kx0, ky0, kx1, ky1 = kasten(k)
     if not hinten:
-        li, re = augen(px, k, seitlich, rgb(NACHT), hoehe=1, zeile=3)
-        put(px, li + 1, ky0 + 3, rgb('f8c53a'))
-        put(px, re + 1, ky0 + 3, rgb('f8c53a'))
+        li, re = augen(px, k, seitlich, haut, art='klar', iris=rgb('f8c53a'))
         for j in range(3):                                        # Hakennase
             put(px, kx0 + 4 + seitlich + (1 if j == 2 else 0), ky0 + 3 + j, haut[2])
         for x in range(kx0 + 3, kx0 + 7):                         # eingefallener Mund
@@ -881,10 +902,10 @@ def brute(px, m, seitlich, hinten, frame):
     haut_kopf(px, k, haut, seitlich, hinten, haar=ton('haar'), glanz=False)
     if not hinten:
         eisen = ton('ruestung')
-        li, re = augen(px, k, seitlich, rgb(SCHWARZ), hoehe=2, zeile=2)
-        put(px, li + 1, ky0 + 2, rgb('b25266'))                   # kleine Augen unter der Stirn
-        put(px, re + 1, ky0 + 2, rgb('b25266'))
-        put(px, li, ky0 + 1, hk); put(px, re + 1, ky0 + 1, hk)    # schwere Brauen
+        li, re = augen(px, k, seitlich, haut, art='klar', iris=rgb('b25266'))
+        for dx in (0, 1):                                         # schwere Brauen
+            put(px, li + dx, ky0 + 2, hk)
+            put(px, re + dx, ky0 + 2, hk)
         for x, y in k:                                            # Maulkorb, untere Gesichtshaelfte
             if ky0 + 4 <= y <= ky0 + 6 and kx0 + 1 <= x <= kx1 - 1:
                 put(px, x, y, eisen[1] if x < kx0 + 5 else eisen[2])

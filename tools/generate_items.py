@@ -397,6 +397,12 @@ def crystal_shard(px):
     funke(px, ((6, 4), (6, 5), (5, 8)), ton('kristall', 0))
     funke(px, ((10, 9), (10, 10), (9, 12)), ton('kristall', 4))
     funke(px, ((4, 11), (11, 5)), ton('kristall', 1))    # Splitter daneben
+    for j, (x, y) in enumerate(((6, 3), (6, 4), (7, 5), (7, 6))):     # vordere Facettenkante
+        put(px, x, y, ton('kristall', 0))
+    for x, y in ((9, 6), (9, 7), (8, 8), (8, 9)):        # hintere Kante im Schatten
+        put(px, x, y, ton('kristall', 4))
+    for x, y in ((7, 9), (7, 10), (6, 11)):              # Lichtbrechung innen
+        put(px, x, y, ton('kristall', 1))
 
 
 def boss_core(px):
@@ -536,11 +542,25 @@ def rune_stone(px):
 # --- Waehrung und Essenz ------------------------------------------------------------
 
 def gold_coin(px):
+    """Muenze: erhabener Rand, eingepraegter Turm, Kerben am Rand - die
+    Praegung hat oben eine Lichtkante und unten einen Schatten."""
     kugel(px, 7.5, 8.0, 5.6, 'gold', flach=0.95)
-    for j in range(5):                                   # Praegung: Stern
-        put(px, 7, 5 + j, ton('gold', 3))
-    funke(px, ((5, 7), (9, 7), (5, 9), (9, 9)), ton('gold', 3))
-    funke(px, ((6, 6), (7, 6)), ton('gold', 0))
+    for x in range(4, 12):                               # erhabener Rand oben und unten
+        if px[x, 3][3]:
+            put(px, x, 3, ton('gold', 0))
+        if px[x, 12][3]:
+            put(px, x, 12, ton('gold', 4))
+    for j in range(4):                                   # Turm als Praegung
+        put(px, 7, 6 + j, ton('gold', 3))
+        put(px, 8, 6 + j, ton('gold', 2))
+    for x in (6, 9):
+        put(px, x, 9, ton('gold', 3))
+        put(px, x, 8, ton('gold', 2))
+    put(px, 7, 5, ton('gold', 3)); put(px, 8, 5, ton('gold', 1))      # Zinne
+    for y in (6, 9):                                     # Kerben am Rand
+        put(px, 3, y, ton('gold', 3))
+        put(px, 12, y, ton('gold', 4))
+    funke(px, ((5, 5), (6, 5)), ton('gold', 0))          # Glanz
     funke(px, ((10, 10), (9, 11)), ton('gold', 4))
 
 
@@ -551,8 +571,16 @@ def gold_pouch(px):
         put(px, x, 5, ton('holz', 3))
     funke(px, ((5, 8), (6, 7)), ton('leder', 0))
     funke(px, ((10, 12), (9, 13)), ton('leder', 4))
-    funke(px, ((7, 3), (8, 2), (6, 3)), ton('gold', 1))  # Muenzen oben raus
-    funke(px, ((7, 2),), ton('gold', 0))
+    for x in (6, 7, 8):                                  # Muenzen schauen aus dem Hals
+        put(px, x, 3, ton('gold', 1) if x < 8 else ton('gold', 2))
+    put(px, 7, 2, ton('gold', 0))
+    for x in range(5, 11):                               # Schnur um den Hals
+        put(px, x, 6, ton('holz', 2) if x < 8 else ton('holz', 3))
+    put(px, 4, 6, ton('holz', 1)); put(px, 4, 7, ton('holz', 3))      # Knoten mit Ende
+    for y in (9, 10, 11):                                # Naht am Beutel
+        put(px, 8, y, ton('leder', 3))
+    put(px, 8, 12, ton('leder', 4))
+    funke(px, ((6, 9), (5, 10)), ton('leder', 0))        # praller Bauch im Licht
 
 
 def essence_slime(px):
@@ -624,6 +652,14 @@ def key(px):
         put(px, x, y, ton('gold', 2))
     funke(px, ((9, 12), (10, 13)), ton('gold', 3))
     funke(px, ((4, 3), (6, 8)), ton('gold', 0))
+    put(px, 5, 4, ton('kristall', 1))                    # Stein im Griff
+    put(px, 5, 5, ton('kristall', 2))
+    put(px, 4, 5, ton('kristall', 0))
+    for x in (6, 7):                                     # Ring unter dem Griff
+        put(px, x, 7, ton('gold', 3))
+    put(px, 8, 7, ton('gold', 4))
+    for x, y in ((8, 12), (9, 12)):                      # zweiter Bart
+        put(px, x, y, ton('gold', 3))
 
 
 def lockpick(px):
@@ -672,6 +708,16 @@ def chest(px):
         put(px, 8, y, ton('gold', 2 if y < 10 else 3))
     put(px, 7, 9, ton('holz', 4))                        # Schluesselloch
     put(px, 7, 8, ton('gold', 0))
+    for x, y in ((2, 4), (3, 4), (2, 5), (12, 4), (13, 4), (13, 5)):  # Eckbeschlaege
+        put(px, x, y, ton('eisen', 1) if x < 8 else ton('eisen', 3))
+    for x, y in ((2, 11), (3, 11), (12, 11), (13, 11)):
+        put(px, x, y, ton('eisen', 2) if x < 8 else ton('eisen', 3))
+    for x in (5, 9, 11):                                 # Maserung im Holz
+        put(px, x, 5, ton('holz', 3))
+        put(px, x, 10, ton('holz', 4))
+    for y in (8, 9, 10):                                 # Schlossblech
+        put(px, 6, y, ton('gold', 3))
+        put(px, 9, y, ton('gold', 4))
 
 
 # --- Verbrauch ----------------------------------------------------------------------
@@ -688,9 +734,19 @@ def flasche(px, rampe, fuell_von=7, korken='holz'):
         for x in (6, 7, 8):
             put(px, x, y, ton('kristall', 1 if x == 6 else (2 if x == 7 else 3)))
     platte(px, 5, 2, 9, 4, korken, rund=1)               # Korken
-    funke(px, ((4, 9), (4, 10), (5, 8)), ton(rampe, 0))  # Glanzstreifen
+    funke(px, ((4, 9), (4, 10), (5, 8)), ton(rampe, 0))  # Glanzstreifen am Glas
     funke(px, ((11, 11), (10, 13)), ton(rampe, 4))
-    funke(px, ((6, 2),), ton(korken, 0))
+    for x in (5, 6, 7, 8, 9):                            # Halsring aus Messing
+        put(px, x, 6, ton('gold', 2) if x < 8 else ton('gold', 3))
+    put(px, 5, 6, ton('gold', 1))
+    for x in range(5, 11):                               # Etikett quer ueber den Bauch
+        put(px, x, 11, ton('papier', 0) if x < 8 else ton('papier', 1))
+        put(px, x, 12, ton('papier', 1) if x < 8 else ton('papier', 2))
+    for x in (6, 9):                                     # Schrift auf dem Etikett
+        put(px, x, 11, ton('papier', 3))
+    funke(px, ((8, 9), (9, 8)), ton(rampe, 1))           # Blasen im Sud
+    funke(px, ((6, 2), (7, 2)), ton(korken, 0))          # Licht auf dem Korken
+    put(px, 5, 4, ton(korken, 1)); put(px, 9, 4, ton(korken, 3))
 
 
 def health_potion(px):
@@ -722,6 +778,15 @@ def bomb(px):
     put(px, 12, 1, ton('feuer', 0))
     funke(px, ((5, 8), (6, 7)), ton('schatten', 0))
     funke(px, ((10, 12), (9, 13)), ton('schatten', 4))
+    for x in range(5, 11):                               # Lichtband ueber der Kugel
+        if px[x, 7][3]:
+            put(px, x, 7, ton('schatten', 1) if x < 8 else ton('schatten', 2))
+    for x in (6, 7, 8, 9):                               # Kragen aus Eisen
+        put(px, x, 6, ton('eisen', 2) if x < 8 else ton('eisen', 3))
+    put(px, 6, 6, ton('eisen', 1))
+    for x, y in ((9, 3), (10, 2)):                       # Lunte geflochten
+        put(px, x, y, ton('holz', 1))
+    put(px, 10, 3, ton('holz', 3))
 
 
 ROLLE = (
@@ -758,6 +823,11 @@ def scroll(px):
         put(px, x, 8, ton('papier', 4))
     funke(px, ((3, 2), (4, 2)), ton('holz', 0))          # Glanz auf dem Stab
     funke(px, ((11, 12), (12, 12)), ton('holz', 4))
+    for x, y in ((9, 9), (10, 9), (9, 10), (10, 10)):    # Wachssiegel auf dem Blatt
+        put(px, x, y, ton('blut', 1))
+    put(px, 9, 9, ton('blut', 0))
+    put(px, 10, 10, ton('blut', 2))
+    put(px, 8, 10, ton('blut', 2)); put(px, 11, 10, ton('blut', 3))     # Wachs laeuft aus
 
 
 def torch(px):
@@ -769,6 +839,13 @@ def torch(px):
     funke(px, ((7, 1), (8, 2)), ton('feuer', 0))
     funke(px, ((6, 6), (9, 6)), ton('feuer', 3))
     funke(px, ((5, 2), (10, 3)), ton('feuer', 1))        # Funkenflug
+    for x, y in ((6, 6), (7, 7), (8, 8), (9, 6), (8, 7)):   # Wicklung kreuzweise
+        put(px, x, y, ton('leder', 3))
+    put(px, 6, 7, ton('leder', 0)); put(px, 9, 7, ton('leder', 2))
+    put(px, 7, 4, ton('feuer', 0))                       # Glutkern
+    put(px, 8, 5, ton('feuer', 1))
+    for x, y in ((6, 10), (8, 12)):                      # Maserung am Stiel
+        put(px, x, y, ton('holz', 3))
 
 
 def bread(px):
@@ -779,6 +856,14 @@ def bread(px):
     funke(px, ((4, 8), (5, 7)), ton('brot', 0))
     funke(px, ((11, 11), (10, 12)), ton('brot', 4))
     funke(px, ((8, 8), (6, 10)), ton('brot', 1))         # Kruste
+    for x, y in ((5, 7), (6, 6), (7, 6), (8, 7)):        # Einschnitt quer
+        put(px, x, y, ton('brot', 3))
+        put(px, x, y + 1, ton('brot', 0))
+    for x, y in ((6, 9), (9, 8), (7, 11)):               # Koerner
+        put(px, x, y, ton('holz', 3))
+    for x in range(4, 12):                               # Mehlstaub oben
+        if px[x, 5][3] and x % 3 == 1:
+            put(px, x, 5, ton('brot', 0))
 
 
 # --- Schmuck ------------------------------------------------------------------------
@@ -793,6 +878,10 @@ def power_ring(px):
     funke(px, ((4, 7), (5, 6)), ton('gold', 0))
     funke(px, ((11, 11), (10, 12)), ton('gold', 4))
     kugel(px, 7.5, 3.5, 2.8, 'blut')                     # Stein
+    for x in (6, 9):                                     # Fassung um den Stein
+        put(px, x, 4, ton('gold', 2) if x < 8 else ton('gold', 3))
+    put(px, 7, 1, ton('gold', 1)); put(px, 8, 1, ton('gold', 2))
+    put(px, 8, 3, ton('blut', 0))                        # Reflex im Stein
     funke(px, ((6, 3),), ton('blut', 0))
 
 
@@ -808,6 +897,11 @@ def life_amulet(px):
     funke(px, ((6, 8),), ton('blut', 0))
     funke(px, ((9, 11),), ton('blut', 4))
     funke(px, ((5, 7),), ton('gold', 0))
+    for x, y in ((5, 7), (10, 7), (5, 11), (10, 11)):    # Krallen der Fassung
+        put(px, x, y, ton('gold', 1) if x < 8 else ton('gold', 3))
+    for j in (1, 3):                                     # Kettenglieder heller
+        put(px, 4 + j, 2 + j, ton('gold', 1))
+        put(px, 11 - j, 2 + j, ton('gold', 2))
 
 
 STIEFEL = (
@@ -841,12 +935,19 @@ def swift_boots(px):
     for j, (x, y) in enumerate(((3, 6), (2, 5), (1, 4), (2, 7), (1, 6))):   # Fluegel
         put(px, x, y, ton('kristall', 0 if j < 3 else 1))
     put(px, 0, 5, ton('kristall', 2))
+    for y in (4, 6, 8):                                  # Schnuerung
+        put(px, 5, y, ton('holz', 3))
+        put(px, 7, y, ton('holz', 4))
+    put(px, 5, 3, ton('gold', 2)); put(px, 6, 3, ton('gold', 3))      # Schnalle am Schaft
+    for x in range(4, 12):                               # Naht ueber der Sohle
+        if px[x, 10][3]:
+            put(px, x, 10, ton('leder', 3))
 
 
 KUERASS = (
     '................',
-    '...SS......SS...',
-    '..S00S....S11S..',
+    '....S......S....',
+    '...S00S..S11S...',
     '..S0011SS1122S..',
     '...S001MM122S...',
     '...0011MM1223...',
@@ -876,6 +977,12 @@ def iron_plate(px):
     funke(px, ((11, 6), (11, 9)), ton('eisen', 4))
     funke(px, ((3, 2), (4, 2)), ton('stahl', 0))         # Licht auf der linken Schulter
     funke(px, ((11, 2), (12, 3)), ton('eisen', 3))       # rechte Schulter im Schatten
+    for y in (5, 9):                                     # Nietenreihen
+        for x in (4, 11):
+            put(px, x, y, ton('stahl', 1) if x < 8 else ton('eisen', 3))
+    for x, y in ((5, 12), (6, 12), (9, 12), (10, 12)):   # Riemen am Bauchabschluss
+        put(px, x, y, ton('leder', 2) if x < 8 else ton('leder', 3))
+    put(px, 7, 12, ton('gold', 2)); put(px, 8, 12, ton('gold', 3))    # Schnalle
 
 
 def hawk_eye(px):
@@ -891,7 +998,12 @@ def hawk_eye(px):
             put(px, x, 5, ton('papier', 3))
         if px[x, 11][3]:
             put(px, x, 11, ton('papier', 4))
-    funke(px, ((3, 4), (12, 4)), ton('papier', 3))       # Wimpern
+    put(px, 3, 7, ton('papier', 3)); put(px, 12, 7, ton('papier', 4))   # Augenwinkel
+    for x, y in ((6, 6), (9, 6), (6, 10), (9, 10)):      # Irisring
+        put(px, x, y, ton('gold', 3))
+    put(px, 6, 7, ton('gold', 0))                        # Reflex
+    for x, y in ((4, 4), (11, 4)):                       # Wimpernansatz am Lid
+        put(px, x, y, ton('papier', 4))
 
 
 FANG = (
@@ -936,6 +1048,12 @@ def skull_charm(px):
         put(px, 4 - j, 3 - j, ton('leder', 2))
         put(px, 11 + j, 3 - j, ton('leder', 3))
     funke(px, ((5, 5), (6, 4)), ton('knochen', 0))
+    for x, y in ((6, 4), (6, 5), (7, 6)):                # Riss ueber die Stirn
+        put(px, x, y, ton('knochen', 4))
+    for x in range(5, 11):                               # Kieferlinie
+        if px[x, 10][3]:
+            put(px, x, 10, ton('knochen', 3))
+    put(px, 5, 12, ton('knochen', 4)); put(px, 10, 12, ton('knochen', 4))
 
 
 ITEMS = {
