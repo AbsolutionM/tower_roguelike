@@ -79,6 +79,10 @@ NACHT = '171516'
 SCHWARZ = '0e0c0c'
 GLUT, GLUT_DK, KRALLE, AUGE = 'fff089', 'e88a36', 'f1f2ff', '36282b'
 
+# Was augen() gesetzt hat, wird danach weder ueberzeichnet noch geglaettet -
+# sonst sehen die Augen je nach Helm, Tuch oder Maske anders aus.
+AUGENPIXEL = set()
+
 
 def rgb(h):
     return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16), 255)
@@ -89,7 +93,7 @@ def ton(name):
 
 
 def put(px, x, y, col):
-    if 0 <= x < 32 and 0 <= y < 32:
+    if 0 <= x < 32 and 0 <= y < 32 and (x, y) not in AUGENPIXEL:
         px[x, y] = col
 
 
@@ -174,7 +178,7 @@ def aufraeumen(img):
         for y in range(32):
             for x in range(32):
                 c = alt[y][x]
-                if not c[3]:
+                if not c[3] or (x, y) in AUGENPIXEL:
                     continue
                 nb = []
                 for dy in (-1, 0, 1):
@@ -329,7 +333,7 @@ def tupfen(px, punkte, stellen, col, x0=None, y0=None):
 AUGENZEILE = 3                          # gleiche Zeile im Kopf bei jeder Figur
 
 
-def augen(px, kopf, seitlich, haut, art='klar', iris=None):
+def augen(px, kopf, seitlich, haut, art='klar', iris=None, verdeckt=None):
     """Das Augenpaar ist bei allen Figuren gleich gebaut: dieselbe Zeile,
     2 px breit, 2 px hoch, vier Pixel Abstand, darueber eine Braue und
     darunter ein Wangenschatten. Nur das Material wechselt:
@@ -344,13 +348,17 @@ def augen(px, kopf, seitlich, haut, art='klar', iris=None):
     z = y0 + AUGENZEILE
     hh, hm, hd, hk = haut
     li, re = x0 + 2 + seitlich, x0 + 6 + seitlich
+    gesetzt = []
     for ex, hinteres in ((li, seitlich > 0), (re, False)):
+        if verdeckt == ('li' if ex == li else 're'):
+            continue                                     # Klappe, Binde, Strähne
         breite = 1 if hinteres else 2
         ax = ex + (1 if hinteres else 0)
         for dx in range(breite):
             for dy in (0, 1):
                 if (ax + dx, z + dy) in kopf:
                     put(px, ax + dx, z + dy, rgb('f1ebdb') if art == 'klar' else rgb(NACHT))
+                    gesetzt.append((ax + dx, z + dy))
         innen = ax + breite - 1 if ex == li else ax          # Iris zur Nase hin
         if art == 'klar':
             put(px, innen, z, iris or rgb(AUGE))
@@ -365,6 +373,7 @@ def augen(px, kopf, seitlich, haut, art='klar', iris=None):
                 put(px, ax + dx, z - 1, hd)                  # Braue
             if (ax + dx, z + 2) in kopf:
                 put(px, ax + dx, z + 2, hd)                  # Wangenschatten
+    AUGENPIXEL.update(gesetzt)
     return li, re
 
 
@@ -502,7 +511,7 @@ def skeleton(px, m, seitlich, hinten, frame):
     else:
         tupfen(px, k, ((3, 2), (4, 3), (5, 4), (6, 3), (2, 5)), bein[3], kx0, ky0)    # Naehte
         tupfen(px, k, ((3, 3), (6, 4)), bein[0], kx0, ky0)
-    for dx, dy in ((1, 2), (1, 3), (2, 3)):                           # Riss links, durchgehend
+    for dx, dy in ((1, 1), (1, 2), (0, 2)):                           # Riss an der Schlaefe
         put(px, kx0 + dx, ky0 + dy, bein[3])
     tupfen(px, k, ((3, 1), (4, 1)), bein[0], kx0, ky0)                # Stirnwoelbung
     rost = ton('rost')
@@ -705,7 +714,8 @@ def bandit(px, m, seitlich, hinten, frame):
     kx0, ky0, kx1, ky1 = kasten(k)
     th, tm, td, tk = ton('tuch')
     if not hinten:
-        li, re = augen(px, k, seitlich, ton('haut'), art='klar')
+        li, re = augen(px, k, seitlich, ton('haut'), art='klar',
+                       verdeckt='li' if seitlich == 0 else None)
         for x in range(kx0 + 1, kx1):                                 # Halstuch ueber Nase und Mund
             for dy, col in ((5, th if x < kx0 + 4 else tm), (6, tm if x < kx0 + 6 else td)):
                 if (x, ky0 + dy) in k:
@@ -717,8 +727,8 @@ def bandit(px, m, seitlich, hinten, frame):
             put(px, kx0 + 3, ky0 + 3, rgb('2d1b1e'))
             for dx, dy in ((1, 2), (4, 2), (0, 1)):                   # Band ueber die Schlaefe
                 put(px, kx0 + dx, ky0 + dy, rgb('2a1e23'))
-        put(px, kx0 + 8, ky0 + 3, rgb('e27285'))                      # Schnitt ueber der Wange
-        put(px, kx0 + 8, ky0 + 4, rgb('b25266'))
+        put(px, kx0 + 8, ky0 + 5, rgb('e27285'))                      # Schnitt ueber der Wange
+        put(px, kx0 + 8, ky0 + 6, rgb('b25266'))
     for x, y in k:                                                    # Kopftuch: obere zwei Zeilen
         if y <= ky0 + 1:
             u = (x - kx0) / (kx1 - kx0)
@@ -907,15 +917,14 @@ def brute(px, m, seitlich, hinten, frame):
             put(px, li + dx, ky0 + 2, hk)
             put(px, re + dx, ky0 + 2, hk)
         for x, y in k:                                            # Maulkorb, untere Gesichtshaelfte
-            if ky0 + 4 <= y <= ky0 + 6 and kx0 + 1 <= x <= kx1 - 1:
+            if ky0 + 5 <= y <= ky0 + 6 and kx0 + 1 <= x <= kx1 - 1:
                 put(px, x, y, eisen[1] if x < kx0 + 5 else eisen[2])
         for x in range(kx0 + 2, kx1 - 1):                         # Spalt im Maulkorb
             if (x, ky0 + 5) in k:
                 put(px, x, ky0 + 5, eisen[3])
-        for dx in (2, 5):                                         # zwei Nieten
-            if (kx0 + dx, ky0 + 4) in k:
-                put(px, kx0 + dx, ky0 + 4, eisen[0])
-                put(px, kx0 + dx + 1, ky0 + 4, eisen[0])
+        for dx in (2, 5):                                         # zwei Nieten am Rand
+            if (kx0 + dx, ky0 + 5) in k:
+                put(px, kx0 + dx, ky0 + 5, eisen[0])
     else:
         tupfen(px, k, ((3, 3), (5, 4)), ton('haar')[3], kx0, ky0)
     put(px, kx0 - 1, ky0 + 3, ton('leder')[2])                    # Riemen der Maske
@@ -944,6 +953,7 @@ EXTRA = {
 
 
 def frame(bauen, richtung, nr, anim='walk'):
+    AUGENPIXEL.clear()
     img = Image.new('RGBA', (32, 32), (0, 0, 0, 0))
     px = img.load()
     if anim == 'walk':
