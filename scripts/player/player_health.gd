@@ -89,7 +89,7 @@ func can_add_container() -> bool:
 	return red_max < MAX_HEARTS * 2
 
 func is_invulnerable() -> bool:
-	return invuln_timer > 0.0 or is_dead
+	return invuln_timer > 0.0 or is_dead or DevMode.god_mode
 
 func set_invulnerable(duration: float) -> void:
 	invuln_timer = maxf(invuln_timer, duration)

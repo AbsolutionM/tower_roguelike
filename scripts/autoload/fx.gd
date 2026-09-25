@@ -30,7 +30,7 @@ func _host() -> Node:
 
 func floating_text(world_pos: Vector2, text: String, tint: Color = COLOR_DAMAGE, font_size: int = 20, rise: float = 46.0) -> void:
 	var host := _host()
-	if not host:
+	if not host or not DevMode.fx("texts"):
 		return
 
 	var label := Label.new()
@@ -71,7 +71,7 @@ func damage_number(world_pos: Vector2, amount: float, crit: bool = false, tint: 
 
 func hit_spark(world_pos: Vector2, tint: Color = COLOR_DAMAGE, count: int = 8, direction: Vector2 = Vector2.ZERO, spread: float = TAU, length: float = 34.0) -> void:
 	var host := _host()
-	if not host:
+	if not host or not DevMode.fx("particles"):
 		return
 	var fx := ShapeFX.new()
 	fx.mode = ShapeFX.Mode.SPARKS
@@ -87,7 +87,7 @@ func hit_spark(world_pos: Vector2, tint: Color = COLOR_DAMAGE, count: int = 8, d
 
 func ring_burst(world_pos: Vector2, tint: Color = COLOR_DAMAGE, start_radius: float = 6.0, end_radius: float = 70.0, duration: float = 0.32, width: float = 7.0) -> void:
 	var host := _host()
-	if not host:
+	if not host or not DevMode.fx("particles"):
 		return
 	var fx := ShapeFX.new()
 	fx.mode = ShapeFX.Mode.RING
@@ -102,7 +102,7 @@ func ring_burst(world_pos: Vector2, tint: Color = COLOR_DAMAGE, start_radius: fl
 
 func muzzle_flash(world_pos: Vector2, direction: Vector2, tint: Color = Palette.AMBER, size: float = 30.0) -> void:
 	var host := _host()
-	if not host:
+	if not host or not DevMode.fx("particles"):
 		return
 	var fx := ShapeFX.new()
 	fx.mode = ShapeFX.Mode.CONE
@@ -118,7 +118,7 @@ func muzzle_flash(world_pos: Vector2, direction: Vector2, tint: Color = Palette.
 
 func dust_puff(world_pos: Vector2, tint: Color = Color(Palette.MIST, 0.55), count: int = 4, radius: float = 22.0) -> void:
 	var host := _host()
-	if not host:
+	if not host or not DevMode.fx("particles"):
 		return
 	var fx := ShapeFX.new()
 	fx.mode = ShapeFX.Mode.PUFF
@@ -140,7 +140,7 @@ func impact(world_pos: Vector2, direction: Vector2 = Vector2.ZERO, tint: Color =
 ## Gezackter Blitz zwischen zwei Punkten (Kettenblitz, Gewitter-Treffer).
 func lightning(from: Vector2, to: Vector2, tint: Color = Palette.TEAL, segments: int = 8, jitter: float = 18.0) -> void:
 	var host := _host()
-	if not host:
+	if not host or not DevMode.fx("particles"):
 		return
 
 	var pixel := pixel_size()
@@ -178,7 +178,7 @@ func lightning(from: Vector2, to: Vector2, tint: Color = Palette.TEAL, segments:
 ## Kurzer Lichtblitz an einer Weltposition.
 func light_flash(world_pos: Vector2, tint: Color = Palette.AMBER, energy: float = 2.0, light_scale: float = 1.0, duration: float = 0.18) -> void:
 	var host := _host()
-	if not host:
+	if not host or not DevMode.fx("light_flash"):
 		return
 	var light := LightFlash.new()
 	light.color = tint
@@ -191,7 +191,7 @@ func light_flash(world_pos: Vector2, tint: Color = Palette.AMBER, energy: float 
 
 func afterimage(source: Node2D, lifetime: float = 0.35, tint: Color = Color(1.0, 1.0, 1.0, 0.4)) -> void:
 	var host := _host()
-	if not host or not is_instance_valid(source):
+	if not host or not is_instance_valid(source) or not DevMode.fx("afterimage"):
 		return
 
 	var texture: Texture2D = null
@@ -228,28 +228,36 @@ func afterimage(source: Node2D, lifetime: float = 0.35, tint: Color = Color(1.0,
 	tween.chain().tween_callback(ghost.queue_free)
 
 func flash(target: CanvasItem, tint: Color = Color(6.0, 6.0, 6.0), duration: float = 0.1) -> void:
-	if not is_instance_valid(target):
+	if not is_instance_valid(target) or not DevMode.fx("hit_flash"):
 		return
 	target.self_modulate = tint
 	var tween := target.create_tween()
 	tween.tween_property(target, "self_modulate", Color.WHITE, duration).set_ease(Tween.EASE_OUT)
 
 func shake(amount: float) -> void:
+	if not DevMode.fx("shake"):
+		return
 	var camera := _get_camera()
 	if camera and camera.has_method("shake"):
 		camera.shake(amount)
 
 func zoom_punch(amount: float = 0.06) -> void:
+	if not DevMode.fx("shake"):
+		return
 	var camera := _get_camera()
 	if camera and camera.has_method("punch_zoom"):
 		camera.punch_zoom(amount)
 
 func hitstop(duration: float = 0.06, time_scale: float = 0.05) -> void:
+	if not DevMode.fx("hitstop"):
+		return
 	var hit_stop := get_node_or_null("/root/HitStop")
 	if hit_stop and hit_stop.has_method("trigger"):
 		hit_stop.trigger(duration, time_scale)
 
 func screen_flash(color: Color = Color(1.0, 1.0, 1.0, 0.35), duration: float = 0.25) -> void:
+	if not DevMode.fx("screen_flash"):
+		return
 	screen_flash_requested.emit(color, duration)
 
 func _get_camera() -> Node:

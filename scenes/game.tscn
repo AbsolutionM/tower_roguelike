@@ -10,8 +10,6 @@
 [ext_resource type="Script" uid="uid://bqncykrd6ndst" path="res://scripts/rooms/room_controller.gd" id="15_x5rto"]
 [ext_resource type="PackedScene" uid="uid://bhhnrk2i5ajqx" path="res://scenes/ui/hud_layer.tscn" id="19_8fpdd"]
 [ext_resource type="Script" uid="uid://mtydripo7gbs" path="res://resources/rooms/room_data.gd" id="19_xor3i"]
-[ext_resource type="Script" uid="uid://degagr6otf1m3" path="res://resources/character/character_data.gd" id="24_p0fn2"]
-[ext_resource type="Script" uid="uid://d1oop0o8n7lws" path="res://resources/weapons/weapon_data.gd" id="27_1bovr"]
 [ext_resource type="Texture2D" path="res://assets/sprites/cowboy/hand.png" id="45_awo1y"]
 [ext_resource type="Script" uid="uid://sdwaqp2fhabl" path="res://scripts/player/weapon_pivot.gd" id="46_rpqcm"]
 [ext_resource type="Script" uid="uid://uykq45hwuk7t" path="res://resources/weapons/sword.gd" id="46_vtoad"]
@@ -19,13 +17,9 @@
 [ext_resource type="Script" uid="uid://b4b4gmbbi24a1" path="res://scripts/player/off_hand_static.gd" id="47_offhand"]
 [ext_resource type="Script" uid="uid://f2gwp2hggeqt" path="res://scripts/camera_shake.gd" id="51_fmgkh"]
 [ext_resource type="AudioStream" uid="uid://27ujbniku80j" path="res://assets/audio/slime_hit/floraphonic-slime-splatter-1-220262.mp3" id="52_whnll"]
-[ext_resource type="Resource" path="res://resources/character/cowboy/cowboy_data.tres" id="60_cowboy"]
-[ext_resource type="Resource" path="res://resources/character/first/first_data.tres" id="61_first"]
-[ext_resource type="Resource" path="res://resources/weapons/shortsword_slime.tres" id="63_revolver"]
 [ext_resource type="Resource" path="res://resources/rooms/room_easy.tres" id="64_room1"]
 [ext_resource type="Resource" path="res://resources/rooms/room_swarm.tres" id="65_room2"]
 [ext_resource type="Resource" path="res://resources/rooms/room_mixed.tres" id="66_room3"]
-[ext_resource type="Script" uid="uid://bfpav1s030qq2" path="res://scripts/debug/test_harness.gd" id="67_harness"]
 [ext_resource type="Script" path="res://scripts/player/player_stats.gd" id="68_stats"]
 [ext_resource type="Script" path="res://scripts/player/player_health.gd" id="69_health"]
 [ext_resource type="Script" path="res://scripts/player/player_ability.gd" id="70_ability"]
@@ -161,8 +155,3 @@ enemy_scene = ExtResource("14_bxw2g")
 boss_scene = ExtResource("74_boss")
 spawn_points = [NodePath("../SpawnPoint1"), NodePath("../SpawnPoint2"), NodePath("../SpawnPoint3"), NodePath("../SpawnPoint4"), NodePath("../SpawnPoint5"), NodePath("../SpawnPoint6")]
 rooms = Array[ExtResource("19_xor3i")]([ExtResource("64_room1"), ExtResource("65_room2"), ExtResource("66_room3"), ExtResource("71_room4"), ExtResource("72_room5")])
-
-[node name="TestHarness" type="Node" parent="." unique_id=314159265]
-script = ExtResource("67_harness")
-characters = Array[ExtResource("24_p0fn2")]([ExtResource("60_cowboy"), ExtResource("61_first")])
-weapons = Array[ExtResource("27_1bovr")]([ExtResource("4_ah16c"), ExtResource("63_revolver")])

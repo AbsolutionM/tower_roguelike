@@ -25,6 +25,8 @@ class_name HUD
 @onready var joystick: Control = get_node_or_null("Joystick")
 ## Wird in _ready gebaut, siehe _create_pause_button.
 var pause_button: Button
+## Öffnet das Dev-Menü - nur in Debug-Builds vorhanden.
+var dev_button: Button
 ## Wird in _ready gebaut, siehe _create_key_counter.
 var key_label: Label
 
@@ -67,6 +69,21 @@ func _create_pause_button() -> void:
 	pause_button.process_mode = Node.PROCESS_MODE_ALWAYS
 	pause_button.pressed.connect(_toggle_pause)
 	add_child(pause_button)
+
+	if not DevMode.available:
+		return
+	dev_button = UIKit.make_button("DEV", 16, Palette.TEAL)
+	dev_button.anchor_left = 1.0
+	dev_button.anchor_right = 1.0
+	# Unter der Pause - links daneben stünde er auf der Etagenanzeige.
+	dev_button.offset_left = -92.0
+	dev_button.offset_right = -16.0
+	dev_button.offset_top = 100.0
+	dev_button.offset_bottom = 176.0
+	dev_button.custom_minimum_size = Vector2.ZERO
+	dev_button.process_mode = Node.PROCESS_MODE_ALWAYS
+	dev_button.pressed.connect(DevMode.toggle_menu)
+	add_child(dev_button)
 
 ## Schlüssel stehen neben Gold und Essenz - mit Symbol, weil die Zahl
 ## allein sonst nicht von den anderen zu unterscheiden wäre.
@@ -114,9 +131,10 @@ func _apply_safe_area() -> void:
 	if insets.x > 0.0:
 		if top_bar:
 			top_bar.position.y = insets.x
-		if pause_button:
-			pause_button.offset_top += insets.x
-			pause_button.offset_bottom += insets.x
+		for button in [pause_button, dev_button]:
+			if button:
+				button.offset_top += insets.x
+				button.offset_bottom += insets.x
 
 	# Die Leiste selbst reicht bis zum Bildschirmrand, damit darunter kein
 	# Spielfeld durchblitzt; ihr Inhalt rückt über den Home-Indikator.
