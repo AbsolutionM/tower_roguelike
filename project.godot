@@ -75,13 +75,6 @@ ability={
 ]
 }
 
-[shader_globals]
-
-dev_outlines={
-"type": "bool",
-"value": true
-}
-
 [physics]
 
 3d/physics_engine="Jolt Physics"
@@ -92,3 +85,10 @@ textures/canvas_textures/default_texture_filter=0
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="mobile"
 environment/defaults/default_clear_color=Color(0.045, 0.04, 0.07, 1)
+
+[shader_globals]
+
+dev_outlines={
+"type": "bool",
+"value": true
+}
