@@ -108,6 +108,9 @@ func _update_magnet(delta: float) -> void:
 		return
 
 	var attract_radius: float = _stats.pickup_radius if _stats else 95.0
+	# Endspurt: doppelter Sammelradius, damit man noch mitnimmt, was geht.
+	if GameManager.is_final_spurt():
+		attract_radius *= 2.0
 	if distance > attract_radius:
 		_magnet_speed_current = 0.0
 		return

@@ -8,7 +8,7 @@
 [resource]
 script = ExtResource("1_script")
 enemy_name = "Kristallwächter"
-max_health = 714.6
+max_health = 300.0
 sprite_texture = ExtResource("2_sprite")
 move_speed = 34.0
 sprite_scale = 1.30

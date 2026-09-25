@@ -357,7 +357,7 @@ func _charger_velocity(delta: float, to_player: Vector2, distance: float) -> Vec
 
 	match state:
 		State.APPROACH:
-			if distance < trigger and attack_timer <= 0.0:
+			if distance < trigger and attack_timer <= 0.0 and not GameManager.is_overview():
 				state = State.WINDUP
 				state_timer = windup
 				FX.ring_burst(global_position, Palette.EMBER, 6.0, 46.0, windup, 4.0)
@@ -387,7 +387,7 @@ func _shooter_velocity(to_player: Vector2, distance: float) -> Vector2:
 	var keep: float = enemy_data.keep_distance if enemy_data else 190.0
 	var shoot_range: float = enemy_data.shoot_range if enemy_data else 340.0
 
-	if attack_timer <= 0.0 and distance <= shoot_range and spawn_timer <= 0.0:
+	if attack_timer <= 0.0 and distance <= shoot_range and spawn_timer <= 0.0 and not GameManager.is_overview():
 		_shoot(to_player)
 
 	if distance > keep * 1.15:
@@ -429,7 +429,8 @@ func _shoot(direction: Vector2) -> void:
 	FX.muzzle_flash(global_position + direction * 18.0, direction, Palette.ROSE, 22.0)
 
 func _check_contact_damage() -> void:
-	if contact_timer > 0.0 or spawn_timer > 0.0:
+	# Im Überblick zu Beginn des Raums greift noch niemand an.
+	if contact_timer > 0.0 or spawn_timer > 0.0 or GameManager.is_overview():
 		return
 	if not player or not is_instance_valid(player) or not player_health:
 		return

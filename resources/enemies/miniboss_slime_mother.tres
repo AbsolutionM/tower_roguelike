@@ -1,0 +1,42 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://resources/enemies/enemy_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/loot/dt_miniboss.tres" id="2_drops"]
+[ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="3_projectile"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/own_giant_green_slime.png" id="4_sprite"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_fast.tres" id="5_minion"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_giant.tres" id="6_split"]
+
+[resource]
+script = ExtResource("1_script")
+enemy_name = "Schleimmutter"
+max_health = 650.0
+move_speed = 40.0
+sprite_texture = ExtResource("4_sprite")
+sprite_scale = 1.9
+movement = 1
+hop_interval = 1.3
+hop_height = 60.0
+hop_duration = 0.6
+hop_speed_mult = 3.2
+behavior = 0
+contact_damage = 40.0
+contact_range = 44.0
+attack_cooldown = 1.3
+projectile_scene = ExtResource("3_projectile")
+projectile_speed = 240.0
+projectile_damage = 28.0
+trail_colors = Array[Color]([Color(0.4, 0.8, 0.3, 0.45), Color(0.3, 0.6, 0.25, 0.4)])
+squash_amount = 0.14
+squash_speed = 3.5
+knockback_friction = 1400.0
+shadow_radius = 24.0
+split_data = ExtResource("6_split")
+split_count = 2
+is_boss = true
+boss_title = "Schleimmutter"
+minion_data = ExtResource("5_minion")
+minions_per_wave = 2
+spray_projectiles = 8
+special_interval = 5.0
+drop_table = ExtResource("2_drops")

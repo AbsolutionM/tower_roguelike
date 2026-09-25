@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("1_3a2jy")
 enemy_name = "Slime"
-max_health = 225.6
+max_health = 70.0
 move_speed = 55.0
 sprite_texture = ExtResource("2_sprite")
 sprite_scale = 1.25
@@ -18,7 +18,7 @@ hop_interval = 0.95
 hop_height = 34.0
 hop_duration = 0.42
 hop_speed_mult = 3.0
-contact_damage = 22.0
+contact_damage = 22
 contact_range = 24.0
 attack_cooldown = 1.0
 squash_amount = 0.15

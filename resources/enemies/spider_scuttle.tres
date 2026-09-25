@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_script")
 enemy_name = "Huscher"
-max_health = 225.6
+max_health = 50.0
 move_speed = 70.0
 sprite_scale = 1.0
 tint = Color(0.851, 0.31, 0.31, 1)
@@ -14,7 +14,7 @@ symbol = 4
 symbol_size = 18.0
 movement = 0
 behavior = 1
-contact_damage = 33.0
+contact_damage = 28
 contact_range = 21.6
 attack_cooldown = 1.6
 charge_speed = 500.0

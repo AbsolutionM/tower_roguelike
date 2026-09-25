@@ -15,8 +15,8 @@ signal keys_changed(amount: int)
 
 const SAVE_PATH := "user://savegame.json"
 const MAX_RUN_SLOTS := 12
-## So viele Beutel-Slots gehen beim Tod verloren.
-const SLOTS_LOST_ON_DEATH := 4
+## Wer stirbt, verliert diesen Anteil der Beute aus dem Lauf (Beutel, Gold, Essenz).
+const DEATH_LOOT_LOSS := 0.5
 ## So viele Accessoires darf ein Charakter gleichzeitig tragen.
 const MAX_ACCESSORY_SLOTS := 2
 
@@ -35,6 +35,12 @@ var owned_accessory_ids: Array[String] = []
 var equipped_accessory_ids: Dictionary = {}
 var selected_character_id: String = ""
 var selected_tower_id: String = ""
+## Türme, deren Hauptboss schon besiegt wurde - öffnen den jeweils nächsten.
+var cleared_tower_ids: Array[String] = []
+## Was im laufenden Lauf an Gold und Essenz dazukam - davon geht beim Tod
+## die Hälfte verloren.
+var run_gold: int = 0
+var run_essences: Dictionary = {}
 
 ## Beutel des laufenden Runs: Liste aus { "item_id": String, "count": int }
 var run_slots: Array = []
@@ -51,6 +57,8 @@ func _ready() -> void:
 
 func add_gold(amount: int) -> void:
 	gold += amount
+	if GameManager.run_active:
+		run_gold += amount
 	GameManager.count_gold(amount)
 	gold_changed.emit(gold)
 
@@ -65,6 +73,8 @@ func add_essence(essence_id: String, amount: int = 1) -> void:
 	if essence_id.is_empty():
 		return
 	essences[essence_id] = int(essences.get(essence_id, 0)) + amount
+	if GameManager.run_active:
+		run_essences[essence_id] = int(run_essences.get(essence_id, 0)) + amount
 	essence_changed.emit(essence_id, essences[essence_id])
 
 func get_total_essence() -> int:
@@ -78,6 +88,8 @@ func get_total_essence() -> int:
 ## Setzt alles zurück, was nur einen Run lang lebt.
 func start_run() -> void:
 	keys = 0
+	run_gold = 0
+	run_essences.clear()
 	keys_changed.emit(keys)
 
 func add_keys(amount: int) -> void:
@@ -157,30 +169,60 @@ func get_stash_entries() -> Array:
 
 # --- Run-Abschluss ---------------------------------------------------------
 
-## Beendet den Run. Bei Tod gehen zufällige Slots verloren, der Rest wandert
-## ins Lager. Gibt { "lost": Array, "kept": Array, "died": bool } zurück.
-func end_run(died: bool) -> Dictionary:
+## Beendet den Run. Bei Tod geht die Hälfte jedes Stapels im Beutel verloren,
+## dazu die Hälfte des im Lauf verdienten Golds und der Essenz. Der Rest
+## wandert ins Lager. Gibt { "lost", "kept", "died", "gold_lost", "victory" } zurück.
+func end_run(died: bool, victory: bool = false) -> Dictionary:
 	GameManager.end_run()
-	var slots := run_slots.duplicate(true)
 	var lost: Array = []
+	var kept: Array = []
+	var gold_lost: int = 0
+
+	for slot in run_slots:
+		var count: int = int(slot["count"])
+		var lose: int = int(floor(float(count) * DEATH_LOOT_LOSS)) if died else 0
+		if lose > 0:
+			lost.append({"item_id": slot["item_id"], "count": lose})
+		if count - lose > 0:
+			add_to_stash(str(slot["item_id"]), count - lose)
+			kept.append({"item_id": slot["item_id"], "count": count - lose})
 
 	if died:
-		slots.shuffle()
-		var lose_count: int = mini(SLOTS_LOST_ON_DEATH, slots.size())
-		for i in lose_count:
-			lost.append(slots.pop_back())
-
-	var kept: Array = []
-	for slot in slots:
-		add_to_stash(str(slot["item_id"]), int(slot["count"]))
-		kept.append(slot)
+		gold_lost = mini(int(floor(float(run_gold) * DEATH_LOOT_LOSS)), gold)
+		gold -= gold_lost
+		gold_changed.emit(gold)
+		for essence_id in run_essences:
+			var lose: int = mini(int(floor(float(run_essences[essence_id]) * DEATH_LOOT_LOSS)), int(essences.get(essence_id, 0)))
+			essences[essence_id] = int(essences.get(essence_id, 0)) - lose
+			essence_changed.emit(str(essence_id), essences[essence_id])
 
 	run_slots.clear()
+	run_gold = 0
+	run_essences.clear()
 	run_inventory_changed.emit()
 
-	last_run_summary = {"lost": lost, "kept": kept, "died": died}
+	last_run_summary = {"lost": lost, "kept": kept, "died": died, "gold_lost": gold_lost, "victory": victory}
 	save_game()
 	return last_run_summary
+
+# --- Türme -----------------------------------------------------------------
+
+func mark_tower_cleared(tower_id: String) -> void:
+	if tower_id.is_empty() or cleared_tower_ids.has(tower_id):
+		return
+	cleared_tower_ids.append(tower_id)
+	save_game()
+
+## Der erste Turm ist immer offen, jeder weitere erst nach dem Sieg im vorigen.
+func is_tower_unlocked(tower: TowerData) -> bool:
+	if not tower:
+		return false
+	var towers := Database.get_towers()
+	var index := towers.find(tower)
+	if index <= 0 or tower.unlocked:
+		return true
+	var previous: TowerData = towers[index - 1]
+	return previous != null and cleared_tower_ids.has(previous.tower_id)
 
 # --- Schmieden (Waffen) ----------------------------------------------------
 
@@ -534,6 +576,7 @@ func save_game() -> void:
 		"equipped_weapon_ids": equipped_weapon_ids,
 		"selected_character_id": selected_character_id,
 		"selected_tower_id": selected_tower_id,
+		"cleared_tower_ids": cleared_tower_ids,
 		"run_slots": run_slots,
 		"stash": stash,
 		"owned_accessory_ids": owned_accessory_ids,
@@ -563,6 +606,9 @@ func load_game() -> void:
 	equipped_weapon_ids = parsed.get("equipped_weapon_ids", {})
 	selected_character_id = str(parsed.get("selected_character_id", ""))
 	selected_tower_id = str(parsed.get("selected_tower_id", ""))
+	cleared_tower_ids.clear()
+	for tower_id in parsed.get("cleared_tower_ids", []):
+		cleared_tower_ids.append(str(tower_id))
 	stash = parsed.get("stash", {})
 
 	equipped_accessory_ids = parsed.get("equipped_accessory_ids", {})

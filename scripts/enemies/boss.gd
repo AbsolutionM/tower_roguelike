@@ -37,6 +37,8 @@ func _process(delta: float) -> void:
 			invulnerable = false
 		return
 
+	if GameManager.is_overview():
+		return
 	special_timer -= delta
 	if special_timer <= 0.0:
 		special_timer = _special_interval()

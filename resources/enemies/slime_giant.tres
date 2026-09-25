@@ -8,7 +8,7 @@
 [resource]
 script = ExtResource("1_script")
 enemy_name = "Riesenschleim"
-max_health = 520.0
+max_health = 220.0
 move_speed = 36.0
 sprite_texture = ExtResource("2_sprite")
 sprite_scale = 1.35
@@ -19,7 +19,7 @@ hop_interval = 1.4
 hop_height = 46.0
 hop_duration = 0.55
 hop_speed_mult = 3.2
-contact_damage = 36.0
+contact_damage = 36
 contact_range = 32.0
 attack_cooldown = 1.2
 squash_amount = 0.18

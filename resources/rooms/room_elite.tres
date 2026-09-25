@@ -15,7 +15,7 @@
 script = ExtResource("1_script")
 room_name = "Brutkammer"
 enemy_pool = Array[EnemyData]([ExtResource("2_enemy"), ExtResource("3_enemy"), ExtResource("4_enemy"), ExtResource("5_enemy"), ExtResource("6_enemy")])
-enemy_count = 6
+enemy_count = 5
 room_size = Vector2(1280, 1792)
 fixed_camera = false
 spawn_margin = 110.0
@@ -25,3 +25,7 @@ layout_set = ExtResource("93_layouts")
 obstacle_scene = ExtResource("90_rock")
 chest_scene = ExtResource("91_chest")
 harvestable_scene = ExtResource("92_ore")
+kind = 1
+weight = 8.0
+chest_count = 1
+harvestable_count = 1

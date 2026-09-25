@@ -52,10 +52,11 @@ func build() -> void:
 		for other in towers:
 			if not other:
 				continue
-			var button := UIKit.make_button(other.tower_name, 16, other.accent_color)
+			var open := RunState.is_tower_unlocked(other)
+			var button := UIKit.make_button(other.tower_name if open else other.tower_name + " (gesperrt)", 16, other.accent_color)
 			button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			button.custom_minimum_size = Vector2(0.0, UIKit.TOUCH_HEIGHT)
-			button.disabled = other == tower
+			button.disabled = other == tower or not open
 			button.pressed.connect(func() -> void:
 				RunState.set_selected_tower(other.tower_id)
 				refresh()
@@ -64,6 +65,9 @@ func build() -> void:
 		column.add_child(switch_row)
 
 	var enter_button := UIKit.make_primary_button("Turm betreten", 26, tower.accent_color)
+	if not RunState.is_tower_unlocked(tower):
+		enter_button.text = "Gesperrt - erst den vorigen Turm bezwingen"
+		enter_button.disabled = true
 	enter_button.custom_minimum_size = Vector2(0.0, UIKit.TOUCH_HEIGHT + 16.0)
 	enter_button.pressed.connect(func() -> void: get_tree().change_scene_to_file(GAME_SCENE))
 	column.add_child(enter_button)

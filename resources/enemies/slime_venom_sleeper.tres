@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("1_script")
 enemy_name = "Giftschläfer"
-max_health = 240.0
+max_health = 140.0
 move_speed = 70.0
 sprite_texture = ExtResource("2_sprite")
 sprite_scale = 1.20
@@ -18,7 +18,7 @@ hop_interval = 0.7
 hop_height = 28.0
 hop_duration = 0.36
 hop_speed_mult = 3.0
-contact_damage = 15.0
+contact_damage = 28
 contact_range = 20.4
 attack_cooldown = 1.1
 keep_distance = 200.0

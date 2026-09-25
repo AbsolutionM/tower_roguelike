@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_script")
 enemy_name = "Fledermaus"
-max_health = 105.2
+max_health = 35.0
 move_speed = 128.0
 sprite_scale = 1.0
 tint = Color(0.545, 0.435, 0.831, 1)

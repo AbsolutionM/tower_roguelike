@@ -32,6 +32,8 @@ var _noise: FastNoiseLite
 var _noise_time: float = 0.0
 var _base_zoom: Vector2 = Vector2.ONE
 var _zoom_punch: float = 0.0
+## 1.0 = normal; im Überblick zu Raumbeginn kurz kleiner (weiter weg).
+var _overview_factor: float = 1.0
 
 func _ready() -> void:
 	add_to_group("camera")
@@ -86,13 +88,11 @@ func _update_shake(delta: float) -> void:
 	rotation = _noise.get_noise_2d(_noise_time, _noise_time) * max_shake_roll * strength
 
 func _update_zoom(delta: float) -> void:
-	if _zoom_punch <= 0.0:
-		zoom = _base_zoom
-		return
-	_zoom_punch = maxf(_zoom_punch - zoom_punch_recovery * _zoom_punch * delta, 0.0)
-	if _zoom_punch < 0.001:
-		_zoom_punch = 0.0
-	zoom = _base_zoom * (1.0 + _zoom_punch)
+	if _zoom_punch > 0.0:
+		_zoom_punch = maxf(_zoom_punch - zoom_punch_recovery * _zoom_punch * delta, 0.0)
+		if _zoom_punch < 0.001:
+			_zoom_punch = 0.0
+	zoom = _base_zoom * _overview_factor * (1.0 + _zoom_punch)
 
 ## Zoom zur Laufzeit ändern (Dev-Modus). Die Raumgrenzen hängen am Zoom.
 func set_base_zoom(value: float) -> void:
@@ -100,6 +100,13 @@ func set_base_zoom(value: float) -> void:
 	_base_zoom = Vector2.ONE * base_zoom
 	zoom = _base_zoom
 	_apply_limits()
+
+## Überblick zu Raumbeginn: kurz auf 70 % des Grundzooms, dann zurück.
+func overview(duration: float) -> void:
+	_overview_factor = 0.7
+	var tween := create_tween()
+	tween.tween_interval(duration * 0.6)
+	tween.tween_property(self, "_overview_factor", 1.0, duration * 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 ## Kompatibel zum alten Aufruf: shake(4.0)
 func shake(amount: float) -> void:

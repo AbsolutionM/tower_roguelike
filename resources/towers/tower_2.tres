@@ -12,15 +12,21 @@
 [ext_resource type="Resource" path="res://resources/weather/weather_rain.tres" id="8_rain"]
 [ext_resource type="Resource" path="res://resources/weather/weather_ash.tres" id="9_ash"]
 [ext_resource type="Resource" path="res://resources/weather/weather_snow.tres" id="12_snow"]
+[ext_resource type="Resource" path="res://resources/enemies/miniboss_bone_lord.tres" id="mb_miniboss_bone_lord"]
+[ext_resource type="Resource" path="res://resources/enemies/miniboss_spider_mother.tres" id="mb_miniboss_spider_mother"]
+[ext_resource type="Resource" path="res://resources/rooms/room_mini_boss.tres" id="mb_room"]
 
 [resource]
 script = ExtResource("1_script")
 tower_id = "tower_2"
 tower_name = "Sturmturm"
-description = "Offene Etagen im Dauergewitter. Härtere Räume, launisches Wetter."
+description = "Turmstufe 2. Offene Etagen im Dauergewitter. Gegner treffen eine Schadensstufe härter. Öffnet sich, wenn Grünwald bezwungen ist."
 accent_color = Color(0.6, 0.75, 1, 1)
 ambient_color = Color(0.52, 0.55, 0.72, 1)
-floors = 7
+floors = 5
 rooms = Array[RoomData]([ExtResource("2_room1"), ExtResource("3_room2"), ExtResource("4_room3"), ExtResource("5_room4"), ExtResource("10_crypt"), ExtResource("11_belfry"), ExtResource("6_boss")])
 weather_options = Array[WeatherData]([ExtResource("7_storm"), ExtResource("8_rain"), ExtResource("9_ash"), ExtResource("12_snow")])
-unlocked = true
+unlocked = false
+damage_mult = 1.6
+mini_bosses = Array[EnemyData]([ExtResource("mb_miniboss_bone_lord"), ExtResource("mb_miniboss_spider_mother")])
+mini_boss_room = ExtResource("mb_room")

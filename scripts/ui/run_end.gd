@@ -12,6 +12,8 @@ func _ready() -> void:
 func _build() -> void:
 	var summary: Dictionary = RunState.last_run_summary
 	var died: bool = bool(summary.get("died", false))
+	var gave_up: bool = bool(summary.get("gave_up", false))
+	var victory: bool = bool(summary.get("victory", false))
 	var lost: Array = summary.get("lost", [])
 	var kept: Array = summary.get("kept", [])
 
@@ -19,9 +21,13 @@ func _build() -> void:
 
 	var accent: Color = UIKit.BAD if died else UIKit.GOOD
 	var title_text: String = "Gefallen" if died else "Turm verlassen"
+	if gave_up:
+		title_text = "Aufgegeben"
+	elif victory:
+		title_text = "Turm bezwungen"
 	column.add_child(UIKit.make_label(title_text, 42, accent, HORIZONTAL_ALIGNMENT_CENTER))
 
-	column.add_child(UIKit.make_label(_subtitle(died, lost.size()), 18, UIKit.TEXT_DIM,
+	column.add_child(UIKit.make_label(_subtitle(died, lost, int(summary.get("gold_lost", 0))), 18, UIKit.TEXT_DIM,
 		HORIZONTAL_ALIGNMENT_CENTER, true))
 
 	var currency := UIKit.make_currency_row(RunState.gold, RunState.get_total_essence())
@@ -68,15 +74,12 @@ func _build() -> void:
 	footer.add_child(town)
 	column.add_child(footer)
 
-## Ein verlorener Slot ist Einzahl - "1 Beutel-Slots" las sich falsch.
-func _subtitle(died: bool, lost_count: int) -> String:
+func _subtitle(died: bool, lost: Array, gold_lost: int) -> String:
 	if not died:
 		return "Die gesamte Beute ist im Lager."
-	if lost_count <= 0:
+	if lost.is_empty() and gold_lost <= 0:
 		return "Nichts verloren - der Beutel war leer."
-	if lost_count == 1:
-		return "1 Beutel-Slot verloren."
-	return "%d Beutel-Slots verloren." % lost_count
+	return "Die Hälfte der Beute ist verloren (%d Gold)." % gold_lost
 
 func _make_slot_panel(title: String, slots: Array, accent: Color) -> Control:
 	var panel := UIKit.make_panel(UIKit.PANEL, Color(accent, 0.4))

@@ -27,14 +27,14 @@ count_max = 2
 [sub_resource type="Resource" id="Entry_half"]
 script = ExtResource("2_entry")
 item = ExtResource("6_half")
-chance = 0.05
+chance = 0.06
 count_min = 1
 count_max = 1
 
 [sub_resource type="Resource" id="Entry_heart"]
 script = ExtResource("2_entry")
 item = ExtResource("7_heart")
-chance = 0.025
+chance = 0.01
 count_min = 1
 count_max = 1
 

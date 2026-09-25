@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("1_script")
 enemy_name = "Zünder"
-max_health = 165.4
+max_health = 60.0
 move_speed = 98.0
 sprite_texture = ExtResource("2_sprite")
 sprite_scale = 1.20

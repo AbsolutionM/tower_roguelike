@@ -18,7 +18,9 @@ func roll(luck: float = 0.0) -> Array:
 	for entry in entries:
 		if not entry or not entry.item:
 			continue
-		if randf() < clampf(entry.chance + luck, 0.0, 1.0):
+		# Glück verstärkt jede Chance anteilig - ein 1-%-Drop wird dadurch
+		# nicht plötzlich zum 15-%-Drop.
+		if randf() < clampf(entry.chance * (1.0 + luck * 4.0), 0.0, 1.0):
 			results.append({"item": entry.item, "count": entry.roll_count()})
 
 	return results

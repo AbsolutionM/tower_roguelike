@@ -7,14 +7,14 @@
 [resource]
 script = ExtResource("1_script")
 enemy_name = "Glutschläfer"
-max_health = 230.0
+max_health = 150.0
 move_speed = 50.0
 sprite_texture = ExtResource("2_sprite")
 sprite_scale = 1.25
 tint = Color(1, 1, 1, 1)
 behavior = 1
 movement = 0
-contact_damage = 34.0
+contact_damage = 34
 contact_range = 23.0
 attack_cooldown = 1.2
 charge_speed = 440.0

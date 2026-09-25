@@ -6,16 +6,22 @@ class_name RoomController
 
 signal room_started(room: RoomData)
 signal room_finished
+## Alle Gegner lagen vor Ablauf der Zeit - der HUD zeigt den "Weiter"-Knopf.
+signal room_perfect
+## Mini-Boss besiegt - der HUD fragt: weiter oder verlassen?
+signal mini_boss_defeated(is_last_floor: bool)
+## Hauptboss besiegt - der Turm ist geschafft.
+signal tower_cleared
 
 @export var enemy_scene: PackedScene
 @export var boss_scene: PackedScene
 @export var rooms: Array[RoomData] = []
 @export var transition_delay: float = 0.55
 
-## Nach so vielen geschafften Räumen kommt garantiert ein Bossraum (0 = aus).
-@export var boss_every: int = 4
-## Gold pro Sekunde Restzeit, wenn der Raum leergeräumt wurde.
-@export var CLEAR_BONUS_PER_SECOND: float = 5.0
+## Perfekt-Bonus: so viel vom Gold des Raums gibt es obendrauf (0,5 = ×1,5).
+@export var perfect_gold_bonus: float = 0.5
+## Nachschub: alle so viele Sekunden 1-2 Gegner, solange noch welche leben.
+@export var reinforcement_interval: float = 8.0
 
 @export_group("Spawns")
 ## Aus, wenn Gegner zufällig im Raum verteilt werden sollen.
@@ -39,6 +45,19 @@ signal room_finished
 var is_transitioning: bool = false
 ## Dev-Modus: dieser Raum kommt als nächstes statt eines zufälligen (-1 = aus).
 var forced_room_index: int = -1
+## Alle Gegner lagen vor Ablauf der Zeit; der Raum läuft weiter, bis man
+## "Weiter" drückt oder die Zeit abläuft.
+var is_perfect: bool = false
+
+## Mini-Boss- oder Bossraum, der nicht in `rooms` steht.
+var _room_override: RoomData = null
+var _mini_boss: EnemyData = null
+var _used_mini_bosses: Array[EnemyData] = []
+var _elite_this_floor: bool = false
+var _special_this_floor: bool = false
+var _reinforce_timer: float = 0.0
+var _reinforcements_left: int = 0
+var _boss_down: bool = false
 var current_room_index: int = -1
 
 var _ambient: CanvasModulate
@@ -54,12 +73,56 @@ func _ready() -> void:
 	# Erst nach dem Szenenaufbau spawnen, sonst ist die Root-Node noch gesperrt.
 	start_room.call_deferred()
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	_clamp_player()
+	if is_transitioning or not GameManager.room_active:
+		return
 
 	var empty: bool = get_tree().get_nodes_in_group("enemies").is_empty()
-	if not is_transitioning and GameManager.room_active and empty:
-		clear_room(true)
+	if empty:
+		_on_room_emptied()
+	else:
+		_tick_reinforcements(delta)
+
+## Alle Gegner liegen. Normale Räume laufen weiter (Truhen, Erze in Ruhe),
+## Bossräume führen zur Belohnung bzw. zur Entscheidung.
+func _on_room_emptied() -> void:
+	match GameManager.stage:
+		GameManager.Stage.MINI_BOSS:
+			if not _boss_down:
+				_boss_down = true
+				_on_mini_boss_down()
+		GameManager.Stage.BOSS:
+			if not _boss_down:
+				_boss_down = true
+				_on_boss_down()
+		_:
+			if not is_perfect:
+				is_perfect = true
+				_award_perfect_bonus()
+				room_perfect.emit()
+
+## Nachschub, damit der Raum nicht leer wird - aber nur, solange noch Gegner
+## leben. Wer alle erwischt, schafft den Raum trotzdem perfekt.
+func _tick_reinforcements(delta: float) -> void:
+	if GameManager.stage != GameManager.Stage.ROOM or _reinforcements_left <= 0:
+		return
+	if GameManager.is_overview() or GameManager.is_final_spurt():
+		return
+	_reinforce_timer -= delta
+	if _reinforce_timer > 0.0:
+		return
+	_reinforce_timer = reinforcement_interval
+	var count: int = mini(randi_range(1, 2), _reinforcements_left)
+	_reinforcements_left -= count
+	var room := get_current_room()
+	for i in count:
+		if not enemy_scene or not room or room.enemy_pool.is_empty():
+			return
+		var enemy = enemy_scene.instantiate()
+		enemy.enemy_data = room.enemy_pool[randi() % room.enemy_pool.size()]
+		get_tree().current_scene.add_child(enemy)
+		enemy.global_position = _random_spawn_position(room)
 
 ## Übernimmt Räume und Grundbeleuchtung des gewählten Turms.
 func _apply_tower() -> void:
@@ -92,6 +155,8 @@ func _update_ambient() -> void:
 
 func start_room() -> void:
 	is_transitioning = false
+	is_perfect = false
+	_boss_down = false
 	Enemy.time_scale = 1.0
 	pick_next_room()
 	_apply_weather_for_room()
@@ -99,52 +164,114 @@ func start_room() -> void:
 	var room := get_current_room()
 	_setup_camera(room)
 
-	var duration: float = room.duration_override if room else 0.0
-	if room and room.disable_timer:
-		duration = 99999.0
-	GameManager.start_room(duration)
+	var timed: bool = GameManager.stage == GameManager.Stage.ROOM and not (room and room.disable_timer)
+	GameManager.start_room(room.duration_override if room else 0.0, timed)
 
-	spawn_boss()
+	if GameManager.stage == GameManager.Stage.MINI_BOSS:
+		_spawn_mini_boss(room)
+	else:
+		spawn_boss()
 	# Feste Layouts haben Vorrang; ohne Layout wird zufällig verteilt.
-	if not spawn_from_layout(room):
+	if GameManager.stage == GameManager.Stage.ROOM and spawn_from_layout(room):
+		_top_up_room(room)
+	elif GameManager.stage == GameManager.Stage.ROOM:
 		spawn_enemies()
 		spawn_props()
+	else:
+		spawn_props()
+
+	_reinforce_timer = reinforcement_interval
+	_reinforcements_left = int(ceil(float(room.enemy_count) * 0.5)) if room else 0
+	_overview_zoom()
 
 	Audio.play(Audio.ID_ROOM_CHANGE)
 	queue_redraw()
 	room_started.emit(room)
 
+## Welcher Raum als nächstes kommt, hängt an der Stufe des Laufs:
+## normale Räume gewichtet gezogen, dann der Mini-Boss, am Ende der Hauptboss.
 func pick_next_room() -> void:
+	_room_override = null
+	_mini_boss = null
 	if rooms.is_empty():
 		current_room_index = -1
-		return
-	if rooms.size() == 1:
-		current_room_index = 0
 		return
 
 	if forced_room_index >= 0 and forced_room_index < rooms.size():
 		current_room_index = forced_room_index
 		forced_room_index = -1
+		# Der Dev-Modus springt auch direkt in den Bossraum.
+		if rooms[current_room_index].boss_data:
+			GameManager.stage = GameManager.Stage.BOSS
+		elif GameManager.stage != GameManager.Stage.ROOM:
+			GameManager.stage = GameManager.Stage.ROOM
 		return
 
-	var cleared := GameManager.rooms_cleared_this_floor
-	if boss_every > 0 and cleared > 0 and cleared % boss_every == 0:
-		var boss_index := _find_room_index(true)
-		if boss_index >= 0:
-			current_room_index = boss_index
+	match GameManager.stage:
+		GameManager.Stage.BOSS:
+			current_room_index = maxi(_find_room_index(true), 0)
 			return
+		GameManager.Stage.MINI_BOSS:
+			var tower := RunState.get_selected_tower()
+			if tower and tower.mini_boss_room and not tower.mini_bosses.is_empty():
+				_room_override = tower.mini_boss_room
+				_mini_boss = _pick_mini_boss(tower)
+				return
+			# Ohne Mini-Boss-Pool gibt es einen normalen Raum statt eines Kampfs.
+			GameManager.stage = GameManager.Stage.ROOM
 
-	# Normale Räume: zufällig, aber nie zweimal derselbe und nie ein Bossraum.
+	if GameManager.rooms_cleared_this_floor == 0:
+		_elite_this_floor = false
+		_special_this_floor = false
+	current_room_index = _pick_weighted_room()
+	var picked := get_current_room()
+	if picked:
+		_elite_this_floor = _elite_this_floor or picked.kind == RoomData.Kind.ELITE
+		_special_this_floor = _special_this_floor or picked.kind == RoomData.Kind.SPECIAL
+
+## Gewichtet ziehen: nie zweimal derselbe Raum hintereinander, höchstens ein
+## Elite-Raum pro Etage, und im letzten Raum ein Sonderraum, falls es noch
+## keinen gab und der Turm welche hat.
+func _pick_weighted_room() -> int:
+	var last_room_of_floor: bool = GameManager.rooms_cleared_this_floor >= GameManager.ROOMS_PER_FLOOR - 1
+	var force_special: bool = last_room_of_floor and not _special_this_floor
 	var candidates: Array[int] = []
 	for i in rooms.size():
-		if not rooms[i] or rooms[i].boss_data or i == current_room_index:
+		var room := rooms[i]
+		if not room or room.boss_data or i == current_room_index:
+			continue
+		if room.kind == RoomData.Kind.ELITE and _elite_this_floor:
 			continue
 		candidates.append(i)
-
+	if force_special:
+		var specials := candidates.filter(func(i): return rooms[i].kind == RoomData.Kind.SPECIAL)
+		if not specials.is_empty():
+			candidates.assign(specials)
 	if candidates.is_empty():
-		current_room_index = maxi(_find_room_index(false), 0)
-		return
-	current_room_index = candidates[randi() % candidates.size()]
+		return maxi(_find_room_index(false), 0)
+
+	var total: float = 0.0
+	for i in candidates:
+		total += maxf(rooms[i].weight, 0.0)
+	var pick: float = randf() * total
+	for i in candidates:
+		pick -= maxf(rooms[i].weight, 0.0)
+		if pick <= 0.0:
+			return i
+	return candidates.back()
+
+## Jeder Mini-Boss höchstens einmal pro Lauf; sind alle durch, von vorn.
+func _pick_mini_boss(tower: TowerData) -> EnemyData:
+	var left: Array[EnemyData] = []
+	for boss in tower.mini_bosses:
+		if boss and not _used_mini_bosses.has(boss):
+			left.append(boss)
+	if left.is_empty():
+		_used_mini_bosses.clear()
+		left = tower.mini_bosses.duplicate()
+	var boss: EnemyData = left[randi() % left.size()]
+	_used_mini_bosses.append(boss)
+	return boss
 
 func _find_room_index(want_boss: bool) -> int:
 	for i in rooms.size():
@@ -155,6 +282,8 @@ func _find_room_index(want_boss: bool) -> int:
 	return -1
 
 func get_current_room() -> RoomData:
+	if _room_override:
+		return _room_override
 	if current_room_index >= 0 and current_room_index < rooms.size():
 		return rooms[current_room_index]
 	return null
@@ -211,9 +340,15 @@ func spawn_boss() -> void:
 	var room := get_current_room()
 	if not room or not room.boss_data or not boss_scene:
 		return
+	_spawn_boss_enemy(room.boss_data, room)
 
+func _spawn_mini_boss(room: RoomData) -> void:
+	if _mini_boss and boss_scene:
+		_spawn_boss_enemy(_mini_boss, room)
+
+func _spawn_boss_enemy(data: EnemyData, room: RoomData) -> void:
 	var boss = boss_scene.instantiate()
-	boss.enemy_data = room.boss_data
+	boss.enemy_data = data
 	get_tree().current_scene.add_child(boss)
 	boss.global_position = global_position + Vector2(0.0, -room.room_size.y * 0.28)
 
@@ -263,6 +398,24 @@ func _cell_to_world(x: int, y: int, columns: int, rows: int, half: Vector2) -> V
 	return global_position + Vector2(lerpf(-half.x, half.x, fx), lerpf(-half.y, half.y, fy))
 
 ## Sicherheitsnetz: nie einen Felsen auf den Spieler setzen.
+## Layouts legen Felsen und ein paar Gegner fest; was die Raumdaten darüber
+## hinaus verlangen (Gegnerzahl, Truhen, Erzadern), kommt zufällig dazu.
+func _top_up_room(room: RoomData) -> void:
+	var missing_enemies: int = room.enemy_count - get_tree().get_nodes_in_group("enemies").size()
+	for i in maxi(missing_enemies, 0):
+		if not enemy_scene or room.enemy_pool.is_empty():
+			break
+		var enemy = enemy_scene.instantiate()
+		enemy.enemy_data = room.enemy_pool[randi() % room.enemy_pool.size()]
+		get_tree().current_scene.add_child(enemy)
+		enemy.global_position = _random_spawn_position(room)
+	var missing_chests: int = room.chest_count - get_tree().get_nodes_in_group("chests").size()
+	for i in maxi(missing_chests, 0):
+		_spawn_layout_prop(room.chest_scene, _random_spawn_position(room))
+	var missing_ores: int = room.harvestable_count - get_tree().get_nodes_in_group("harvestables").size()
+	for i in maxi(missing_ores, 0):
+		_spawn_layout_prop(room.harvestable_scene, _random_spawn_position(room))
+
 func _spawn_layout_obstacle(room: RoomData, position: Vector2, player: Node2D) -> void:
 	if not room.obstacle_scene:
 		return
@@ -363,20 +516,30 @@ func force_next_room() -> void:
 func _on_time_up() -> void:
 	clear_room()
 
-## `by_kill` = alle Gegner lagen, bevor die Zeit ablief. Nur dann gibt es
-## den Bonus - sonst waere er keine Leistung, sondern eine Wartezeit.
-func clear_room(by_kill: bool = false) -> void:
+## Knopf "Weiter" nach einem perfekten Raum: Restzeit in die Zeitbank.
+func continue_early() -> void:
+	if is_transitioning or GameManager.stage != GameManager.Stage.ROOM:
+		return
+	GameManager.bank_remaining_time()
+	clear_room()
+
+## Raum beenden. In normalen Räumen verfällt liegengebliebener Loot und
+## übrige Gegner lösen sich ohne Drop auf; aus Bossräumen wird alles
+## eingesammelt.
+func clear_room() -> void:
 	if is_transitioning:
 		return
 	is_transitioning = true
 
-	if by_kill:
-		_award_clear_bonus()
-
+	var was_boss_room: bool = GameManager.stage != GameManager.Stage.ROOM
 	GameManager.on_room_cleared()
+	_teardown_and_next(was_boss_room)
+
+func _teardown_and_next(was_boss_room: bool) -> void:
 	room_finished.emit()
 
-	_collect_remaining_pickups()
+	if was_boss_room:
+		_collect_remaining_pickups()
 	_despawn_group("pickups")
 	_despawn_group("enemies")
 	_despawn_group("projectiles")
@@ -384,34 +547,63 @@ func clear_room(by_kill: bool = false) -> void:
 	_despawn_group("harvestables")
 	_despawn_group("obstacles")
 
-	await get_tree().create_timer(transition_delay).timeout
+	await get_tree().create_timer(transition_delay, true, false, true).timeout
 	if is_inside_tree():
 		start_room()
 
-## Wer den Raum leerräumt, bekommt die Restzeit in Gold ausgezahlt.
-## Das gibt dem Zeitdruck eine zweite Seite: nicht nur überleben, sondern
-## schnell genug sein.
-func _award_clear_bonus() -> void:
-	# Räume ohne Zeitlimit (Bossraum) haben einen Timer von 99999 Sekunden.
-	# Ohne diese Sperre zahlt der Bonus dort ein Vermögen aus.
-	var room := get_current_room()
-	if room and room.disable_timer:
-		return
-	# Zusätzlich auf die Raumdauer deckeln, damit kein Sonderfall durchrutscht.
-	var remaining: float = minf(GameManager.get_time_remaining(), GameManager.current_duration)
-	if remaining <= 0.5:
-		return
-
-	var bonus: int = int(round(remaining * CLEAR_BONUS_PER_SECOND))
-	RunState.add_gold(bonus)
+## Perfekt-Bonus: das Gold dieses Raums ×1,5.
+func _award_perfect_bonus() -> void:
 	GameManager.count_room_cleared_early()
-
+	var bonus: int = int(round(float(GameManager.room_gold_earned) * perfect_gold_bonus))
 	var player := get_tree().get_first_node_in_group("player")
 	var origin: Vector2 = player.global_position if player else global_position
-	FX.floating_text(origin + Vector2(0.0, -96.0), "Raum geschafft", Palette.GOLD, 24, 60.0)
-	FX.floating_text(origin + Vector2(0.0, -62.0), "+%d Gold" % bonus, Palette.AMBER, 20, 48.0)
+	FX.floating_text(origin + Vector2(0.0, -96.0), "Perfekt!", Palette.GOLD, 24, 60.0)
+	if bonus > 0:
+		RunState.add_gold(bonus)
+		FX.floating_text(origin + Vector2(0.0, -62.0), "+%d Gold" % bonus, Palette.AMBER, 20, 48.0)
 	FX.ring_burst(origin, Palette.GOLD, 12.0, 190.0, 0.45, 8.0)
 	Audio.play(Audio.ID_LEVEL_UP)
+
+## Mini-Boss liegt: ein Herz zurück, Beute einsammeln, dann fragt der HUD.
+func _on_mini_boss_down() -> void:
+	var player := get_tree().get_first_node_in_group("player")
+	if player:
+		var health = player.get_node_or_null("PlayerHealth")
+		if health:
+			health.heal_hearts(2)
+	# Echte Sekunden - der Hitstop beim Todesstoß soll die Pause nicht dehnen.
+	await get_tree().create_timer(1.6, true, false, true).timeout
+	if not is_inside_tree() or is_transitioning or GameManager.stage != GameManager.Stage.MINI_BOSS:
+		return
+	_collect_remaining_pickups()
+	GameManager.room_active = false
+	mini_boss_defeated.emit(GameManager.is_last_floor())
+
+## Nach der Entscheidung "weiter": nächste Etage bzw. Hauptboss.
+func continue_after_mini_boss() -> void:
+	if is_transitioning:
+		return
+	is_transitioning = true
+	GameManager.run_rooms_cleared += 1
+	GameManager.advance_after_mini_boss()
+	_teardown_and_next(true)
+
+## Kurz herauszoomen, damit man den Raum überblickt (Überblicksphase).
+func _overview_zoom() -> void:
+	var camera := get_tree().get_first_node_in_group("camera")
+	if camera and camera.has_method("overview"):
+		camera.overview(GameManager.OVERVIEW_TIME)
+
+func _on_boss_down() -> void:
+	await get_tree().create_timer(2.0, true, false, true).timeout
+	if not is_inside_tree() or is_transitioning or GameManager.stage != GameManager.Stage.BOSS:
+		return
+	_collect_remaining_pickups()
+	GameManager.room_active = false
+	var tower := RunState.get_selected_tower()
+	if tower:
+		RunState.mark_tower_cleared(tower.tower_id)
+	tower_cleared.emit()
 
 ## Übrig gebliebenes Loot fliegt beim Raumwechsel automatisch zum Spieler.
 func _collect_remaining_pickups() -> void:

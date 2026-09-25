@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="DropTable" format=3]
+
+[ext_resource type="Script" path="res://resources/loot/drop_table.gd" id="1_table"]
+[ext_resource type="Script" path="res://resources/loot/drop_entry.gd" id="2_entry"]
+[ext_resource type="Resource" path="res://resources/items/gold_coin.tres" id="3_gold"]
+[ext_resource type="Resource" path="res://resources/items/red_heart.tres" id="4_heart"]
+[ext_resource type="Resource" path="res://resources/items/boss_core.tres" id="5_core"]
+[ext_resource type="Resource" path="res://resources/items/essence_slime.tres" id="6_essence"]
+[ext_resource type="Resource" path="res://resources/items/key.tres" id="7_key"]
+
+[sub_resource type="Resource" id="Entry_heart"]
+script = ExtResource("2_entry")
+item = ExtResource("4_heart")
+chance = 1.0
+count_min = 1
+count_max = 1
+
+[sub_resource type="Resource" id="Entry_core"]
+script = ExtResource("2_entry")
+item = ExtResource("5_core")
+chance = 0.2
+count_min = 1
+count_max = 1
+
+[sub_resource type="Resource" id="Entry_essence"]
+script = ExtResource("2_entry")
+item = ExtResource("6_essence")
+chance = 1.0
+count_min = 2
+count_max = 4
+
+[sub_resource type="Resource" id="Entry_key"]
+script = ExtResource("2_entry")
+item = ExtResource("7_key")
+chance = 0.5
+count_min = 1
+count_max = 1
+
+[resource]
+script = ExtResource("1_table")
+entries = Array[DropEntry]([SubResource("Entry_heart"), SubResource("Entry_core"), SubResource("Entry_essence"), SubResource("Entry_key")])
+gold_item = ExtResource("3_gold")
+gold_chance = 1.0
+gold_min = 15
+gold_max = 30

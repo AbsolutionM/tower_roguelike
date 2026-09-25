@@ -7,13 +7,13 @@
 [resource]
 script = ExtResource("1_script")
 enemy_name = "Pflegerin"
-max_health = 285.9
+max_health = 90.0
 move_speed = 58.0
 sprite_texture = ExtResource("2_sprite")
 sprite_scale = 1.25
 tint = Color(1, 1, 1, 1)
 behavior = 3
-contact_damage = 11.0
+contact_damage = 11
 contact_range = 20.4
 attack_cooldown = 1.5
 keep_distance = 230.0

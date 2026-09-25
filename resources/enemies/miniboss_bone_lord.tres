@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://resources/enemies/enemy_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/loot/dt_miniboss.tres" id="2_drops"]
+[ext_resource type="PackedScene" path="res://scenes/projectiles/projectile.tscn" id="3_projectile"]
+[ext_resource type="Resource" path="res://resources/enemies/skull_hopper.tres" id="5_minion"]
+
+[resource]
+script = ExtResource("1_script")
+enemy_name = "Knochenfürst"
+max_health = 700.0
+move_speed = 60.0
+tint = Color(0.93, 0.9, 0.8, 1)
+symbol = 2
+symbol_size = 44.0
+movement = 1
+hop_interval = 1.0
+hop_height = 70.0
+hop_duration = 0.5
+hop_speed_mult = 3.4
+behavior = 0
+contact_damage = 45.0
+contact_range = 40.0
+attack_cooldown = 1.2
+projectile_scene = ExtResource("3_projectile")
+projectile_speed = 260.0
+projectile_damage = 28.0
+trail_colors = Array[Color]([Color(0.85, 0.83, 0.75, 0.3)])
+knockback_friction = 1400.0
+shadow_radius = 20.0
+is_boss = true
+boss_title = "Knochenfürst"
+minion_data = ExtResource("5_minion")
+minions_per_wave = 2
+spray_projectiles = 10
+special_interval = 4.4
+drop_table = ExtResource("2_drops")

@@ -35,6 +35,8 @@ var thorns: float = 0.0
 var dodge_chance: float = 0.0
 ## Multiplikator auf die Abklingzeit der Fähigkeit.
 var ability_cooldown_mult: float = 1.0
+## Zusätzliche Sekunden pro Raum (Relikte).
+var bonus_room_time: float = 0.0
 
 ## Baut die Werte für Menüs, ohne dass ein Spieler in der Szene existiert.
 static func preview(character: CharacterData) -> PlayerStats:
@@ -140,6 +142,7 @@ func _apply_base() -> void:
 	health_regen = 0.0
 	thorns = 0.0
 	dodge_chance = 0.0
+	bonus_room_time = 0.0
 
 func _apply_accessories() -> void:
 	if not character_data:

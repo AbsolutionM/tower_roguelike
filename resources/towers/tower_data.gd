@@ -15,4 +15,14 @@ class_name TowerData
 @export var rooms: Array[RoomData] = []
 ## Pro Raum wird zufällig eines dieser Wetter gezogen. Leer = immer klar.
 @export var weather_options: Array[WeatherData] = []
+## Erster Turm = offen. Jeder weitere öffnet sich, wenn der vorige bezwungen ist.
 @export var unlocked: bool = true
+## Schaden der Gegner in diesem Turm. Springt pro Turmstufe eine Schadensstufe
+## (Isaac-Prinzip), statt mit jeder Etage ein bisschen zu steigen.
+@export var damage_mult: float = 1.0
+
+@export_group("Mini-Bosse")
+## Nach je fünf Räumen kommt einer davon; jeder höchstens einmal pro Lauf.
+@export var mini_bosses: Array[EnemyData] = []
+## Raum, in dem die Mini-Bosse kämpfen (ohne Timer).
+@export var mini_boss_room: RoomData

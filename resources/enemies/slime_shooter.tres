@@ -8,7 +8,7 @@
 [resource]
 script = ExtResource("1_script")
 enemy_name = "Spucker"
-max_health = 180.4
+max_health = 60.0
 move_speed = 62.0
 sprite_texture = ExtResource("2_sprite")
 sprite_scale = 1.20

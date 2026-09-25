@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="RoomData" format=3]
+
+[ext_resource type="Script" path="res://resources/rooms/room_data.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/props/obstacle.tscn" id="2_rock"]
+
+[resource]
+script = ExtResource("1_script")
+room_name = "Etagenwächter"
+enemy_pool = Array[EnemyData]([])
+enemy_count = 0
+room_size = Vector2(1088, 1472)
+fixed_camera = false
+spawn_margin = 140.0
+min_player_distance = 340.0
+disable_timer = true
+obstacle_scene = ExtResource("2_rock")
+obstacle_count = 3

@@ -27,6 +27,8 @@ class_name HUD
 var pause_button: Button
 ## Öffnet das Dev-Menü - nur in Debug-Builds vorhanden.
 var dev_button: Button
+## Erscheint nach einem perfekten Raum: Restzeit in die Zeitbank, weiter.
+var continue_button: Button
 ## Wird in _ready gebaut, siehe _create_key_counter.
 var key_label: Label
 
@@ -51,6 +53,7 @@ func _ready() -> void:
 	_update_essence_label()
 	_update_bag_label()
 	_create_key_counter()
+	_create_continue_button()
 	# Erst nach dem Layout, dann steht die Leistenhöhe fest.
 	_create_pause_button()
 	_apply_safe_area.call_deferred()
@@ -208,6 +211,9 @@ func _bind_room_controller() -> void:
 		return
 	room_controller.room_started.connect(_on_room_started)
 	room_controller.room_finished.connect(_on_room_finished)
+	room_controller.room_perfect.connect(_on_room_perfect)
+	room_controller.mini_boss_defeated.connect(_on_mini_boss_defeated)
+	room_controller.tower_cleared.connect(_on_tower_cleared)
 	_on_room_started(room_controller.get_current_room())
 
 ## ESC (bzw. Zurück-Taste auf Android) öffnet die Pause statt sofort abzubrechen.
@@ -245,7 +251,7 @@ func _open_pause() -> void:
 	column.add_child(UIKit.make_label("Pause", 44, UIKit.TEXT, HORIZONTAL_ALIGNMENT_CENTER))
 	column.add_child(UIKit.make_label(GameManager.get_progress_text(), 18, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_CENTER))
 	column.add_child(UIKit.make_label(
-		"Beutel %d/%d - beim Tod gehen %d Slots verloren." % [RunState.get_used_slots(), RunState.MAX_RUN_SLOTS, RunState.SLOTS_LOST_ON_DEATH],
+		"Beutel %d/%d. Sicher ist die Beute erst, wenn du nach einem Mini-Boss den Turm verlässt. Wer aufgibt oder stirbt, verliert die Hälfte." % [RunState.get_used_slots(), RunState.MAX_RUN_SLOTS],
 		16, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_CENTER, true
 	))
 	column.add_child(UIKit.make_spacer(20.0))
@@ -254,7 +260,7 @@ func _open_pause() -> void:
 	resume.pressed.connect(_close_pause)
 	column.add_child(resume)
 
-	var leave := UIKit.make_button("Turm verlassen", 20, UIKit.TEXT_DIM)
+	var leave := UIKit.make_button("Aufgeben", 20, UIKit.TEXT_DIM)
 	leave.pressed.connect(_leave_run)
 	column.add_child(leave)
 
@@ -266,12 +272,117 @@ func _close_pause() -> void:
 		_pause_overlay.queue_free()
 	_pause_overlay = null
 
-## Freiwillig aussteigen - die Beute bleibt erhalten.
+## Mitten in der Etage aufgeben kostet wie der Tod die Hälfte der Beute.
 func _leave_run() -> void:
 	get_tree().paused = false
 	_pause_overlay = null
-	RunState.end_run(false)
+	RunState.end_run(true)
+	RunState.last_run_summary["gave_up"] = true
 	get_tree().change_scene_to_file("res://scenes/ui/run_end.tscn")
+
+# --- Raumende, Mini-Boss, Sieg --------------------------------------------
+
+func _create_continue_button() -> void:
+	continue_button = UIKit.make_primary_button("Weiter", 22, Palette.GOLD)
+	# Unten im Spielfeld, direkt über der Steuerleiste - dort verdeckt er
+	# weder den Helden noch die Beute, die man noch einsammeln will.
+	continue_button.anchor_left = 0.5
+	continue_button.anchor_right = 0.5
+	continue_button.anchor_top = 1.0
+	continue_button.anchor_bottom = 1.0
+	continue_button.offset_left = -170.0
+	continue_button.offset_right = 170.0
+	continue_button.offset_top = -470.0
+	continue_button.offset_bottom = -390.0
+	continue_button.visible = false
+	continue_button.pressed.connect(func() -> void:
+		continue_button.visible = false
+		var room_controller := get_tree().get_first_node_in_group("room_controller")
+		if room_controller:
+			room_controller.continue_early()
+	)
+	add_child(continue_button)
+
+func _on_room_perfect() -> void:
+	if not continue_button:
+		return
+	continue_button.visible = true
+	_pop(continue_button)
+
+## Ein Overlay mit Titel, Text und Knöpfen; pausiert das Spiel.
+func _make_choice_overlay(title: String, text: String, accent: Color) -> VBoxContainer:
+	var overlay := Control.new()
+	overlay.name = "ChoiceOverlay"
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(overlay)
+
+	var dim := ColorRect.new()
+	dim.color = Color(Palette.INK, 0.88)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(dim)
+
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 50)
+	margin.add_theme_constant_override("margin_right", 50)
+	overlay.add_child(margin)
+
+	var column := UIKit.make_column(16)
+	column.alignment = BoxContainer.ALIGNMENT_CENTER
+	margin.add_child(column)
+	column.add_child(UIKit.make_label(title, 40, accent, HORIZONTAL_ALIGNMENT_CENTER))
+	column.add_child(UIKit.make_label(text, 18, UIKit.TEXT_DIM, HORIZONTAL_ALIGNMENT_CENTER, true))
+	column.add_child(UIKit.make_spacer(16.0))
+	get_tree().paused = true
+	return column
+
+func _close_choice_overlay() -> void:
+	get_tree().paused = false
+	var overlay := get_node_or_null("ChoiceOverlay")
+	if overlay:
+		overlay.queue_free()
+
+## Nach dem Mini-Boss: weiter (mehr Beute, mehr Risiko) oder mit der Beute heim.
+func _on_mini_boss_defeated(is_last_floor: bool) -> void:
+	var next_text: String = "Zum Hauptboss" if is_last_floor else "Weiter zu Etage %d" % (GameManager.current_floor + 1)
+	var column := _make_choice_overlay(
+		"Etage %d geschafft" % GameManager.current_floor,
+		"Beutel %d/%d, +%d Gold in diesem Lauf.\nVerlässt du den Turm jetzt, ist alles sicher. Stirbst du später, verlierst du die Hälfte." % [
+			RunState.get_used_slots(), RunState.MAX_RUN_SLOTS, RunState.run_gold
+		],
+		Palette.GOLD
+	)
+	var go_on := UIKit.make_primary_button(next_text, 24, Palette.BLOOD)
+	go_on.pressed.connect(func() -> void:
+		_close_choice_overlay()
+		var room_controller := get_tree().get_first_node_in_group("room_controller")
+		if room_controller:
+			room_controller.continue_after_mini_boss()
+	)
+	column.add_child(go_on)
+	var leave := UIKit.make_button("Turm verlassen - Beute sichern", 20, UIKit.GOOD)
+	leave.pressed.connect(func() -> void:
+		get_tree().paused = false
+		RunState.end_run(false)
+		get_tree().change_scene_to_file("res://scenes/ui/run_end.tscn")
+	)
+	column.add_child(leave)
+
+func _on_tower_cleared() -> void:
+	var tower := RunState.get_selected_tower()
+	var column := _make_choice_overlay(
+		"Turm bezwungen!",
+		"%s ist geschafft. Die gesamte Beute ist sicher, und die nächste Turmstufe ist offen." % (tower.tower_name if tower else "Der Turm"),
+		Palette.GOLD
+	)
+	var done := UIKit.make_primary_button("Zur Beute", 24, Palette.GOLD)
+	done.pressed.connect(func() -> void:
+		get_tree().paused = false
+		RunState.end_run(false, true)
+		get_tree().change_scene_to_file("res://scenes/ui/run_end.tscn")
+	)
+	column.add_child(done)
 
 func _process(_delta: float) -> void:
 	_update_boss()
@@ -284,7 +395,7 @@ func _process(_delta: float) -> void:
 ## Ein Balken allein sagt nicht, ob noch zwanzig Sekunden oder drei bleiben.
 func _update_timer() -> void:
 	var remaining: float = GameManager.get_time_remaining()
-	var urgent: bool = remaining < 5.0
+	var urgent: bool = GameManager.is_final_spurt()
 	var tint: Color = Palette.BLOOD if urgent else Palette.AZURE
 
 	if timer_bar:
@@ -394,6 +505,8 @@ func _on_room_started(room: RoomData) -> void:
 		tween.tween_property(room_label, "modulate:a", 0.45, 0.4).set_delay(1.0)
 
 func _on_room_finished() -> void:
+	if continue_button:
+		continue_button.visible = false
 	if fade_overlay:
 		var tween := fade_overlay.create_tween()
 		tween.tween_property(fade_overlay, "color:a", 0.6, 0.22)

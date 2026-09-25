@@ -94,9 +94,9 @@ func is_invulnerable() -> bool:
 func set_invulnerable(duration: float) -> void:
 	invuln_timer = maxf(invuln_timer, duration)
 
-## Rechnet einen Schadenswert in halbe Herzen um - mindestens eins.
+## Schadensstufen: 1-30 = ½ Herz, 31-60 = 1, 61-90 = 1½, ab 91 = 2 (Deckel).
 static func damage_to_halves(amount: float) -> int:
-	return clampi(int(round(amount / HALF_HEART_VALUE)), 1, MAX_HALVES_PER_HIT)
+	return clampi(int(ceil(amount / HALF_HEART_VALUE - 0.001)), 1, MAX_HALVES_PER_HIT)
 
 func _get_stats() -> Node:
 	return _body.get_node_or_null("PlayerStats") if _body else null

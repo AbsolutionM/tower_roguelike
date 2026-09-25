@@ -3,6 +3,12 @@ class_name RoomData
 
 @export var room_name: String = "Raum"
 
+## ELITE: höchstens einer pro Etage. SPECIAL: Mine, Schmiede, Händler, Schrein.
+enum Kind { NORMAL, ELITE, SPECIAL }
+@export var kind: Kind = Kind.NORMAL
+## Ziehgewicht unter den Räumen des Turms.
+@export var weight: float = 10.0
+
 @export_group("Gegner")
 @export var enemy_pool: Array[EnemyData] = []
 ## Gegner beim Betreten des Raums.
