@@ -342,24 +342,23 @@ def augen(px, kopf, seitlich, haut, art='klar', iris=None, verdeckt=None):
         hohl    leere Hoehle, unten am tiefsten
         glut    Hoehle mit einem Glutpunkt
 
-    seitlich rueckt das Paar mit dem Kopf; das hintere Auge wird dabei
-    1 px schmal, weil es angeschnitten ist."""
+    seitlich rueckt das Paar nur mit dem Kopf - beide Augen bleiben dabei
+    gleich gross, auch in der Seitenansicht."""
     x0, y0, x1, y1 = kasten(kopf)
     z = y0 + AUGENZEILE
     hh, hm, hd, hk = haut
     li, re = x0 + 2 + seitlich, x0 + 6 + seitlich
     gesetzt = []
-    for ex, hinteres in ((li, seitlich > 0), (re, False)):
+    for ex in (li, re):
         if verdeckt == ('li' if ex == li else 're'):
-            continue                                     # Klappe, Binde, Strähne
-        breite = 1 if hinteres else 2
-        ax = ex + (1 if hinteres else 0)
+            continue                                     # Klappe, Binde, Straehne
+        breite, ax = 2, ex
         for dx in range(breite):
             for dy in (0, 1):
                 if (ax + dx, z + dy) in kopf:
                     put(px, ax + dx, z + dy, rgb('f1ebdb') if art == 'klar' else rgb(NACHT))
                     gesetzt.append((ax + dx, z + dy))
-        innen = ax + breite - 1 if ex == li else ax          # Iris zur Nase hin
+        innen = ax + 1 if ex == li else ax                   # Iris zur Nase hin
         if art == 'klar':
             put(px, innen, z, iris or rgb(AUGE))
             put(px, innen, z + 1, rgb(AUGE))
