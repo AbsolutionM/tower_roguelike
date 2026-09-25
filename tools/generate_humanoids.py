@@ -342,8 +342,9 @@ def augen(px, kopf, seitlich, haut, art='klar', iris=None, verdeckt=None):
         hohl    leere Hoehle, unten am tiefsten
         glut    Hoehle mit einem Glutpunkt
 
-    seitlich rueckt das Paar nur mit dem Kopf - beide Augen bleiben dabei
-    gleich gross, auch in der Seitenansicht."""
+    In der Seitenansicht schaut der Kopf nach links: die Zuege ruecken nach
+    links, das vordere (linke) Auge bleibt 2 px breit, das hintere (rechte)
+    wird 1 px schmal, weil es vom Kopf angeschnitten ist."""
     x0, y0, x1, y1 = kasten(kopf)
     z = y0 + AUGENZEILE
     hh, hm, hd, hk = haut
@@ -352,13 +353,17 @@ def augen(px, kopf, seitlich, haut, art='klar', iris=None, verdeckt=None):
     for ex in (li, re):
         if verdeckt == ('li' if ex == li else 're'):
             continue                                     # Klappe, Binde, Straehne
-        breite, ax = 2, ex
+        hinteres = seitlich != 0 and ex == re            # rechtes Auge liegt hinten
+        breite, ax = (1, ex + 1) if hinteres else (2, ex)
         for dx in range(breite):
             for dy in (0, 1):
                 if (ax + dx, z + dy) in kopf:
                     put(px, ax + dx, z + dy, rgb('f1ebdb') if art == 'klar' else rgb(NACHT))
                     gesetzt.append((ax + dx, z + dy))
-        innen = ax + 1 if ex == li else ax                   # Iris zur Nase hin
+        if seitlich:
+            innen = ax                                       # Blick nach links
+        else:
+            innen = ax + 1 if ex == li else ax               # Iris zur Nase hin
         if art == 'klar':
             put(px, innen, z, iris or rgb(AUGE))
             put(px, innen, z + 1, rgb(AUGE))
@@ -963,7 +968,7 @@ def frame(bauen, richtung, nr, anim='walk'):
             dx = 0
         m = verschieben(maske(richtung, vnr), dx, dy)
     hinten = richtung in ('Back', 'BSide')
-    seitlich = 1 if richtung in ('FSide', 'BSide') else 0
+    seitlich = -1 if richtung in ('FSide', 'BSide') else 0   # Seitenansicht: Blick nach links
     if m['kopf'] and m['rumpf']:
         bauen(px, m, seitlich, hinten, nr if anim == 'walk' else 1)
     if anim == 'death':                                     # unter dem Boden nichts mehr
