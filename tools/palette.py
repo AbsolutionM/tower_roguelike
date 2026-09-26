@@ -85,7 +85,7 @@ AAP_ZU_NEU = {
     '73172d': 'b63c35', 'b4202a': 'e45c5f', 'e86a73': 'ff9ba8', 'df3e23': 'cd5e46',
     'fa6a0a': 'e37840', 'f9a31b': 'ffb108', 'ffd541': 'ffcf05', 'fffc40': 'a6cc34',
     # Haut (Rampe 2)
-    '422433': '733d3b', '5b3138': '733d3b', '8e5252': 'ad6e51', 'ba756a': 'd58d6b',
+    '422433': '5e4646', '5b3138': '733d3b', '8e5252': 'ad6e51', 'ba756a': 'd58d6b',
     'f5a097': 'fbaa84', 'fad6b8': 'ffce7f', 'fef3c0': 'fff3d6',
     # Leder und Hut (Rampe 12), Knochen (Rampe 1)
     '5a4e44': '9e8a6e', '796755': 'c0a588', '71413b': '725a51', 'a08662': 'ddbf9a',
