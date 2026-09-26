@@ -258,60 +258,63 @@ def _rampe(c):
 
 
 def umriss(img):
-    """Legt die Kontur neu an: eine schon vorhandene wird abgezogen, dann
-    bekommt jeder freie Pixel neben der Figur die dunkelste Stufe der Rampe,
-    die ringsum ueberwiegt (gerade Nachbarn zaehlen doppelt). Grau zaehlt nur,
-    wenn es nichts anderes gibt - ein heller Punkt auf dem Stiefel soll die
-    Kontur nicht einfaerben."""
+    """Legt die Kontur an, ohne die Form anzufassen - es wird nie ein Pixel
+    entfernt oder verschoben.
+
+    Hat die Figur noch keine Kontur (der Rand ist bunt), kommt ein Ring von
+    1 px aussen herum. Hat sie schon eine (der Rand ist durchgehend eine
+    Farbe, wie bei den Schleimen, oder steht schon auf Stufe 0 wie in
+    cowboy/Front1), wird genau dieser Ring umgefaerbt - die Silhouette
+    bleibt Pixel fuer Pixel dieselbe.
+
+    Die Farbe ist immer die dunkelste Stufe (0) der Reihe des angrenzenden
+    Pixels; gerade Nachbarn zaehlen doppelt, Diagonalen einfach. Grau gibt
+    nie die Farbe vor, sonst faerbt ein heller Punkt - etwa die weisse
+    Stiefelspitze - den Rand ein."""
     px = img.load()
     w, h = img.size
     deckend = {(x, y) for y in range(h) for x in range(w) if px[x, y][3]}
+    if not deckend:
+        return img
     rampen = {p: _rampe(px[p]) for p in deckend}
-    stufe = {}
-    for p in deckend:
-        i = _RAMPE_VON.get(px[p][:3])
-        stufe[p] = None if i is None else _STUFE[px[p][:3]] % 8
-    def dunkel(c):
-        return 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]
-    alt = set()
-    for p in deckend:                                 # vorhandene Kontur erkennen:
-        if all((p[0] + dx, p[1] + dy) in deckend for dx, dy in _VIER):
-            continue                                  # liegt innen, ist keine
-        nachbarn = [px[(p[0] + dx, p[1] + dy)] for dx in (-1, 0, 1) for dy in (-1, 0, 1)
-                    if (dx or dy) and (p[0] + dx, p[1] + dy) in deckend
-                    and px[(p[0] + dx, p[1] + dy)] != px[p]]    # gleiche Farbe: derselbe Ring
-        if stufe[p] == 0:
-            alt.add(p)                                # steht schon ganz unten in der Reihe
-        elif (nachbarn and dunkel(px[p]) <= min(dunkel(c) for c in nachbarn)
-                and (stufe[p] is None or stufe[p] <= 2)):
-            alt.add(p)                                # dunkler als alles ringsum
-    innen = deckend - alt
-    for p in alt:
-        px[p] = (0, 0, 0, 0)
+    rand = [p for p in deckend
+            if any((p[0] + dx, p[1] + dy) not in deckend for dx, dy in _VIER)]
     haeufig = {}
-    for p in innen:                                   # welche Reihe traegt die Figur?
+    for p in deckend:
         haeufig[rampen[p]] = haeufig.get(rampen[p], 0) + 1
     haeufig.pop(0, None)
     haupt = max(haeufig, key=haeufig.get) if haeufig else 0
-    neu = {}
-    for x in range(w):
-        for y in range(h):
-            p = (x, y)
-            if p in innen:
-                continue
-            gewicht = {}
-            for (dx, dy), g in [(d, 2) for d in _VIER] + [(d, 1) for d in _DIAG]:
-                q = (x + dx, y + dy)
-                if q in innen:
-                    gewicht[rampen[q]] = gewicht.get(rampen[q], 0) + g
-            if not gewicht or not any((x + dx, y + dy) in innen for dx, dy in _VIER):
-                continue
-            ohne_grau = {r: g for r, g in gewicht.items() if r != 0}
-            if ohne_grau:
-                wahl = max(ohne_grau.items(), key=lambda t: (t[1], -t[0]))[0]
-            else:
-                wahl = haupt                              # nur Grau ringsum: Reihe der Figur
-            neu[p] = _rgb(PALETTE[wahl * 8]) + (255,)
+
+    def waehlen(p, quelle):
+        gewicht = {}
+        for (dx, dy), g in [(d, 2) for d in _VIER] + [(d, 1) for d in _DIAG]:
+            q = (p[0] + dx, p[1] + dy)
+            if q in quelle:
+                gewicht[rampen[q]] = gewicht.get(rampen[q], 0) + g
+        ohne_grau = {r: g for r, g in gewicht.items() if r != 0}
+        if ohne_grau:
+            return max(ohne_grau.items(), key=lambda t: (t[1], -t[0]))[0]
+        return haupt
+
+    anteil0 = sum(1 for p in rand if _STUFE.get(px[p][:3], 1) % 8 == 0) / float(len(rand))
+    zaehl = {}
+    for p in rand:
+        zaehl[px[p]] = zaehl.get(px[p], 0) + 1
+    gleich = max(zaehl.values()) / float(len(rand))
+    innen = {p for p in deckend if p not in rand}
+
+    if anteil0 >= 0.8 or gleich >= 0.75:          # Kontur ist schon da: nur umfaerben
+        quelle = innen or deckend
+        neu = {p: _rgb(PALETTE[waehlen(p, quelle) * 8]) + (255,) for p in rand}
+    else:                                          # noch keine: Ring aussen anlegen
+        neu = {}
+        for x in range(w):
+            for y in range(h):
+                p = (x, y)
+                if p in deckend:
+                    continue
+                if any((x + dx, y + dy) in deckend for dx, dy in _VIER):
+                    neu[p] = _rgb(PALETTE[waehlen(p, deckend) * 8]) + (255,)
     for p, c in neu.items():
         px[p] = c
     return img
