@@ -21,7 +21,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from palette import duel_anpassen
+from palette import duel_anpassen, umriss
 
 
 def aseprite_ebene(pfad):
@@ -70,7 +70,10 @@ def main():
         # Was der Spieler steuert oder traegt, ist kraeftig; Gegner und
         # Kacheln bleiben gedaempft
         stil = 'gedaempft'        # die Handzuordnung ist schon die des Nutzers
-        duel_anpassen(img, stil).save(aus)
+        duel_anpassen(img, stil)
+        if rel.parts[:2] != ('Character', 'template'):
+            umriss(img)           # Kontur wie in cowboy/Front1: dunkelste Stufe
+        img.save(aus)             # der angrenzenden Rampe, 1 px, keine Vorlagenmasken
         n += 1
     print('%d Dateien nach %s' % (n, ziel))
 

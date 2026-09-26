@@ -83,7 +83,7 @@ AAP_ZU_NEU = {
     '322b28': '4a353c', '423934': '5e4646', '3b1725': '82211d',
     # Rot (Rampe 9) und Feuer (Rampe 4 / 31)
     '73172d': 'b63c35', 'b4202a': 'e45c5f', 'e86a73': 'ff9ba8', 'df3e23': 'cd5e46',
-    'fa6a0a': 'e37840', 'f9a31b': 'ffb108', 'ffd541': 'ffcf05', 'fffc40': 'fff02b',
+    'fa6a0a': 'e37840', 'f9a31b': 'ffb108', 'ffd541': 'ffcf05', 'fffc40': 'a6cc34',
     # Haut (Rampe 2)
     '422433': '733d3b', '5b3138': '885041', '8e5252': 'ad6e51', 'ba756a': 'd58d6b',
     'f5a097': 'fbaa84', 'fad6b8': 'ffce7f', 'fef3c0': 'fff3d6',
@@ -93,8 +93,8 @@ AAP_ZU_NEU = {
     # Holz (Rampe 15)
     'bb7547': 'b29062', 'dba463': 'cca96e', 'f4d29c': 'e8cb82',
     # Gruen (Rampe 6)
-    '122020': '002219', '24523b': '174a1b', '1a7a3e': '225918', '14a02e': '2f690c',
-    '59c135': '518822', '9cdb43': '7da42d', 'd6f264': 'a6cc34',
+    '122020': '002219', '24523b': '003221', '1a7a3e': '174a1b', '14a02e': '225918',
+    '59c135': '2f690c', '9cdb43': '518822', 'd6f264': '7da42d',
     # Blau (Rampe 29 / 26 / 14)
     '143464': '2d3d72', '285cc4': '5274c5', '849be4': '8393c3', '249fde': '1476c0',
     '20d6c7': '00bfa3', 'a6fcdb': '00deda',
@@ -232,6 +232,78 @@ def palette_anpassen(img, stil='gedaempft'):
             if c not in cache:
                 cache[c] = naechste(c, stil)
             px[x, y] = cache[c]
+    return img
+
+
+# --- Kontur ----------------------------------------------------------------------
+# Der Nutzer umrandet seine Figuren seit 26.09.2026 mit 1 px in der
+# *dunkelsten Stufe der Rampe des angrenzenden Materials* (Leder 31222a,
+# Haut 583126, Poncho 5e0711) - kein Schwarz, keine zweite Farbe. Gemessen
+# an Sprites/Character/cowboy/Front1.png: 76 Konturpixel, alle auf der
+# 4er-Nachbarschaft, die Farbe folgt dem Material ringsum.
+
+_RAMPE_VON = {}
+for _i, _h in enumerate(PALETTE):
+    _RAMPE_VON.setdefault(_rgb(_h), _i // 8)
+
+_VIER = ((0, -1), (0, 1), (-1, 0), (1, 0))
+_DIAG = tuple((dx, dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1) if dx and dy)
+
+
+def _rampe(c):
+    r = _RAMPE_VON.get(c[:3])
+    if r is None:
+        r = _RAMPE_VON[naechste(c)[:3]]
+    return r
+
+
+def umriss(img):
+    """Legt die Kontur neu an: eine schon vorhandene wird abgezogen, dann
+    bekommt jeder freie Pixel neben der Figur die dunkelste Stufe der Rampe,
+    die ringsum ueberwiegt (gerade Nachbarn zaehlen doppelt). Grau zaehlt nur,
+    wenn es nichts anderes gibt - ein heller Punkt auf dem Stiefel soll die
+    Kontur nicht einfaerben."""
+    px = img.load()
+    w, h = img.size
+    deckend = {(x, y) for y in range(h) for x in range(w) if px[x, y][3]}
+    rampen = {p: _rampe(px[p]) for p in deckend}
+    stufe = {}
+    for p in deckend:
+        i = _RAMPE_VON.get(px[p][:3])
+        stufe[p] = None if i is None else _STUFE[px[p][:3]] % 8
+    def dunkel(c):
+        return 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]
+    alt = set()
+    for p in deckend:                                 # vorhandene Kontur erkennen:
+        if all((p[0] + dx, p[1] + dy) in deckend for dx, dy in _VIER):
+            continue                                  # liegt innen, ist keine
+        nachbarn = [px[(p[0] + dx, p[1] + dy)] for dx in (-1, 0, 1) for dy in (-1, 0, 1)
+                    if (dx or dy) and (p[0] + dx, p[1] + dy) in deckend
+                    and px[(p[0] + dx, p[1] + dy)] != px[p]]    # gleiche Farbe: derselbe Ring
+        if (nachbarn and dunkel(px[p]) <= min(dunkel(c) for c in nachbarn)
+                and (stufe[p] is None or stufe[p] <= 2)):
+            alt.add(p)                                # dunkler als alles ringsum
+    innen = deckend - alt
+    for p in alt:
+        px[p] = (0, 0, 0, 0)
+    neu = {}
+    for x in range(w):
+        for y in range(h):
+            p = (x, y)
+            if p in innen:
+                continue
+            gewicht = {}
+            for (dx, dy), g in [(d, 2) for d in _VIER] + [(d, 1) for d in _DIAG]:
+                q = (x + dx, y + dy)
+                if q in innen:
+                    gewicht[rampen[q]] = gewicht.get(rampen[q], 0) + g
+            if not gewicht or not any((x + dx, y + dy) in innen for dx, dy in _VIER):
+                continue
+            ohne_grau = {r: g for r, g in gewicht.items() if r != 0}
+            wahl = max((ohne_grau or gewicht).items(), key=lambda t: (t[1], -t[0]))[0]
+            neu[p] = _rgb(PALETTE[wahl * 8]) + (255,)
+    for p, c in neu.items():
+        px[p] = c
     return img
 
 
