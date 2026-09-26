@@ -1,116 +1,227 @@
 #!/usr/bin/env python3
-"""Aktive Palette: AAP-Splendor128 (lospec, 128 Farben) - seit 18.09.2026.
+"""Aktive Palette: 256 Farben in 32 Rampen zu je 8 Stufen (dunkel -> hell),
+seit 26.09.2026. Vorlage ist Sprites/Character/cowboy/Front1.png - dort hat
+der Nutzer die Palette bereits umgesetzt.
 
-Gelesen aus Downloads/aap-splendor128-1x.png. palette_anpassen() setzt
-AAP-64-Farben nach der Handzuordnung AAP_ZU_SPLENDOR um (bewusst gedaempfte
-Reihen) und rueckt alles andere auf die naechste Splendor-Farbe. Frueher:
+Aus diesem Frame ist die gewuenschte Zuordnung abgelesen (Pixel fuer Pixel
+gegen die alte Fassung gestellt):
+
+    Poncho    b4202a -> e45c5f, 73172d -> b63c35, 3b1725 -> 82211d   (Rampe 9)
+    Haut      f5a097 -> fbaa84, ba756a -> d58d6b, 8e5252 -> ad6e51   (Rampe 2)
+    Hut/Leder 796755 -> c0a588, 5a4e44 -> 9e8a6e, 423934 -> 5e4646   (Rampe 12)
+    Blau      285cc4 -> 5274c5, 143464 -> 2d3d72                     (Rampe 29)
+    Gold      f9a31b -> ffb108, ffd541 -> ffcf05                     (Rampe 31)
+    Weiss     ffffff -> cdd2da                                       (Rampe 0)
+
+palette_anpassen() setzt alles auf diese Palette: erst ueber die
+Handzuordnungen (AAP-64 und die vorher benutzte Splendor-Reihe), sonst
+ueber den naechsten Nachbarn in CIE-Lab. Frueher: AAP-Splendor128, davor
 Duel (tools/duel.py), davor AAP-64.
 """
 
-SPLENDOR = """050403 0e0c0c 2d1b1e 612721 b9451d f1641f fca570 ffe0b7 ffffff fff089 f8c53a e88a36 b05b2c 673931 271f1b 4c3d2e 855f39 d39741 f8f644 d5dc1d adb834 7f8e44 586335 333c24 181c19 293f21 477238 61a53f 8fd032 c4f129 d0ffea 97edca 59cf93 42a459 3d6f43 27412d 14121d 1b2447 2b4e95 2789cd 42bfe8 73efe8 f1f2ff c9d4fd 8aa1f6 4572e3 494182 7864c6 9c8bdb ceaaed fad6ff eeb59c d480bb 9052bc 171516 373334 695b59 b28b78 e2b27e f6d896 fcf7be ecebe7 cbc6c1 a69e9a 807b7a 595757 323232 4f342f 8c5b3e c68556 d6a851 b47538 724b2c 452a1b 61683a 939446 c6b858 efdd91 b5e7cb 86c69a 5d9b79 486859 2c3b39 171819 2c3438 465456 64878c 8ac4c3 afe9df dceaee b8ccd8 88a3bc 5e718e 485262 282c3c 464762 696682 9a97b9 c5c7dd e6e7f0 eee6ea e3cddf bfa5c9 87738f 564f5b 322f35 36282b 654956 966888 c090a9 d4b8b8 eae0dd f1ebdb ddcebf bda499 886e6a 594d4d 33272a b29476 e1bf89 f8e398 ffe9e3 fdc9c9 f6a2a8 e27285 b25266 64364b 2a1e23""".split()
+import math
 
-SPLENDOR_RGB = [(int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)) for h in SPLENDOR]
-SPLENDOR_SET = set(SPLENDOR_RGB)
+PALETTE = """000000 222323 434549 626871 828b98 a6aeba cdd2da f5f7fa
+625d54 857565 9e8c79 aea189 bbafa4 ccc3b1 eadbc9 fff3d6
+583126 733d3b 885041 9a624c ad6e51 d58d6b fbaa84 ffce7f
+002735 003850 004d5e 0b667f 006f89 328ca7 24aed6 88d6ff
+662b29 94363a b64d46 cd5e46 e37840 f99b4e ffbc4e ffe949
+282b4a 3a4568 615f84 7a7799 8690b2 96b2d9 c7d6ff c6ecff
+002219 003221 174a1b 225918 2f690c 518822 7da42d a6cc34
+181f2f 23324d 25466b 366b8a 318eb8 41b2e3 52d2ff 74f5fd
+1a332c 2f3f38 385140 325c40 417455 498960 55b67d 91daa1
+5e0711 82211d b63c35 e45c5f ff7676 ff9ba8 ffbbc7 ffdbff
+2d3136 48474d 5b5c69 73737f 848795 abaebe bac7db ebf0f6
+3b303c 5a3c45 8a5258 ae6b60 c7826c d89f75 ecc581 fffaab
+31222a 4a353c 5e4646 725a51 7e6c54 9e8a6e c0a588 ddbf9a
+2e1026 49283d 663659 975475 b96d91 c178aa db99bf f8c6da
+002e49 004051 005162 006b6d 008279 00a087 00bfa3 00deda
+453125 614a3c 7e6144 997951 b29062 cca96e e8cb82 fbeaa3
+5f0926 6e2434 904647 a76057 bd7d64 ce9770 edb67c edd493
+323558 4a5280 64659d 7877c1 8e8ce2 9c9bef b8aeff dcd4ff
+431729 712b3b 9f3b52 d94a69 f85d80 ff7daf ffa6c5 ffcdff
+49251c 633432 7c4b47 98595a ac6f6e c17e7a d28d7a e59a7c
+202900 2f4f08 495d00 617308 7c831e 969a26 b4aa33 d0cc32
+622a00 753b09 854f12 9e6520 ba882e d1aa39 e8d24b fff64f
+26233d 3b3855 56506f 75686e 917a7b b39783 cfaf8e fedfb1
+1d2c43 2e3d47 394d3c 4c5f33 58712c 6b842d 789e24 7fbd39
+372423 53393a 784c49 945d4f a96d58 bf7e63 d79374 f4a380
+2d4b47 47655a 5b7b69 71957d 87ae8e 8ac196 a9d1c1 e0faeb
+001b40 03315f 07487c 105da2 1476c0 4097ea 55b1f1 6dccff
+554769 765d73 977488 b98c93 d5a39a ebbd9d ffd59b fdf786
+1d1d21 3c3151 584a7f 7964ba 9585f1 a996ec baabf7 d1bdfe
+262450 28335d 2d3d72 3d5083 5165ae 5274c5 6c82c4 8393c3
+492129 5e414a 77535b 91606a ad7984 b58b94 d4aeaa ffe2cf
+721c03 9c3327 bf5a3e e98627 ffb108 ffcf05 fff02b f7f4bf""".split()
 
-# AAP-64 -> Splendor, von Hand: gedaempfte Reihen (Schleimgruen wird Salbei,
-# Rot wird Himbeer/Ziegel, Stahl wird Blaugrau). Eindeutig, damit Baender
-# und die 3-Pixel-Regel auf den Waffen erhalten bleiben.
-# Farbtheorie mit leichter Hand: Schatten kippen etwas ins Kalte, Lichter
-# etwas ins Warme; die Rampen enden eine Stufe vor Schwarz und Weiss.
-AAP_ZU_SPLENDOR = {
-    # Schwarz und Kanten: kuehl
-    '060608': '050403', '141013': '0e0c0c', '221c1a': '171516', '242234': '282c3c',
-    '322b28': '271f1b', '3b1725': '2d1b1e',
-    # Rot: Schatten violett, Licht rosa; Feuer warm bis gelb
-    '73172d': '64364b', 'b4202a': 'b25266', 'df3e23': 'b9451d', 'fa6a0a': 'f1641f',
-    'f9a31b': 'e88a36', 'ffd541': 'f8c53a', 'fffc40': 'fff089',
-    # Gruen: Schatten blaugruen, Licht warm gelbgruen
-    '122020': '171819', '24523b': '2c3b39', '1a7a3e': '486859', '14a02e': '5d9b79',
-    '59c135': '86c69a', '9cdb43': 'b5e7cb', 'd6f264': 'efdd91',
-    # Blau / Kristall
-    '143464': '1b2447', '285cc4': '2b4e95', '249fde': '2789cd', '20d6c7': '42bfe8',
-    'a6fcdb': '73efe8', '849be4': '8aa1f6',
-    # Haut: Schatten ins Violett, Licht ins Creme
-    'fef3c0': 'fcf7be', 'fad6b8': 'ffe0b7', 'f5a097': 'eeb59c', 'ba756a': 'b28b78',
-    '8e5252': '8c5b3e', 'e86a73': 'e27285',
-    # Violett
-    'bc4a9b': 'd480bb', '793a80': '966888', '403353': '654956',
-    # Leder / Holz
-    'f4d29c': 'e1bf89', 'dba463': 'd6a851', 'bb7547': 'b47538', '71413b': '724b2c',
-    '5b3138': '4f342f',
-    # Stahl: Licht fast weiss, Schatten tiefblau
-    'ffffff': 'ffffff', 'fdf6d5': 'f1ebdb', 'dae0ea': 'e6e7f0', 'b3b9d1': 'c5c7dd',
-    '8b93af': '9a97b9', '6d758d': '696682', '4a5462': '464762', '333941': '2c3438',
-    '422433': '36282b',
-    # Knochen: warm, Schatten grau-violett
-    'e4d2aa': 'ddcebf', 'c7b08b': 'bda499', 'a08662': 'b29476', '796755': '886e6a',
-    '5a4e44': '594d4d', '423934': '33272a',
+# Die Rampen der Reihe nach - so heissen sie in den Generatoren.
+RAMPEN = {
+    'grau': 0, 'sand': 1, 'haut': 2, 'petrol': 3, 'feuer': 4, 'stahlblau': 5,
+    'gruen': 6, 'eis': 7, 'moos': 8, 'rot': 9, 'zinn': 10, 'altholz': 11,
+    'leder': 12, 'violett': 13, 'tuerkis': 14, 'holz': 15, 'wein': 16,
+    'lavendel': 17, 'pink': 18, 'ocker': 19, 'oliv': 20, 'gold': 21,
+    'daemmer': 22, 'waldgruen': 23, 'terrakotta': 24, 'salbei': 25,
+    'himmel': 26, 'mauve': 27, 'nacht': 28, 'koenigsblau': 29, 'altrosa': 30,
+    'glut': 31,
 }
-assert len(set(AAP_ZU_SPLENDOR.values())) == len(AAP_ZU_SPLENDOR), 'Zuordnung nicht eindeutig'
-assert all(v in SPLENDOR for v in AAP_ZU_SPLENDOR.values())
 
-# Kraeftige Fassung fuer Spielfiguren und Waffen: dieselben Rampen, aber
-# eine Stufe gesaettigter - Gegner und Umgebung bleiben gedaempft, damit
-# der Spieler sich vom Turm abhebt.
-AAP_ZU_SPLENDOR_KRAEFTIG = dict(AAP_ZU_SPLENDOR)
-AAP_ZU_SPLENDOR_KRAEFTIG.update({
-    # Rot / Feuer / Gold
-    '73172d': '612721', 'b4202a': 'b9451d', 'df3e23': 'f1641f', 'fa6a0a': 'e88a36',
-    'f9a31b': 'f8c53a', 'ffd541': 'f8f644', 'fffc40': 'fff089', 'e86a73': 'e27285',
+PALETTE_RGB = [(int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)) for h in PALETTE]
+PALETTE_SET = set(PALETTE_RGB)
+
+
+def ton(rampe, stufe):
+    """Eine Stufe aus einer benannten Rampe, 0 = dunkel .. 7 = hell."""
+    return PALETTE[RAMPEN[rampe] * 8 + max(0, min(7, stufe))]
+
+
+# --- AAP-64 -> neu, nach der Vorlage des Nutzers ---------------------------------
+# Die Zeilen folgen den Rampen oben: Rot bleibt Rot, Haut bleibt Haut. Was
+# im Cowboy-Frame belegt ist, steht genau so drin.
+AAP_ZU_NEU = {
+    # Schwarz, Grau, Kanten
+    '060608': '000000', '141013': '1d1d21', '221c1a': '222323', '242234': '26233d',
+    '322b28': '4a353c', '423934': '5e4646', '3b1725': '82211d',
+    # Rot (Rampe 9) und Feuer (Rampe 4 / 31)
+    '73172d': 'b63c35', 'b4202a': 'e45c5f', 'e86a73': 'ff9ba8', 'df3e23': 'cd5e46',
+    'fa6a0a': 'e37840', 'f9a31b': 'ffb108', 'ffd541': 'ffcf05', 'fffc40': 'fff02b',
+    # Haut (Rampe 2)
+    '422433': '733d3b', '5b3138': '885041', '8e5252': 'ad6e51', 'ba756a': 'd58d6b',
+    'f5a097': 'fbaa84', 'fad6b8': 'ffce7f', 'fef3c0': 'fff3d6',
+    # Leder und Hut (Rampe 12), Knochen (Rampe 1)
+    '5a4e44': '9e8a6e', '796755': 'c0a588', '71413b': '725a51', 'a08662': 'ddbf9a',
+    'c7b08b': 'ccc3b1', 'e4d2aa': 'eadbc9',
+    # Holz (Rampe 15)
+    'bb7547': 'b29062', 'dba463': 'cca96e', 'f4d29c': 'e8cb82',
+    # Gruen (Rampe 6)
+    '122020': '002219', '24523b': '174a1b', '1a7a3e': '225918', '14a02e': '2f690c',
+    '59c135': '518822', '9cdb43': '7da42d', 'd6f264': 'a6cc34',
+    # Blau (Rampe 29 / 26 / 14)
+    '143464': '2d3d72', '285cc4': '5274c5', '849be4': '8393c3', '249fde': '1476c0',
+    '20d6c7': '00bfa3', 'a6fcdb': '00deda',
+    # Violett (Rampe 13), Schleimviolett und Runen
+    'bc4a9b': 'c178aa', '793a80': '663659', '403353': '49283d', '494182': '584a7f',
+    # Stahl (Rampe 0 / 10)
+    'ffffff': 'cdd2da', 'fdf6d5': 'f5f7fa', 'dae0ea': 'bac7db', 'b3b9d1': 'abaebe',
+    '8b93af': '848795', '6d758d': '73737f', '4a5462': '5b5c69', '333941': '48474d',
+    '422433_': '',
+}
+AAP_ZU_NEU.pop('422433_')
+assert all(v in PALETTE for v in AAP_ZU_NEU.values()), 'AAP-Ziel nicht in der Palette'
+
+
+# --- Splendor (vorherige Palette) -> neu ------------------------------------------
+# Die Generatoren schreiben noch in den Splendor-Toenen; hier werden sie
+# rampenweise umgesetzt, damit Hell-Dunkel-Reihen Reihen bleiben.
+SPLENDOR_ZU_NEU = {
+    # Schwarz und Kanten
+    '050403': '000000', '0e0c0c': '1d1d21', '171516': '222323', '14121d': '26233d',
+    '2d1b1e': '372423', '271f1b': '31222a', '322f35': '3b303c', '33272a': '4a353c',
+    '36282b': '53393a', '2a1e23': '431729', '323232': '434549', '373334': '48474d',
+    '595757': '5b5c69', '695b59': '625d54', '807b7a': '73737f', 'a69e9a': 'abaebe',
+    'cbc6c1': 'bbafa4', 'ecebe7': 'ebf0f6', 'ffffff': 'f5f7fa', 'f1f2ff': 'e0faeb',
+    # Rot, Feuer, Gold
+    '612721': '662b29', 'b9451d': 'bf5a3e', 'b05b2c': 'cd5e46', 'f1641f': 'e37840',
+    'fca570': 'f99b4e', 'ffe0b7': 'fedfb1', 'fff089': 'fff64f', 'f8c53a': 'ffb108',
+    'e88a36': 'e98627', '673931': '633432', 'f8f644': 'fff02b', 'd6a851': 'd1aa39',
+    'b47538': '9e6520', '855f39': '7e6144', '724b2c': '614a3c', '452a1b': '49251c',
+    '4c3d2e': '453125', 'e1bf89': 'ecc581', 'f8e398': 'fbeaa3', 'efdd91': 'e8cb82',
+    'f6d896': 'edd493', 'e2b27e': 'edb67c', 'c68556': 'd58d6b', '8c5b3e': '9a624c',
+    '4f342f': '53393a', 'b28b78': 'b39783',
+    # Wein, Rosa, Haut
+    'b25266': '9f3b52', '64364b': '663659', 'e27285': 'ff7676', 'f6a2a8': 'ff9ba8',
+    'fdc9c9': 'ffbbc7', 'ffe9e3': 'ffe2cf', 'eeb59c': 'ebbd9d', 'd4b8b8': 'd4aeaa',
+    'eae0dd': 'f8c6da', 'e3cddf': 'db99bf', 'bfa5c9': 'b98c93', '87738f': '765d73',
+    '564f5b': '554769', '966888': '977488', 'c090a9': 'b58b94', '654956': '5e414a',
+    'd480bb': 'c178aa', '9052bc': '7877c1', '7864c6': '7964ba', '9c8bdb': 'a996ec',
+    'ceaaed': 'baabf7', 'fad6ff': 'd1bdfe', '494182': '584a7f',
+    # Knochen und Stoff
+    'fcf7be': 'fff3d6', 'f1ebdb': 'eadbc9', 'ddcebf': 'ccc3b1', 'bda499': 'aea189',
+    'b29476': '9e8c79', '886e6a': '857565', '594d4d': '5e4646',
     # Gruen
-    '122020': '181c19', '24523b': '293f21', '1a7a3e': '477238', '14a02e': '42a459',
-    '59c135': '61a53f', '9cdb43': '8fd032', 'd6f264': 'c4f129',
-    # Blau / Kristall
-    '143464': '2b4e95', '285cc4': '4572e3', '249fde': '2789cd', '20d6c7': '42bfe8',
-    'a6fcdb': '73efe8', '849be4': '8aa1f6',
-    # Violett
-    'bc4a9b': 'd480bb', '793a80': '9052bc', '403353': '494182',
-    # Leder / Holz
-    'f4d29c': 'f6d896', 'dba463': 'd39741', 'bb7547': 'c68556', '71413b': '724b2c',
-    '5b3138': '673931',
-    # Stahl: etwas kuehler und heller
-    'dae0ea': 'f1f2ff', 'b3b9d1': 'c9d4fd', '8b93af': '9a97b9', '6d758d': '696682',
-    '4a5462': '464762', '333941': '2c3438',
-})
-assert len(set(AAP_ZU_SPLENDOR_KRAEFTIG.values())) == len(AAP_ZU_SPLENDOR_KRAEFTIG), 'kraeftig nicht eindeutig'
-assert all(v in SPLENDOR for v in AAP_ZU_SPLENDOR_KRAEFTIG.values())
+    '181c19': '002219', '293f21': '2f4f08', '477238': '58712c', '61a53f': '518822',
+    '8fd032': '7da42d', 'c4f129': 'a6cc34', '333c24': '202900', '586335': '4c5f33',
+    '61683a': '495d00', '7f8e44': '6b842d', '939446': '7c831e', 'adb834': 'b4aa33',
+    'c6b858': 'd0cc32', 'd5dc1d': 'fff64f',
+    # Schleim und Salbei
+    'd0ffea': 'e0faeb', 'b5e7cb': '91daa1', '97edca': 'a9d1c1', '86c69a': '8ac196',
+    '59cf93': '55b67d', '5d9b79': '498960', '42a459': '417455', '3d6f43': '385140',
+    '486859': '47655a', '27412d': '394d3c', '2c3b39': '2f3f38', '171819': '1a332c',
+    '8ac4c3': '87ae8e', 'afe9df': '71957d',
+    # Blau, Eis, Stahl
+    '1b2447': '282b4a', '2b4e95': '105da2', '2789cd': '1476c0', '42bfe8': '24aed6',
+    '73efe8': '74f5fd', 'c9d4fd': 'c7d6ff', '8aa1f6': '96b2d9', '4572e3': '5165ae',
+    '2c3438': '2d3136', '465456': '2e3d47', '64878c': '5b7b69', 'dceaee': 'c6ecff',
+    'b8ccd8': 'bac7db', '88a3bc': '8690b2', '5e718e': '7a7799', '485262': '5b5c69',
+    '282c3c': '1d2c43', '464762': '56506f', '696682': '615f84', '9a97b9': '8690b2',
+    'c5c7dd': 'a6aeba', 'e6e7f0': 'cdd2da', 'eee6ea': 'ebf0f6',
+}
+assert all(v in PALETTE for v in SPLENDOR_ZU_NEU.values()), 'Splendor-Ziel nicht in der Palette'
 
 
-def _karte(zuordnung):
-    return {tuple(int(k[i:i + 2], 16) for i in (0, 2, 4)): tuple(int(v[i:i + 2], 16) for i in (0, 2, 4)) + (255,)
-            for k, v in zuordnung.items()}
+def _rgb(h):
+    return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
 
 
-# Fuer die Kopien der Nutzer-Figuren (Spielerfiguren, also kraeftig): das
-# Poncho-Rot ist die kraeftigste Rotreihe der Palette (Orangerot, Maroon,
-# Tiefrot - ein Farbton), Hut und Hautschatten bleiben wie im Original
-# gedaempft, damit nur die Kleidung leuchtet und das Gesicht nicht kippt.
-AAP_ZU_SPLENDOR_FIGUR = dict(AAP_ZU_SPLENDOR_KRAEFTIG)
-AAP_ZU_SPLENDOR_FIGUR.update({
-    'b4202a': 'b9451d', '73172d': '612721', '3b1725': '2d1b1e',
-    '796755': '886e6a', '5a4e44': '594d4d', '423934': '33272a', '322b28': '271f1b',
-    '8e5252': '966888', 'ba756a': 'b28b78', '5b3138': '4f342f', '71413b': '724b2c',
-})
-assert len(set(AAP_ZU_SPLENDOR_FIGUR.values())) == len(AAP_ZU_SPLENDOR_FIGUR), 'figur nicht eindeutig'
+def _lab(c):
+    r, g, b = [v / 255.0 for v in c]
+    r, g, b = r ** 2.2, g ** 2.2, b ** 2.2
+    x = r * 0.4124 + g * 0.3576 + b * 0.1805
+    y = r * 0.2126 + g * 0.7152 + b * 0.0722
+    z = r * 0.0193 + g * 0.1192 + b * 0.9505
 
-KARTEN = {'gedaempft': _karte(AAP_ZU_SPLENDOR), 'kraeftig': _karte(AAP_ZU_SPLENDOR_KRAEFTIG),
-          'figur': _karte(AAP_ZU_SPLENDOR_FIGUR)}
+    def f(t):
+        return t ** (1.0 / 3) if t > 0.008856 else 7.787 * t + 16.0 / 116
+    fx, fy, fz = f(x / 0.9505), f(y), f(z / 1.089)
+    return (116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz))
+
+
+_LAB = [(h, _lab(_rgb(h))) for h in PALETTE]
+
+
+def _naechste_lab(c):
+    l = _lab(c)
+    return min(_LAB, key=lambda p: (p[1][0] - l[0]) ** 2 + (p[1][1] - l[1]) ** 2 + (p[1][2] - l[2]) ** 2)[0]
+
+
+# Handzuordnungen zusammen, als RGB-Tabelle
+def _karte(*zuordnungen):
+    k = {}
+    for z in zuordnungen:
+        for a, b in z.items():
+            k[_rgb(a)] = _rgb(b) + (255,)
+    return k
+
+
+# Die Vorlage des Nutzers hat Vorrang: erst die alte Splendor-Reihe, dann
+# AAP-64 daruebergelegt.
+KARTE = _karte(SPLENDOR_ZU_NEU, AAP_ZU_NEU)
+
+# Spielfiguren und Waffen duerfen eine Stufe heller in ihrer Rampe stehen -
+# so heben sie sich vom Turm ab, ohne den Farbton zu wechseln.
+_STUFE = {_rgb(h): i for i, h in enumerate(PALETTE)}
+
+
+def _heller(rgbwert, um=1):
+    i = _STUFE.get(rgbwert[:3])
+    if i is None:
+        return rgbwert
+    rampe, stufe = divmod(i, 8)
+    return _rgb(PALETTE[rampe * 8 + min(7, stufe + um)]) + (255,)
 
 
 def naechste(c, stil='gedaempft'):
     r, g, b = c[:3]
-    karte = KARTEN[stil]
-    if (r, g, b) in karte:
-        return karte[(r, g, b)]
-    if (r, g, b) in SPLENDOR_SET:
-        return (r, g, b, 255)
-    best = min(SPLENDOR_RGB, key=lambda k: (k[0] - r) ** 2 + (k[1] - g) ** 2 + (k[2] - b) ** 2)
-    return best + (255,)
+    ziel = KARTE.get((r, g, b))
+    if ziel is None:
+        ziel = (_rgb(_naechste_lab((r, g, b))) + (255,)) if (r, g, b) not in PALETTE_SET else (r, g, b, 255)
+    if stil in ('kraeftig', 'figur') and _STUFE.get(ziel[:3], 0) % 8 <= 5:
+        ziel = _heller(ziel, 1)
+    return ziel
 
 
 def palette_anpassen(img, stil='gedaempft'):
     """Alle deckenden Pixel auf die Palette ruecken. stil: gedaempft (Gegner,
-    Kacheln) oder kraeftig (Spielfiguren, Waffen)."""
+    Kacheln) oder kraeftig/figur (Spielfiguren, Waffen, Beute)."""
     px = img.load()
     cache = {}
     for y in range(img.height):
@@ -124,5 +235,6 @@ def palette_anpassen(img, stil='gedaempft'):
     return img
 
 
-# Rueckwaerts-kompatibler Name fuer die Generatoren
+# Rueckwaerts-kompatible Namen fuer die Generatoren
 duel_anpassen = palette_anpassen
+SPLENDOR = PALETTE

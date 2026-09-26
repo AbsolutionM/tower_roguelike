@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Kopiert die Sprites des Nutzers in die aktive Palette (Splendor128) - in einen eigenen
-Ordner, die Originale bleiben unberuehrt.
+"""Kopiert die Sprites des Nutzers in die aktive Palette (256 Farben, 32 Rampen)
+- in einen eigenen Ordner, die Originale bleiben unberuehrt.
 
-    Sprites/<pfad>.png       -> Sprites/claude/splendor/<pfad>.png
-    Sprites/<pfad>.aseprite  -> Sprites/claude/splendor/<pfad>.png  (erste Ebene)
+    Sprites/<pfad>.png       -> Sprites/claude/palette/<pfad>.png
+    Sprites/<pfad>.aseprite  -> Sprites/claude/palette/<pfad>.png  (erste Ebene)
 
 Character/ und Weapons/ (vom Spieler gesteuert bzw. getragen) nach der kraeftigen
 Zuordnung, Enemies/ und tilesets/ nach der gedaempften; alles andere auf die
@@ -53,7 +53,7 @@ def main():
     ap.add_argument('--quelle', required=True)
     args = ap.parse_args()
     quelle = Path(args.quelle)
-    ziel = quelle / 'claude' / 'splendor'
+    ziel = quelle / 'claude' / 'palette'
     n = 0
     for pfad in sorted(quelle.rglob('*')):
         if 'claude' in pfad.parts or not pfad.is_file():
@@ -69,7 +69,7 @@ def main():
         aus.parent.mkdir(parents=True, exist_ok=True)
         # Was der Spieler steuert oder traegt, ist kraeftig; Gegner und
         # Kacheln bleiben gedaempft
-        stil = {'Character': 'figur', 'Weapons': 'kraeftig'}.get(rel.parts[0], 'gedaempft')
+        stil = 'gedaempft'        # die Handzuordnung ist schon die des Nutzers
         duel_anpassen(img, stil).save(aus)
         n += 1
     print('%d Dateien nach %s' % (n, ziel))

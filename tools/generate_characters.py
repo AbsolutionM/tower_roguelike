@@ -414,12 +414,12 @@ def main():
         frames = []
         for richtung in ('Front', 'FSide', 'BSide', 'Back'):
             for nr in range(1, 11):
-                img = duel_anpassen(frame(fig, richtung, nr), 'kraeftig')
+                img = duel_anpassen(frame(fig, richtung, nr))
                 img.save(ziel / ('%s%d.png' % (richtung, nr)))
                 frames.append(img)
         if args.sheet:
             sc = 4
-            blatt = Image.new('RGBA', (10 * 34 * sc, 4 * 34 * sc), (56, 52, 72, 255))
+            blatt = Image.new('RGBA', (10 * 34 * sc, 4 * 34 * sc), (38, 35, 61, 255))
             for i, im in enumerate(frames):
                 g = im.resize((32 * sc, 32 * sc), Image.NEAREST)
                 blatt.alpha_composite(g, ((i % 10) * 34 * sc + sc, (i // 10) * 34 * sc + sc))

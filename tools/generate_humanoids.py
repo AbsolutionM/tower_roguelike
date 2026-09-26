@@ -1009,7 +1009,7 @@ def main():
                 gesamt += len(reihe)
         if args.sheet:
             sc = 3
-            blatt = Image.new('RGBA', (10 * 34 * sc, len(zeilen) * 34 * sc), (23, 21, 22, 255))
+            blatt = Image.new('RGBA', (10 * 34 * sc, len(zeilen) * 34 * sc), (34, 35, 35, 255))
             for r_, reihe in enumerate(zeilen):
                 for i, im in enumerate(reihe):
                     blatt.alpha_composite(im.resize((32 * sc, 32 * sc), Image.NEAREST), (i * 34 * sc + sc, r_ * 34 * sc + sc))

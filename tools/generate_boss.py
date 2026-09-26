@@ -285,7 +285,7 @@ def main():
         bilder.append(img)
         print('  %-10s %dx%d' % (name, img.width, img.height))
     sc = 4
-    blatt = Image.new('RGBA', (4 * (W + 4) * sc, (H + 4) * sc), (56, 52, 72, 255))
+    blatt = Image.new('RGBA', (4 * (W + 4) * sc, (H + 4) * sc), (38, 35, 61, 255))
     for i, im in enumerate(bilder):
         g = im.resize((im.width * sc, im.height * sc), Image.NEAREST)
         blatt.alpha_composite(g, (i * (W + 4) * sc + 2 * sc, 2 * sc))

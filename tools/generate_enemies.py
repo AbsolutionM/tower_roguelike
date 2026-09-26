@@ -607,7 +607,7 @@ def main():
     spalten = 4
     zelle = 34
     zeilen = (len(bilder) + spalten - 1) // spalten
-    blatt = Image.new('RGBA', (spalten * zelle * sc, zeilen * zelle * sc), (56, 52, 72, 255))
+    blatt = Image.new('RGBA', (spalten * zelle * sc, zeilen * zelle * sc), (38, 35, 61, 255))
     for i, im in enumerate(bilder):
         g = im.resize((im.width * sc, im.height * sc), Image.NEAREST)
         blatt.alpha_composite(g, ((i % spalten) * zelle * sc + (zelle * sc - g.width) // 2,

@@ -1101,7 +1101,7 @@ def main():
     if args.sheet:
         sc, spalten = 4, 9
         zeilen = (len(bilder) + spalten - 1) // spalten
-        blatt = Image.new('RGBA', (spalten * 18 * sc, zeilen * 18 * sc), (23, 21, 22, 255))
+        blatt = Image.new('RGBA', (spalten * 18 * sc, zeilen * 18 * sc), (34, 35, 35, 255))
         for i, (_, im) in enumerate(bilder):
             blatt.alpha_composite(im.resize((G * sc, G * sc), Image.NEAREST),
                                   ((i % spalten) * 18 * sc + sc, (i // spalten) * 18 * sc + sc))

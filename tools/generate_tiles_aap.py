@@ -569,7 +569,7 @@ def main():
             print('  %-12s %2d Farben %s' % (name, n, ', '.join(fehler) or 'ok'))
     blatt.save(ziel / 'slimetower_tileset.png')
     sc = 3
-    hg = Image.new('RGBA', (blatt.width * sc, blatt.height * sc), (40, 36, 52, 255))
+    hg = Image.new('RGBA', (blatt.width * sc, blatt.height * sc), (38, 35, 61, 255))
     hg.alpha_composite(blatt.resize((blatt.width * sc, blatt.height * sc), Image.NEAREST))
     hg.save(ziel / '_vorschau.png')
     print('Blatt %dx%d, %d Farben gesamt -> %s' % (blatt.width, blatt.height, len(alle), ziel))
