@@ -85,7 +85,7 @@ AAP_ZU_NEU = {
     '73172d': 'b63c35', 'b4202a': 'e45c5f', 'e86a73': 'ff9ba8', 'df3e23': 'cd5e46',
     'fa6a0a': 'e37840', 'f9a31b': 'ffb108', 'ffd541': 'ffcf05', 'fffc40': 'a6cc34',
     # Haut (Rampe 2)
-    '422433': '733d3b', '5b3138': '885041', '8e5252': 'ad6e51', 'ba756a': 'd58d6b',
+    '422433': '733d3b', '5b3138': '733d3b', '8e5252': 'ad6e51', 'ba756a': 'd58d6b',
     'f5a097': 'fbaa84', 'fad6b8': 'ffce7f', 'fef3c0': 'fff3d6',
     # Leder und Hut (Rampe 12), Knochen (Rampe 1)
     '5a4e44': '9e8a6e', '796755': 'c0a588', '71413b': '725a51', 'a08662': 'ddbf9a',
@@ -280,12 +280,19 @@ def umriss(img):
         nachbarn = [px[(p[0] + dx, p[1] + dy)] for dx in (-1, 0, 1) for dy in (-1, 0, 1)
                     if (dx or dy) and (p[0] + dx, p[1] + dy) in deckend
                     and px[(p[0] + dx, p[1] + dy)] != px[p]]    # gleiche Farbe: derselbe Ring
-        if (nachbarn and dunkel(px[p]) <= min(dunkel(c) for c in nachbarn)
+        if stufe[p] == 0:
+            alt.add(p)                                # steht schon ganz unten in der Reihe
+        elif (nachbarn and dunkel(px[p]) <= min(dunkel(c) for c in nachbarn)
                 and (stufe[p] is None or stufe[p] <= 2)):
             alt.add(p)                                # dunkler als alles ringsum
     innen = deckend - alt
     for p in alt:
         px[p] = (0, 0, 0, 0)
+    haeufig = {}
+    for p in innen:                                   # welche Reihe traegt die Figur?
+        haeufig[rampen[p]] = haeufig.get(rampen[p], 0) + 1
+    haeufig.pop(0, None)
+    haupt = max(haeufig, key=haeufig.get) if haeufig else 0
     neu = {}
     for x in range(w):
         for y in range(h):
@@ -300,7 +307,10 @@ def umriss(img):
             if not gewicht or not any((x + dx, y + dy) in innen for dx, dy in _VIER):
                 continue
             ohne_grau = {r: g for r, g in gewicht.items() if r != 0}
-            wahl = max((ohne_grau or gewicht).items(), key=lambda t: (t[1], -t[0]))[0]
+            if ohne_grau:
+                wahl = max(ohne_grau.items(), key=lambda t: (t[1], -t[0]))[0]
+            else:
+                wahl = haupt                              # nur Grau ringsum: Reihe der Figur
             neu[p] = _rgb(PALETTE[wahl * 8]) + (255,)
     for p, c in neu.items():
         px[p] = c
